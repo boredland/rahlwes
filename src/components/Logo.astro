@@ -2,31 +2,51 @@
 import { Link } from 'accessible-astro-components'
 import themeConfig from '@theme-config'
 import { currentLocale, localizePath } from '@i18n/config'
+import logo from '@assets/logo.svg?raw'
 
 const locale = currentLocale(Astro.currentLocale)
 ---
 
-<Link href={localizePath('/', locale)} class="logo">
-  <span class="logo-name">{themeConfig.name}</span>
-  <span class="logo-claim">{themeConfig.seo.subtitle}</span>
+<Link href={localizePath('/', locale)} class="logo" aria-label={`${themeConfig.name} — ${themeConfig.seo.subtitle}`}>
+  <span class="logo-svg" set:html={logo} />
 </Link>
 
 <style lang="scss">
   .logo {
-    display: flex;
-    flex-direction: column;
-    line-height: 1.15;
+    display: inline-flex;
+    align-items: center;
     text-decoration: none;
   }
 
-  .logo-name {
-    font-size: var(--font-size-1);
-    font-weight: 700;
+  .logo-svg :global(svg) {
+    display: block;
+    inline-size: 170px;
+    max-inline-size: 100%;
+    block-size: auto;
   }
 
-  .logo-claim {
-    color: var(--link-color);
-    font-size: var(--font-size--1);
-    font-style: italic;
+  // The traced artwork is one flat colour; splitting mark from wordmark lets the
+  // monogram carry the accent while the text stays in the body ink.
+  .logo-svg :global(.logo-mark) {
+    fill: var(--link-color);
+    transition: fill var(--animation-speed-fast) var(--cubic-bezier);
+  }
+
+  .logo-svg :global(.logo-word) {
+    fill: var(--foreground-color);
+  }
+
+  .logo-svg :global(.logo-rule) {
+    fill: var(--foreground-color);
+  }
+
+  .logo:where(:hover, :focus-visible) .logo-svg :global(.logo-mark) {
+    fill: var(--link-hover-color);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .logo-svg :global(.logo-mark) {
+      transition: none;
+    }
   }
 </style>
