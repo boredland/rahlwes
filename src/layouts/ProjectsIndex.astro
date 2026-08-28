@@ -15,6 +15,12 @@ interface Props {
 const { locale } = Astro.props
 const t = useTranslations(locale)
 const projects = await getProjects(locale)
+
+// Grouped by category so the overview stays readable as the reference pages grow.
+const categories = ['ausstellung', 'digital', 'material'] as const
+const grouped = categories
+  .map((category) => ({ category, entries: projects.filter((p) => p.data.category === category) }))
+  .filter((group) => group.entries.length > 0)
 ---
 
 <DefaultLayout
@@ -31,31 +37,37 @@ const projects = await getProjects(locale)
   <section class="my-16">
     <div class="container">
       {projects.length === 0 && <p>{t('projects.empty')}</p>}
-      <div class="grid grid-cols-1 gap-12 md:grid-cols-2 lg:grid-cols-3">
-        {
-          projects.map((project, index) => {
-            const slug = project.id.split('/').slice(1).join('/')
-            return (
-              <article class="teaser">
-                <ContentImage
-                  class="teaser-image"
-                  src={project.data.coverImage}
-                  alt={project.data.coverAlt}
-                  widths={[300, 500, 700]}
-                  sizes="(min-width: 1024px) 30vw, (min-width: 768px) 45vw, 90vw"
-                  aspect="3 / 2"
-                  loading={index < 3 ? 'eager' : 'lazy'}
-                />
-                <p class="meta">{t(`projects.category.${project.data.category}`)}</p>
-                <Heading level="h2" size="h5" class="mb-2">
-                  <Link href={localizePath(`/projekte/${slug}`, locale)}>{project.data.title}</Link>
-                </Heading>
-                <p>{project.data.excerpt}</p>
-              </article>
-            )
-          })
-        }
-      </div>
+      {
+        grouped.map((group, groupIndex) => (
+          <section class="category">
+            <Heading level="h2" size="h4" class="mb-8">
+              {t(`projects.category.${group.category}`)}
+            </Heading>
+            <div class="grid grid-cols-1 gap-12 md:grid-cols-2 lg:grid-cols-3">
+              {group.entries.map((project, index) => {
+                const slug = project.id.split('/').slice(1).join('/')
+                return (
+                  <article class="teaser">
+                    <ContentImage
+                      class="teaser-image"
+                      src={project.data.coverImage}
+                      alt={project.data.coverAlt}
+                      widths={[300, 500, 700]}
+                      sizes="(min-width: 1024px) 30vw, (min-width: 768px) 45vw, 90vw"
+                      aspect="3 / 2"
+                      loading={groupIndex === 0 && index < 3 ? 'eager' : 'lazy'}
+                    />
+                    <Heading level="h3" size="h5" class="mt-4 mb-2">
+                      <Link href={localizePath(`/projekte/${slug}`, locale)}>{project.data.title}</Link>
+                    </Heading>
+                    <p>{project.data.excerpt}</p>
+                  </article>
+                )
+              })}
+            </div>
+          </section>
+        ))
+      }
     </div>
   </section>
 </DefaultLayout>
@@ -70,6 +82,10 @@ const projects = await getProjects(locale)
 
   // Category eyebrow: -600 is the accent step that clears 4.5:1 on white, since
   // this is small text rather than a graphic element.
+  .category + .category {
+    margin-block-start: var(--space-2xl);
+  }
+
   .meta {
     margin-block-start: var(--space-2xs);
     color: var(--color-accent-600);

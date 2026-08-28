@@ -8,6 +8,7 @@ export const ui = {
   de: {
     'nav.home': 'Start',
     'nav.about': 'Über mich',
+    'nav.museums': 'Für Museen',
     'nav.services': 'Leistungen',
     'nav.projects': 'Projekte',
     'nav.journal': 'Journal',
@@ -54,6 +55,7 @@ export const ui = {
   en: {
     'nav.home': 'Home',
     'nav.about': 'About me',
+    'nav.museums': 'For museums',
     'nav.services': 'Services',
     'nav.projects': 'Projects',
     'nav.journal': 'Journal',
@@ -100,6 +102,7 @@ export const ui = {
   fr: {
     'nav.home': 'Accueil',
     'nav.about': 'À propos',
+    'nav.museums': 'Pour les musées',
     'nav.services': 'Prestations',
     'nav.projects': 'Projets',
     'nav.journal': 'Journal',

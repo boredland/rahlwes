@@ -6,6 +6,7 @@ type NavRoute = { key: UIKey; path: string }
 /** Paths are locale-agnostic; `localizePath` adds the prefix for non-default locales. */
 const routes: NavRoute[] = [
   { key: 'nav.about', path: '/ueber-mich' },
+  { key: 'nav.museums', path: '/fuer-museen' },
   { key: 'nav.projects', path: '/projekte' },
   { key: 'nav.journal', path: '/journal' },
   { key: 'nav.contact', path: '/kontakt' },
