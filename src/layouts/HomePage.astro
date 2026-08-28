@@ -1,0 +1,167 @@
+---
+import DefaultLayout from '@layouts/DefaultLayout.astro'
+import Hero from '@components/Hero.astro'
+import Feature from '@components/Feature.astro'
+import BlockQuote from '@components/BlockQuote.astro'
+import { Heading, Link } from 'accessible-astro-components'
+import { localizePath, type Locale } from '@i18n/config'
+import { useTranslations } from '@i18n/ui'
+import { getHome, getJournal, getProjects } from '@i18n/content'
+
+interface Props {
+  locale: Locale
+}
+
+const { locale } = Astro.props
+const t = useTranslations(locale)
+const home = await getHome(locale)
+const { data } = home
+const projects = (await getProjects(locale)).slice(0, 3)
+const posts = (await getJournal(locale)).slice(0, 3)
+---
+
+<DefaultLayout
+  title={data.seo.title || data.heroHeading}
+  description={data.seo.description || data.heroText}
+  useTitleTemplate={!data.seo.title}
+>
+  <Hero
+    heading={data.heroHeading}
+    text={data.heroText}
+    ctaLabel={data.heroCta}
+    ctaHref={localizePath('/kontakt', locale)}
+    src={data.heroImage}
+    alt={data.heroImageAlt}
+  />
+
+  {
+    data.services.length > 0 && (
+      <section class="my-16 md:my-24">
+        <div class="container">
+          <Heading level="h2" class="mb-12">
+            {data.servicesHeading}
+          </Heading>
+          <div class="grid grid-cols-1 gap-12 md:grid-cols-2 lg:grid-cols-3">
+            {data.services.map((service) => (
+              <Feature icon={service.icon} title={service.title}>
+                {service.text}
+              </Feature>
+            ))}
+          </div>
+        </div>
+      </section>
+    )
+  }
+
+  {
+    data.aboutBlocks.length > 0 && (
+      <section class="my-16 md:my-24">
+        <div class="container">
+          <Heading level="h2" class="mb-12">
+            {data.aboutHeading}
+          </Heading>
+          <div class="grid grid-cols-1 gap-8 md:grid-cols-2">
+            {data.aboutBlocks.map((block) => (
+              <article class="about-block">
+                <Heading level="h3" size="h5" class="mb-2">
+                  {block.title}
+                </Heading>
+                <p>{block.text}</p>
+              </article>
+            ))}
+          </div>
+          <p class="mt-8">
+            <Link href={localizePath('/ueber-mich', locale)}>{t('nav.about')}</Link>
+          </p>
+        </div>
+      </section>
+    )
+  }
+
+  {
+    projects.length > 0 && (
+      <section class="my-16 md:my-24">
+        <div class="container">
+          <Heading level="h2" class="mb-12">
+            {t('projects.title')}
+          </Heading>
+          <div class="grid grid-cols-1 gap-8 md:grid-cols-3">
+            {projects.map((project) => (
+              <article class="teaser">
+                {project.data.coverImage && (
+                  <img src={project.data.coverImage} alt={project.data.coverAlt} width="600" height="400" loading="lazy" />
+                )}
+                <Heading level="h3" size="h5" class="mt-4 mb-2">
+                  <Link href={localizePath(`/projekte/${project.id.split('/').slice(1).join('/')}`, locale)}>
+                    {project.data.title}
+                  </Link>
+                </Heading>
+                <p>{project.data.excerpt}</p>
+              </article>
+            ))}
+          </div>
+          <p class="mt-8">
+            <Link href={localizePath('/projekte', locale)}>{t('projects.all')}</Link>
+          </p>
+        </div>
+      </section>
+    )
+  }
+
+  {
+    data.testimonials.length > 0 && (
+      <section class="my-16 md:my-24">
+        <div class="container flex flex-col gap-8">
+          {data.testimonials.map((testimonial) => (
+            <BlockQuote author={testimonial.author}>{testimonial.quote}</BlockQuote>
+          ))}
+        </div>
+      </section>
+    )
+  }
+
+  {
+    posts.length > 0 && (
+      <section class="my-16 md:my-24">
+        <div class="container">
+          <Heading level="h2" class="mb-12">
+            {t('journal.title')}
+          </Heading>
+          <div class="grid grid-cols-1 gap-8 md:grid-cols-3">
+            {posts.map((post) => (
+              <article class="teaser">
+                {post.data.coverImage && (
+                  <img src={post.data.coverImage} alt={post.data.coverAlt} width="600" height="400" loading="lazy" />
+                )}
+                <Heading level="h3" size="h5" class="mt-4 mb-2">
+                  <Link href={localizePath(`/journal/${post.id.split('/').slice(1).join('/')}`, locale)}>
+                    {post.data.title}
+                  </Link>
+                </Heading>
+                <p>{post.data.excerpt}</p>
+              </article>
+            ))}
+          </div>
+          <p class="mt-8">
+            <Link href={localizePath('/journal', locale)}>{t('journal.all')}</Link>
+          </p>
+        </div>
+      </section>
+    )
+  }
+</DefaultLayout>
+
+<style lang="scss">
+  .about-block {
+    border-inline-start: 3px solid var(--color-primary-300);
+    padding-inline-start: var(--space-s);
+  }
+
+  .teaser img {
+    border-radius: var(--radius-m);
+    inline-size: 100%;
+    block-size: auto;
+    object-fit: cover;
+    aspect-ratio: 3 / 2;
+  }
+</style>

@@ -1,0 +1,46 @@
+---
+import { Link } from 'accessible-astro-components'
+import { Icon } from 'astro-icon/components'
+
+interface Props {
+  heading: string
+  text: string
+  ctaLabel: string
+  ctaHref: string
+  src?: string | null
+  alt?: string
+}
+
+const { heading, text, ctaLabel, ctaHref, src, alt = '' }: Props = Astro.props
+---
+
+<section class="hero my-16 md:my-24">
+  <div class="container">
+    <div class="grid grid-cols-1 items-center gap-12 lg:grid-cols-[1.1fr_1fr] lg:gap-24">
+      <div class="flex flex-col items-start gap-8">
+        <h1 class="text-balance">{heading}</h1>
+        <p class="intro">{text}</p>
+        <Link href={ctaHref} isButton type="primary" animateOnHover animationType="boop">
+          <Icon aria-hidden="true" name="lucide:message-circle" size="1.5rem" />
+          {ctaLabel}
+        </Link>
+      </div>
+      {src && <img class="portrait" src={src} alt={alt} width="900" height="1200" decoding="async" fetchpriority="high" />}
+    </div>
+  </div>
+</section>
+
+<style lang="scss">
+  .intro {
+    max-inline-size: 46ch;
+    font-size: var(--font-size-1);
+  }
+
+  .portrait {
+    border-radius: var(--radius-l);
+    inline-size: 100%;
+    block-size: auto;
+    object-fit: cover;
+    aspect-ratio: 3 / 4;
+  }
+</style>

@@ -1,0 +1,24 @@
+---
+import ArticlePage from '@layouts/ArticlePage.astro'
+import { defaultLocale, locales, type Locale } from '@i18n/config'
+import { getJournal } from '@i18n/content'
+import type { CollectionEntry } from 'astro:content'
+
+export async function getStaticPaths() {
+  const translated = locales.filter((locale) => locale !== defaultLocale)
+  const paths = await Promise.all(
+    translated.map(async (locale) => {
+      const posts = await getJournal(locale)
+      return posts.map((entry) => ({
+        params: { locale, slug: entry.id.split('/').slice(1).join('/') },
+        props: { entry, locale },
+      }))
+    }),
+  )
+  return paths.flat()
+}
+
+const { entry, locale } = Astro.props as { entry: CollectionEntry<'journal'>; locale: Locale }
+---
+
+<ArticlePage locale={locale} entry={entry} />

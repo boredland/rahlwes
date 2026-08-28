@@ -1,0 +1,63 @@
+---
+import DefaultLayout from '@layouts/DefaultLayout.astro'
+import PageHeader from '@components/PageHeader.astro'
+import { Heading, Link } from 'accessible-astro-components'
+import { htmlLang, localizePath, type Locale } from '@i18n/config'
+import { useTranslations } from '@i18n/ui'
+import { getJournal } from '@i18n/content'
+
+interface Props {
+  locale: Locale
+}
+
+const { locale } = Astro.props
+const t = useTranslations(locale)
+const posts = await getJournal(locale)
+const dateFormat = new Intl.DateTimeFormat(htmlLang[locale], { dateStyle: 'long' })
+---
+
+<DefaultLayout title={t('journal.title')}>
+  <PageHeader title={t('journal.title')} showBreadcrumbs={false} />
+  <section class="my-16">
+    <div class="container">
+      {posts.length === 0 && <p>{t('journal.empty')}</p>}
+      <div class="grid grid-cols-1 gap-12 md:grid-cols-2 lg:grid-cols-3">
+        {
+          posts.map((post) => {
+            const slug = post.id.split('/').slice(1).join('/')
+            return (
+              <article class="teaser">
+                {post.data.coverImage && (
+                  <img src={post.data.coverImage} alt={post.data.coverAlt} width="600" height="400" loading="lazy" />
+                )}
+                <p class="meta">
+                  {t('journal.published')} <time datetime={post.data.publishedAt.toISOString()}>{dateFormat.format(post.data.publishedAt)}</time>
+                </p>
+                <Heading level="h2" size="h5" class="mb-2">
+                  <Link href={localizePath(`/journal/${slug}`, locale)}>{post.data.title}</Link>
+                </Heading>
+                <p>{post.data.excerpt}</p>
+              </article>
+            )
+          })
+        }
+      </div>
+    </div>
+  </section>
+</DefaultLayout>
+
+<style lang="scss">
+  .teaser img {
+    border-radius: var(--radius-m);
+    inline-size: 100%;
+    block-size: auto;
+    object-fit: cover;
+    aspect-ratio: 3 / 2;
+  }
+
+  .meta {
+    margin-block-start: var(--space-2xs);
+    color: var(--color-neutral-700);
+    font-size: var(--font-size--1);
+  }
+</style>

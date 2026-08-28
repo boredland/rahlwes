@@ -1,0 +1,55 @@
+@use 'breakpoint' as *;
+
+// PT Sans is loaded by Astro's font API (see astro.config.mjs), which emits the
+// @font-face rules and preload hints. Only 400 and 700 exist, so headings use 700.
+
+@layer base {
+  p {
+    text-wrap: pretty;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-family: var(--font-heading);
+    font-weight: 700;
+    text-wrap: balance;
+  }
+
+  h1 {
+    font-size: var(--font-size-6);
+    line-height: 1.05;
+    letter-spacing: -0.02em;
+  }
+
+  h2 {
+    font-size: var(--font-size-4);
+    line-height: 1.1;
+    letter-spacing: -0.015em;
+  }
+
+  h3 {
+    font-size: var(--font-size-3);
+    line-height: 1.15;
+  }
+
+  h4 {
+    font-size: var(--font-size-2);
+    line-height: 1.2;
+  }
+
+  h5 {
+    font-size: var(--font-size-1);
+    line-height: 1.3;
+  }
+
+  h6 {
+    font-size: var(--font-size-0);
+    line-height: 1.4;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+}

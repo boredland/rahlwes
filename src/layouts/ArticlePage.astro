@@ -1,0 +1,69 @@
+---
+import DefaultLayout from '@layouts/DefaultLayout.astro'
+import PageHeader from '@components/PageHeader.astro'
+import { htmlLang, type Locale } from '@i18n/config'
+import { useTranslations } from '@i18n/ui'
+import type { CollectionEntry } from 'astro:content'
+import { render } from 'astro:content'
+
+interface Props {
+  locale: Locale
+  entry: CollectionEntry<'journal'> | CollectionEntry<'projects'> | CollectionEntry<'pages'>
+}
+
+const { locale, entry } = Astro.props
+const t = useTranslations(locale)
+const { Content } = await render(entry)
+
+const publishedAt = 'publishedAt' in entry.data ? entry.data.publishedAt : null
+const coverImage = 'coverImage' in entry.data ? entry.data.coverImage : null
+const coverAlt = 'coverAlt' in entry.data ? entry.data.coverAlt : ''
+const excerpt = 'excerpt' in entry.data ? entry.data.excerpt : 'intro' in entry.data ? entry.data.intro : ''
+const dateFormat = new Intl.DateTimeFormat(htmlLang[locale], { dateStyle: 'long' })
+---
+
+<DefaultLayout
+  title={entry.data.seo.title || entry.data.title}
+  description={entry.data.seo.description || excerpt}
+  type="article"
+  useTitleTemplate={!entry.data.seo.title}
+>
+  <PageHeader title={entry.data.title} subtitle={excerpt} showBreadcrumbs={false} />
+  <article class="my-12">
+    <div class="container">
+      {
+        publishedAt && (
+          <p class="meta">
+            {t('journal.published')}{' '}
+            <time datetime={publishedAt.toISOString()}>{dateFormat.format(publishedAt)}</time>
+          </p>
+        )
+      }
+      {coverImage && <img class="cover" src={coverImage} alt={coverAlt} width="1200" height="700" />}
+      <div class="prose space-content">
+        <Content />
+      </div>
+    </div>
+  </article>
+</DefaultLayout>
+
+<style lang="scss">
+  .meta {
+    margin-block-end: var(--space-s);
+    color: var(--color-neutral-700);
+    font-size: var(--font-size--1);
+  }
+
+  .cover {
+    margin-block-end: var(--space-l);
+    border-radius: var(--radius-l);
+    inline-size: 100%;
+    block-size: auto;
+    object-fit: cover;
+    aspect-ratio: 12 / 7;
+  }
+
+  .prose {
+    max-inline-size: var(--font-measure);
+  }
+</style>

@@ -1,0 +1,34 @@
+---
+import DefaultLayout from '@layouts/DefaultLayout.astro'
+import PageHeader from '@components/PageHeader.astro'
+import themeConfig from '@theme-config'
+import { type Locale } from '@i18n/config'
+import { useTranslations } from '@i18n/ui'
+
+interface Props {
+  locale: Locale
+}
+
+const { locale } = Astro.props
+const t = useTranslations(locale)
+const email = 'info@rahlwes.eu'
+---
+
+<DefaultLayout title={t('contact.title')}>
+  <PageHeader title={t('contact.title')} showBreadcrumbs={false} />
+  <section class="my-16">
+    <div class="container space-content">
+      <p class="lead">{themeConfig.seo.description}</p>
+      <p>
+        <a href={`mailto:${email}`}>{email}</a>
+      </p>
+    </div>
+  </section>
+</DefaultLayout>
+
+<style lang="scss">
+  .lead {
+    max-inline-size: var(--font-measure);
+    font-size: var(--font-size-1);
+  }
+</style>

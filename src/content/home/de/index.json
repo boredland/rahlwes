@@ -1,0 +1,58 @@
+{
+  "heroHeading": "Welche Geschichte bewegt Sie?",
+  "heroText": "Hallo, ich bin Ann-Kathrin Rahlwes, Historikerin aus Frankfurt am Main. Ich unterstütze Sie, historische Zeugnisse zu finden, Geschichte zu erforschen und einfach, klar und spannend zu vermitteln.",
+  "heroCta": "Let’s talk!",
+  "heroImage": "/uploads/portrait-ann-kathrin-rahlwes.jpg",
+  "heroImageAlt": "Ann-Kathrin Rahlwes, Historikerin",
+  "servicesHeading": "Wie kann ich Sie unterstützen?",
+  "services": [
+    {
+      "title": "Historische Unterlagen finden",
+      "text": "Ich recherchiere in Archiven, Sammlungen und Datenbanken und finde die Quellen, die Ihre Geschichte belegen.",
+      "icon": "lucide:search"
+    },
+    {
+      "title": "Alte Dokumente & Fotografien verstehen",
+      "text": "Ich lese und deute historische Schriften, Briefe und Bilder und ordne sie in ihren Zusammenhang ein.",
+      "icon": "lucide:book-open"
+    },
+    {
+      "title": "Geschichte vermitteln",
+      "text": "Ich erzähle Geschichte einfach, klar und spannend – für Ausstellungen, digitale Formate und den Unterricht.",
+      "icon": "lucide:message-circle"
+    }
+  ],
+  "aboutHeading": "Meine Motivation",
+  "aboutBlocks": [
+    {
+      "title": "Mein Ansatz",
+      "text": "Ich möchte Menschen für Geschichte begeistern und ermutigen, sich mit historischen Themen zu beschäftigen. Deshalb ist es mir wichtig, Geschichte einfach, klar und spannend zu vermitteln. Dabei setze ich auf fundiertes Wissen, innovative Themen und Methoden wie Storytelling."
+    },
+    {
+      "title": "Meine Ausbildung",
+      "text": "Ich habe Politikwissenschaft, Mittlere und Neuere Geschichte sowie Philosophie studiert und mich viele Jahre in der historisch-politischen Bildungsarbeit engagiert. Meine Ausstellungskonzepte sind inklusiv & partizipativ, in der Forschung interessieren mich sozialgeschichtliche Ansätze."
+    },
+    {
+      "title": "Mein Fokus",
+      "text": "Ich erforsche Biografien und Familiengeschichte(n) und beschäftige mich mit Erinnerungsstücken, Briefwechseln und Erinnerungsberichten. Wer waren die Menschen, die uns vorausgingen? Wie lebten und arbeiteten sie? Was war ihnen wichtig?"
+    },
+    {
+      "title": "Wissen weitergeben",
+      "text": "Neue Impulse für meine Arbeit finde ich auf Konferenzen, bei Weiterbildungen und im Austausch mit Fachkolleginnen und Fachkollegen. Mein Wissen gebe ich an meine Kundinnen und Kunden, an Ausstellungsteams und im Rahmen von Workshops weiter."
+    }
+  ],
+  "testimonials": [
+    {
+      "quote": "Ann-Kathrin Rahlwes is an absolute professional, extremely creative, and cultivates a very pleasant communication style. She’s fun and interesting to work with.",
+      "author": "Judith Rosenthal"
+    },
+    {
+      "quote": "Ann-Kathrin Rahlwes ist in einer fortgeschrittenen Phase in die Gestaltung unserer Dauerausstellung eingestiegen und hat den weiteren Prozess mit ihrer fundierten Expertise sowie Erfahrung in der Vermittlung der jüngsten Migrationsgeschichte spürbar bereichert. Besonders hervorzuheben sind ihre ausgeprägte Eigeninitiative sowie ihre Fähigkeit, Herausforderungen frühzeitig zu erkennen und konstruktiv zu bearbeiten.",
+      "author": "PD Dr. Florian Greiner, Geschäftsführer des Lern- und Erinnerungsort Notaufnahmelager Gießen gGmbH"
+    }
+  ],
+  "seo": {
+    "title": "Let’s talk about history! | Ann-Kathrin Rahlwes, Historikerin",
+    "description": "Ich unterstütze Familien, Unternehmen & Museen dabei, historische Zeugnisse zu finden, Geschichte zu erforschen & zu erzählen. Jetzt anfragen!"
+  }
+}

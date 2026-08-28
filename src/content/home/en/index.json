@@ -1,0 +1,58 @@
+{
+  "heroHeading": "What story moves you?",
+  "heroText": "Hello, I am Ann-Kathrin Rahlwes, a historian from Frankfurt am Main. I support you in finding historical evidence, researching history and communicating it in a simple, clear and exciting way.",
+  "heroCta": "Let's talk!",
+  "heroImage": "/uploads/portrait-ann-kathrin-rahlwes.jpg",
+  "heroImageAlt": "Ann-Kathrin Rahlwes, historian",
+  "servicesHeading": "How can I support you?",
+  "services": [
+    {
+      "title": "Find historical documents",
+      "text": "I research archives, collections and databases and find the sources that prove your story.",
+      "icon": "lucide:search"
+    },
+    {
+      "title": "Understanding old documents & photographs",
+      "text": "I read and interpret historical writings, letters and pictures and place them in their context.",
+      "icon": "lucide:book-open"
+    },
+    {
+      "title": "Communicating history",
+      "text": "I tell history simply, clearly and excitingly - for exhibitions, digital formats and teaching.",
+      "icon": "lucide:message-circle"
+    }
+  ],
+  "aboutHeading": "My motivation",
+  "aboutBlocks": [
+    {
+      "title": "My approach",
+      "text": "I want to get people excited about history and encourage them to engage with historical topics. That's why it's important to me to convey history in a simple, clear and exciting way. In doing so, I rely on in-depth knowledge, innovative topics and methods such as storytelling."
+    },
+    {
+      "title": "My training",
+      "text": "I studied political science, medieval and modern history and philosophy and have been involved in historical and political education work for many years. My exhibition concepts are inclusive and participatory, and in my research I am interested in social-historical approaches."
+    },
+    {
+      "title": "My focus",
+      "text": "I research biographies and family histories and deal with memorabilia, correspondence and memoirs. Who were the people who preceded us? How did they live and work? What was important to them?"
+    },
+    {
+      "title": "Passing on knowledge",
+      "text": "I find new inspiration for my work at conferences, at further training courses and in exchanges with colleagues in the field. I pass on my knowledge to my clients, exhibition teams and in workshops."
+    }
+  ],
+  "testimonials": [
+    {
+      "quote": "Ann-Kathrin Rahlwes is an absolute professional, extremely creative, and cultivates a very pleasant communication style. She’s fun and interesting to work with.",
+      "author": "Judith Rosenthal"
+    },
+    {
+      "quote": "Ann-Kathrin Rahlwes joined the design of our permanent exhibition at an advanced stage and has noticeably enriched the further process with her in-depth expertise and experience in communicating recent migration history. Her strong sense of initiative and her ability to recognize challenges early on and deal with them constructively deserve special mention.",
+      "author": "PD Dr. Florian Greiner, Geschäftsführer des Lern- und Erinnerungsort Notaufnahmelager Gießen gGmbH"
+    }
+  ],
+  "seo": {
+    "title": "Let's talk about history! | Ann-Kathrin Rahlwes, historian",
+    "description": "I support families, companies & museums in finding historical evidence, researching & telling history. Inquire now!"
+  }
+}

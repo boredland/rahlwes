@@ -1,0 +1,48 @@
+---
+import Navigation from '@components/Navigation.astro'
+import { HighContrast, ReducedMotion, SkipLink } from 'accessible-astro-components'
+import { currentLocale } from '@i18n/config'
+import { useTranslations } from '@i18n/ui'
+
+const t = useTranslations(currentLocale(Astro.currentLocale))
+---
+
+<header>
+  <SkipLink text={t('skip.content')} />
+  <div hidden>
+    <HighContrast />
+    <ReducedMotion />
+  </div>
+
+  <Navigation />
+</header>
+
+<style lang="scss" is:global>
+  @use 'scss/base/breakpoint' as *;
+
+  header {
+    li.type-icon {
+      display: block;
+
+      @include breakpoint('nav') {
+        translate: 0 4px;
+      }
+
+      button {
+        border: none;
+        border-radius: 0;
+      }
+
+      svg {
+        inline-size: 30px;
+        block-size: 30px;
+      }
+    }
+
+    li.type-icon ~ li.type-icon {
+      @include breakpoint('nav') {
+        margin-inline-start: calc(var(--space-2xs) * -1);
+      }
+    }
+  }
+</style>

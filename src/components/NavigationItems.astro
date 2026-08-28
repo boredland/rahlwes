@@ -1,0 +1,40 @@
+---
+import themeConfig from '@theme-config'
+import { Link, DarkMode } from 'accessible-astro-components'
+import { Icon } from 'astro-icon/components'
+import { getNavItems } from '@i18n/nav'
+import { currentLocale } from '@i18n/config'
+import LanguagePicker from '@components/LanguagePicker.astro'
+
+const locale = currentLocale(Astro.currentLocale)
+const items = getNavItems(locale)
+const pathname = Astro.url.pathname
+---
+
+<ul class="menu">
+  {
+    items.map((item) => {
+      const isActive = pathname === item.href || pathname.startsWith(`${item.href}/`)
+      return (
+        <li class="menu-item">
+          <Link href={item.href} class={isActive ? 'is-active' : undefined} aria-current={isActive ? 'page' : undefined}>
+            {item.label}
+          </Link>
+        </li>
+      )
+    })
+  }
+  <li class="menu-item">
+    <LanguagePicker />
+  </li>
+  {
+    themeConfig.navigation.darkmode && (
+      <li class="menu-item type-icon animate-rotate">
+        <DarkMode>
+          <Icon aria-hidden="true" name="lucide:moon" slot="light" />
+          <Icon aria-hidden="true" name="lucide:sun" slot="dark" />
+        </DarkMode>
+      </li>
+    )
+  }
+</ul>

@@ -1,0 +1,130 @@
+---
+import '../styles/tailwind.css'
+import '../assets/scss/index.scss'
+import themeConfig from '@theme-config'
+import { SEO } from 'astro-seo'
+import { Font } from 'astro:assets'
+import Header from '@components/Header.astro'
+import Footer from '@components/Footer.astro'
+import { ClientRouter } from 'astro:transitions'
+import { currentLocale, htmlLang, locales, localizePath, stripLocale } from '@i18n/config'
+import type { ImageMetadata } from 'astro'
+
+interface Props {
+  title?: string
+  description?: string
+  url?: string
+  image?: ImageMetadata | string | null
+  author?: string
+  type?: 'website' | 'article'
+  useTitleTemplate?: boolean
+}
+
+const {
+  title = themeConfig.seo.title,
+  description = themeConfig.seo.description ?? '',
+  url = Astro.url.href,
+  image = themeConfig.seo.image ?? null,
+  author = themeConfig.seo.author ?? '',
+  type = 'website',
+  useTitleTemplate = true,
+} = Astro.props
+
+const locale = currentLocale(Astro.currentLocale)
+const basePath = stripLocale(Astro.url.pathname)
+
+const imagePath = image ? (typeof image === 'string' ? image : image.src) : '/social-preview-image.png'
+const imageUrl = new URL(imagePath, Astro.site).href
+---
+
+<html lang={htmlLang[locale]} dir="ltr">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    {/* No preload: it would fetch all eight variants (76 kB) including italics, which no page needs for first paint. */}
+    <Font cssVariable="--font-pt-sans" />
+
+    {
+      locales.map((code) => (
+        <link rel="alternate" hreflang={htmlLang[code]} href={new URL(localizePath(basePath, code), Astro.site).href} />
+      ))
+    }
+    <link rel="alternate" hreflang="x-default" href={new URL(localizePath(basePath, 'de'), Astro.site).href} />
+
+    <style
+      define:vars={{
+        brandPrimary: themeConfig.colors.primary,
+        brandSecondary: themeConfig.colors.secondary,
+        brandNeutral: themeConfig.colors.neutral,
+        brandOutline: themeConfig.colors.outline,
+      }}
+    >
+      :global(:root) {
+        --brand-primary: var(--brandPrimary);
+        --brand-secondary: var(--brandSecondary);
+        --brand-neutral: var(--brandNeutral);
+        --brand-outline: var(--brandOutline);
+      }
+    </style>
+
+    <SEO
+      title={title}
+      titleTemplate={useTitleTemplate ? `%s — ${themeConfig.seo.title}` : undefined}
+      titleDefault={themeConfig.seo.title}
+      description={description}
+      canonical={url}
+      openGraph={{
+        basic: { title, type, image: imageUrl, url },
+        optional: { description, locale: htmlLang[locale] },
+      }}
+      twitter={{ card: 'summary_large_image', title, description, image: imageUrl }}
+      extend={{ meta: [{ name: 'author', content: author }] }}
+    />
+
+    <ClientRouter />
+  </head>
+  <body>
+    <Header />
+    <main id="main-content" transition:animate="fade">
+      <slot />
+    </main>
+    <Footer />
+    <style lang="scss" is:global>
+      @use 'scss/base/mixins' as *;
+
+      // sticky footer on low content pages
+      html,
+      body {
+        height: 100%;
+      }
+
+      body {
+        display: flex;
+        flex-direction: column;
+        overflow-x: clip;
+
+        main {
+          flex: 1 0 auto;
+        }
+
+        footer {
+          flex-shrink: 0;
+        }
+      }
+
+      pre {
+        border: 2px solid var(--link-color);
+        border-radius: 0.35rem;
+        padding: 1rem;
+      }
+
+      .card {
+        a {
+          @include text-decoration(transparent, var(--foreground-color), 4px, 2px);
+        }
+      }
+    </style>
+  </body>
+</html>

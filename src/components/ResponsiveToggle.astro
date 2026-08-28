@@ -1,0 +1,92 @@
+---
+import { currentLocale } from '@i18n/config'
+import { useTranslations } from '@i18n/ui'
+
+interface Props {
+  class?: string
+}
+
+const { class: className } = Astro.props
+const locale = currentLocale(Astro.currentLocale)
+const t = useTranslations(locale)
+
+const labels = {
+  open: `${t('nav.menu')} ${t('nav.main')}`,
+  close: t('nav.menu'),
+}
+---
+
+<button
+  class:list={[className, 'responsive-toggle']}
+  aria-expanded="false"
+  aria-controls="mobile-menu"
+  aria-label={labels.open}
+  data-label-open={labels.open}
+  data-label-close={labels.close}
+>
+  <span>{t('nav.menu')}</span>
+  <svg width="26" height="21" aria-hidden="true" fill="var(--link-color)" xmlns="http://www.w3.org/2000/svg"
+    ><path
+      d="M2 1.667h24m-24 8h24m-24 8h24"
+      stroke="var(--foreground-color)"
+      stroke-width="2.667"
+      stroke-linecap="round"
+      stroke-linejoin="round"></path></svg
+  >
+</button>
+
+<script>
+  document.addEventListener('astro:page-load', () => {
+    const responsiveToggle = document.querySelector('.responsive-toggle') as HTMLButtonElement | null
+    if (!responsiveToggle) return
+
+    const icon = responsiveToggle.querySelector('svg')
+    const openPath = `<path d="M2 1.667h24m-24 8h24m-24 8h24" stroke="var(--foreground-color)" stroke-width="2.667" stroke-linecap="round" stroke-linejoin="round"/>`
+    const closePath = `<path d="M10 10 2 2m8 8 8 8m-8-8 8-8m-8 8-8 8" stroke="var(--foreground-color)" stroke-width="2.667" stroke-linecap="round" stroke-linejoin="round"/>`
+
+    responsiveToggle.addEventListener('click', () => {
+      const mobileNavigation = document.querySelector('.mobile-menu')
+      if (!mobileNavigation || !icon) return
+
+      const isOpen = mobileNavigation.classList.toggle('show')
+      responsiveToggle.setAttribute('aria-expanded', String(isOpen))
+      responsiveToggle.setAttribute(
+        'aria-label',
+        (isOpen ? responsiveToggle.dataset.labelClose : responsiveToggle.dataset.labelOpen) ?? '',
+      )
+      icon.innerHTML = isOpen ? closePath : openPath
+    })
+  })
+</script>
+
+<style lang="scss">
+  @use 'scss/base/breakpoint' as *;
+
+  .responsive-toggle {
+    display: none;
+    border: none;
+    background: transparent;
+    padding: 0;
+
+    span {
+      margin-inline-end: var(--space-3xs);
+    }
+
+    svg {
+      width: 30px;
+
+      path {
+        transition: fill var(--animation-speed-fast) var(--cubic-bezier);
+      }
+    }
+
+    &:where(:hover, :focus-visible) {
+      span {
+        text-decoration: underline;
+        text-decoration-style: wavy;
+        text-decoration-thickness: 1px;
+        text-underline-offset: 7px;
+      }
+    }
+  }
+</style>

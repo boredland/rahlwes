@@ -1,0 +1,64 @@
+---
+import Logo from './Logo.astro'
+import { Heading, Link } from 'accessible-astro-components'
+import { Icon } from 'astro-icon/components'
+import themeConfig from '@theme-config'
+import { currentLocale, localizePath } from '@i18n/config'
+import { useTranslations } from '@i18n/ui'
+import { getNavItems } from '@i18n/nav'
+
+const locale = currentLocale(Astro.currentLocale)
+const t = useTranslations(locale)
+const navItems = getNavItems(locale)
+const currentYear = new Date().getFullYear()
+---
+
+<footer>
+  <section class="py-16">
+    <Heading level="h2" class="sr-only">Footer</Heading>
+    <div class="container grid grid-cols-1 gap-8 md:grid-cols-3">
+      <div class="flex flex-col gap-4">
+        <Logo />
+        <p class="text-sm">{themeConfig.seo.description}</p>
+      </div>
+      <div class="flex flex-col gap-4">
+        <Heading level="h3" size="h6">{t('nav.main')}</Heading>
+        <ul class="flex flex-col gap-2">
+          {navItems.map((item) => <li><Link href={item.href}>{item.label}</Link></li>)}
+        </ul>
+      </div>
+      <div class="flex flex-col gap-4">
+        <Heading level="h3" size="h6">{t('nav.contact')}</Heading>
+        <ul class="flex flex-col gap-2">
+          {
+            (themeConfig.socials ?? []).map((social) => (
+              <li>
+                <Link href={social.href} isExternal={!social.href.startsWith('mailto:')}>
+                  <Icon aria-hidden="true" name={social.icon} size="1.25rem" />
+                  {social.label}
+                </Link>
+              </li>
+            ))
+          }
+          <li><Link href={localizePath('/impressum', locale)}>{t('footer.imprint')}</Link></li>
+          <li><Link href={localizePath('/datenschutz', locale)}>{t('footer.privacy')}</Link></li>
+        </ul>
+      </div>
+    </div>
+    <div class="container mt-12 text-sm">
+      <p>&copy; {currentYear} {themeConfig.name}. {t('footer.rights')}</p>
+    </div>
+  </section>
+</footer>
+
+<style lang="scss">
+  footer {
+    border-block-start: 1px solid var(--border-color-subtle);
+
+    :global(a) {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-3xs);
+    }
+  }
+</style>

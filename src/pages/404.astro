@@ -1,0 +1,19 @@
+---
+import DefaultLayout from '@layouts/DefaultLayout.astro'
+import { Link } from 'accessible-astro-components'
+import { currentLocale, localizePath } from '@i18n/config'
+import { useTranslations } from '@i18n/ui'
+
+const locale = currentLocale(Astro.currentLocale)
+const t = useTranslations(locale)
+---
+
+<DefaultLayout title={t('error.title')}>
+  <section class="my-24">
+    <div class="container space-content">
+      <h1>{t('error.title')}</h1>
+      <p>{t('error.body')}</p>
+      <Link href={localizePath('/', locale)} isButton type="primary">{t('error.home')}</Link>
+    </div>
+  </section>
+</DefaultLayout>

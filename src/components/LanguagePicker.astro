@@ -1,0 +1,54 @@
+---
+import { currentLocale, locales, localeName, localizePath, stripLocale } from '@i18n/config'
+import { useTranslations } from '@i18n/ui'
+
+const locale = currentLocale(Astro.currentLocale)
+const t = useTranslations(locale)
+const basePath = stripLocale(Astro.url.pathname)
+---
+
+<div class="language-picker">
+  <span class="sr-only" id="language-picker-label">{t('nav.language')}</span>
+  <ul aria-labelledby="language-picker-label">
+    {
+      locales.map((code) => (
+        <li>
+          <a
+            href={localizePath(basePath, code)}
+            hreflang={code}
+            lang={code}
+            aria-current={code === locale ? 'true' : undefined}
+            class={code === locale ? 'is-current' : undefined}
+          >
+            <abbr title={localeName[code]}>{code.toUpperCase()}</abbr>
+          </a>
+        </li>
+      ))
+    }
+  </ul>
+</div>
+
+<style lang="scss">
+  .language-picker ul {
+    display: flex;
+    gap: var(--space-2xs);
+    list-style: none;
+  }
+
+  .language-picker a {
+    padding: var(--space-4xs) var(--space-3xs);
+    font-size: var(--font-size--1);
+    text-decoration: none;
+  }
+
+  .language-picker abbr {
+    text-decoration: none;
+  }
+
+  .language-picker .is-current {
+    font-weight: 700;
+    text-decoration: underline;
+    text-decoration-style: wavy;
+    text-underline-offset: 5px;
+  }
+</style>
