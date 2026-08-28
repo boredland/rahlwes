@@ -1,0 +1,17 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "rahlwes",
+  "compatibility_date": "2026-08-26",
+  // `main` and `assets` are intentionally absent: the Astro Cloudflare adapter
+  // generates those into dist/server/wrangler.json at build time, and setting them
+  // here makes the build fail before dist exists.
+  //
+  // `remote: true` proxies local dev sends to the real service; without it the
+  // binding is a local stub and nothing is delivered.
+  "send_email": [{ "name": "EMAIL", "remote": true }],
+  // Per-IP throttle on the contact endpoint: cheap, credential-free protection that
+  // holds even if the Turnstile widget is missing or its script fails to load.
+  "ratelimits": [{ "name": "CONTACT_LIMIT", "namespace_id": "1001", "simple": { "limit": 5, "period": 60 } }],
+  "routes": [{ "pattern": "next.rahlwes.eu", "custom_domain": true }],
+  "observability": { "enabled": true }
+}

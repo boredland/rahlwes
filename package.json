@@ -41,6 +41,7 @@
     "@types/react-dom": "^19.2.5",
     "@types/sanitize-html": "^2.16.1",
     "potrace": "^2.1.8",
+    "puppeteer-core": "^25.9.0",
     "wrangler": "^4.127.0"
   }
 }

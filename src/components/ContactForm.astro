@@ -1,0 +1,253 @@
+---
+import { type Locale } from '@i18n/config'
+import { useTranslations } from '@i18n/ui'
+
+interface Props {
+  locale: Locale
+}
+
+const { locale } = Astro.props
+const t = useTranslations(locale)
+
+// Empty in dev until the widget exists; the endpoint then skips verification.
+const sitekey = import.meta.env.PUBLIC_TURNSTILE_SITEKEY ?? ''
+---
+
+<form
+  class="contact-form"
+  novalidate
+  data-locale={locale}
+  data-sending={t('form.sending')}
+  data-network-error={t('form.networkError')}
+>
+  <div class="field-row">
+    <p class="field">
+      <label for="fname">{t('form.firstName')} <span aria-hidden="true">*</span></label>
+      <input id="fname" name="fname" type="text" autocomplete="given-name" required maxlength="100" />
+    </p>
+    <p class="field">
+      <label for="lname">{t('form.lastName')} <span aria-hidden="true">*</span></label>
+      <input id="lname" name="lname" type="text" autocomplete="family-name" required maxlength="100" />
+    </p>
+  </div>
+
+  <p class="field">
+    <label for="email">{t('form.email')} <span aria-hidden="true">*</span></label>
+    <input id="email" name="email" type="email" autocomplete="email" required maxlength="254" />
+  </p>
+
+  <p class="field">
+    <label for="message">{t('form.message')} <span aria-hidden="true">*</span></label>
+    <textarea id="message" name="message" rows="7" required maxlength="5000"></textarea>
+  </p>
+
+  {/* Honeypot: off-screen and hidden from assistive tech, so only bots reach it. */}
+  <p class="honeypot" aria-hidden="true">
+    <label for="website">Website</label>
+    <input id="website" name="website" type="text" tabindex="-1" autocomplete="off" />
+  </p>
+
+  <p class="field consent">
+    <input id="consent" name="consent" type="checkbox" required />
+    <label for="consent">{t('form.consent')} <span aria-hidden="true">*</span></label>
+  </p>
+
+  {sitekey && <div class="cf-turnstile" data-sitekey={sitekey} data-action="turnstile-spin-v1" data-language={locale} />}
+
+  <p class="actions">
+    <button type="submit">{t('form.submit')}</button>
+  </p>
+
+  <p class="form-status" role="status" aria-live="polite"></p>
+</form>
+
+{sitekey && <script is:inline async defer src="https://challenges.cloudflare.com/turnstile/v0/api.js"></script>}
+
+<script>
+  document.addEventListener('astro:page-load', () => {
+    const form = document.querySelector<HTMLFormElement>('.contact-form')
+    if (!form) return
+
+    const status = form.querySelector<HTMLParagraphElement>('.form-status')!
+    const button = form.querySelector<HTMLButtonElement>('button[type="submit"]')!
+    const idle = button.textContent ?? ''
+
+    form.addEventListener('submit', async (event) => {
+      event.preventDefault()
+
+      // Native validation first, so the browser handles focus and messaging.
+      if (!form.reportValidity()) return
+
+      const data = new FormData(form)
+      status.textContent = ''
+      status.classList.remove('is-error', 'is-success')
+      button.disabled = true
+      button.textContent = button.dataset.sending ?? idle
+
+      try {
+        const response = await fetch('/api/kontakt', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({
+            fname: data.get('fname'),
+            lname: data.get('lname'),
+            email: data.get('email'),
+            message: data.get('message'),
+            website: data.get('website'),
+            consent: data.get('consent') === 'on',
+            locale: form.dataset.locale,
+            'cf-turnstile-response': data.get('cf-turnstile-response'),
+          }),
+        })
+        const result = (await response.json()) as { ok: boolean; message: string }
+
+        status.textContent = result.message
+        status.classList.add(result.ok ? 'is-success' : 'is-error')
+
+        if (result.ok) {
+          form.reset()
+        } else if (window.turnstile) {
+          // A used token cannot be replayed, so a failed attempt needs a fresh one.
+          window.turnstile.reset()
+        }
+      } catch {
+        status.textContent = form.dataset.networkError ?? 'Network error'
+        status.classList.add('is-error')
+      } finally {
+        button.disabled = false
+        button.textContent = idle
+      }
+    })
+  })
+</script>
+
+<style lang="scss">
+  .contact-form {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-s);
+    max-inline-size: 46rem;
+  }
+
+  .field-row {
+    display: grid;
+    gap: var(--space-s);
+    grid-template-columns: 1fr;
+
+    @media (min-width: 40rem) {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+
+  .field {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3xs);
+    margin: 0;
+  }
+
+  label {
+    font-size: var(--font-size--1);
+    font-weight: 700;
+  }
+
+  input[type='text'],
+  input[type='email'],
+  textarea {
+    border: 2px solid var(--border-color-subtle);
+    border-radius: var(--radius-s);
+    background-color: var(--background-color);
+    padding: var(--space-2xs) var(--space-xs);
+    color: var(--foreground-color);
+    font-family: inherit;
+    font-size: var(--font-size-0);
+
+    &:focus-visible {
+      outline: 3px dotted var(--outline-color);
+      outline-offset: 2px;
+      border-color: var(--link-color);
+    }
+  }
+
+  textarea {
+    // `rows` is overridden by the shared form reset, so set the height here.
+    min-block-size: 9rem;
+    resize: vertical;
+  }
+
+  .consent {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    align-items: start;
+    gap: var(--space-2xs);
+
+    label {
+      font-weight: 400;
+      font-size: var(--font-size--1);
+      line-height: 1.5;
+    }
+
+    input {
+      margin-block-start: 0.2em;
+      inline-size: 1.15rem;
+      block-size: 1.15rem;
+      accent-color: var(--color-accent-500);
+    }
+  }
+
+  // Kept in the layout for bots to find, but out of sight and out of the tab order.
+  .honeypot {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+    inline-size: 1px;
+    block-size: 1px;
+    overflow: hidden;
+  }
+
+  .actions {
+    margin: 0;
+  }
+
+  button[type='submit'] {
+    border: 2px solid var(--color-accent-600);
+    border-radius: var(--radius-s);
+    background-color: var(--color-accent-600);
+    padding: var(--space-2xs) var(--space-m);
+    color: #fff;
+    font-family: inherit;
+    font-size: var(--font-size-0);
+    font-weight: 700;
+    cursor: pointer;
+    transition: background-color var(--animation-speed-fast) var(--cubic-bezier);
+
+    &:where(:hover, :focus-visible) {
+      background-color: transparent;
+      color: var(--color-accent-600);
+    }
+
+    &[disabled] {
+      opacity: 0.6;
+      cursor: progress;
+    }
+  }
+
+  .form-status {
+    margin: 0;
+    font-weight: 700;
+
+    &.is-success {
+      color: var(--color-accent-600);
+    }
+
+    &.is-error {
+      color: #b3261e;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    button[type='submit'] {
+      transition: none;
+    }
+  }
+</style>
