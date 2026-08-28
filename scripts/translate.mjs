@@ -243,6 +243,17 @@ async function translateFrontmatter(frontmatter, targetLang) {
     .join('\n')
 }
 
+/**
+ * True when the target file is human-written rather than generated. Marked with
+ * `translated: false` in front matter (or `"translated": false` in JSON), which
+ * `scripts/import-squarespace-en.mjs` writes for her own English articles.
+ */
+async function isAuthored(path) {
+  const raw = await readFile(path, 'utf8').catch(() => null)
+  if (!raw) return false
+  return /^\s*"?translated"?:\s*false\s*,?\s*$/m.test(raw)
+}
+
 async function collectSourceFiles() {
   const files = []
   for (const root of ROOTS) {
@@ -270,6 +281,13 @@ for (const [locale, deeplCode] of Object.entries(targets)) {
     const targetPath = sourcePath.replace(`/${SOURCE_LOCALE}/`, `/${locale}/`)
     if (onlyMissing && (await stat(targetPath).catch(() => null))) {
       console.log(`· skip ${relative('.', targetPath)} (exists)`)
+      continue
+    }
+
+    // Some locales have copy Ann-Kathrin wrote herself rather than a translation.
+    // Machine output must never replace it, so those files opt out permanently.
+    if (await isAuthored(targetPath)) {
+      console.log(`· keep ${relative('.', targetPath)} (authored, not a translation)`)
       continue
     }
 

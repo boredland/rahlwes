@@ -38,6 +38,11 @@ function journalFor(locale: Locale) {
       title: fields.slug({ name: { label: 'Titel' } }),
       publishedAt: fields.date({ label: 'Veröffentlicht am', defaultValue: { kind: 'today' } }),
       draft: fields.checkbox({ label: 'Entwurf (nicht veröffentlichen)', defaultValue: false }),
+      translated: fields.checkbox({
+        label: 'Automatisch übersetzt',
+        description: 'Abwählen, wenn dieser Text selbst geschrieben wurde – dann überschreibt ihn die Übersetzung nie.',
+        defaultValue: true,
+      }),
       excerpt: fields.text({ label: 'Teaser', multiline: true }),
       coverImage: fields.image({
         label: 'Titelbild',

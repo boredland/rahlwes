@@ -19,6 +19,8 @@ const journal = defineCollection({
     title: z.string(),
     publishedAt: z.coerce.date(),
     draft: z.boolean().default(false),
+    /** False when the text is hers rather than machine-translated; see scripts/translate.mjs. */
+    translated: z.boolean().default(true),
     excerpt: z.string().default(''),
     coverImage: z.string().nullable().optional(),
     coverAlt: z.string().default(''),
