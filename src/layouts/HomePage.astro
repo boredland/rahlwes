@@ -3,6 +3,7 @@ import DefaultLayout from '@layouts/DefaultLayout.astro'
 import Hero from '@components/Hero.astro'
 import Feature from '@components/Feature.astro'
 import BlockQuote from '@components/BlockQuote.astro'
+import ContentImage from '@components/ContentImage.astro'
 import { Heading, Link } from 'accessible-astro-components'
 import { localizePath, type Locale } from '@i18n/config'
 import { useTranslations } from '@i18n/ui'
@@ -88,9 +89,14 @@ const posts = (await getJournal(locale)).slice(0, 3)
           <div class="grid grid-cols-1 gap-8 md:grid-cols-3">
             {projects.map((project) => (
               <article class="teaser">
-                {project.data.coverImage && (
-                  <img src={project.data.coverImage} alt={project.data.coverAlt} width="600" height="400" loading="lazy" />
-                )}
+                <ContentImage
+                  class="teaser-image"
+                  src={project.data.coverImage}
+                  alt={project.data.coverAlt}
+                  widths={[300, 500, 700]}
+                  sizes="(min-width: 768px) 30vw, 90vw"
+                  aspect="3 / 2"
+                />
                 <Heading level="h3" size="h5" class="mt-4 mb-2">
                   <Link href={localizePath(`/projekte/${project.id.split('/').slice(1).join('/')}`, locale)}>
                     {project.data.title}
@@ -130,9 +136,14 @@ const posts = (await getJournal(locale)).slice(0, 3)
           <div class="grid grid-cols-1 gap-8 md:grid-cols-3">
             {posts.map((post) => (
               <article class="teaser">
-                {post.data.coverImage && (
-                  <img src={post.data.coverImage} alt={post.data.coverAlt} width="600" height="400" loading="lazy" />
-                )}
+                <ContentImage
+                  class="teaser-image"
+                  src={post.data.coverImage}
+                  alt={post.data.coverAlt}
+                  widths={[300, 500, 700]}
+                  sizes="(min-width: 768px) 30vw, 90vw"
+                  aspect="3 / 2"
+                />
                 <Heading level="h3" size="h5" class="mt-4 mb-2">
                   <Link href={localizePath(`/journal/${post.id.split('/').slice(1).join('/')}`, locale)}>
                     {post.data.title}
@@ -157,11 +168,10 @@ const posts = (await getJournal(locale)).slice(0, 3)
     padding-inline-start: var(--space-s);
   }
 
-  .teaser img {
+  .teaser :global(.teaser-image) {
     border-radius: var(--radius-m);
     inline-size: 100%;
     block-size: auto;
     object-fit: cover;
-    aspect-ratio: 3 / 2;
   }
 </style>

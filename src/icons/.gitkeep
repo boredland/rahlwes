@@ -1,0 +1,2 @@
+# astro-icon scans this directory for local SVGs. All icons currently come from
+# the bundled lucide set; the directory exists so the loader does not warn.

@@ -1,6 +1,7 @@
 ---
 import { Link } from 'accessible-astro-components'
 import { Icon } from 'astro-icon/components'
+import ContentImage from '@components/ContentImage.astro'
 
 interface Props {
   heading: string
@@ -25,7 +26,14 @@ const { heading, text, ctaLabel, ctaHref, src, alt = '' }: Props = Astro.props
           {ctaLabel}
         </Link>
       </div>
-      {src && <img class="portrait" src={src} alt={alt} width="900" height="1200" decoding="async" fetchpriority="high" />}
+      <ContentImage
+        class="portrait"
+        src={src}
+        alt={alt}
+        widths={[400, 700, 900]}
+        sizes="(min-width: 1024px) 40vw, 90vw"
+        loading="eager"
+      />
     </div>
   </div>
 </section>
@@ -36,11 +44,9 @@ const { heading, text, ctaLabel, ctaHref, src, alt = '' }: Props = Astro.props
     font-size: var(--font-size-1);
   }
 
-  .portrait {
+  :global(.portrait) {
     border-radius: var(--radius-l);
     inline-size: 100%;
     block-size: auto;
-    object-fit: cover;
-    aspect-ratio: 3 / 4;
   }
 </style>

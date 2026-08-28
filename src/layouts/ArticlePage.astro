@@ -1,6 +1,7 @@
 ---
 import DefaultLayout from '@layouts/DefaultLayout.astro'
 import PageHeader from '@components/PageHeader.astro'
+import ContentImage from '@components/ContentImage.astro'
 import { htmlLang, type Locale } from '@i18n/config'
 import { useTranslations } from '@i18n/ui'
 import type { CollectionEntry } from 'astro:content'
@@ -39,7 +40,15 @@ const dateFormat = new Intl.DateTimeFormat(htmlLang[locale], { dateStyle: 'long'
           </p>
         )
       }
-      {coverImage && <img class="cover" src={coverImage} alt={coverAlt} width="1200" height="700" />}
+      <ContentImage
+        class="cover"
+        src={coverImage}
+        alt={coverAlt}
+        widths={[600, 900, 1200]}
+        sizes="(min-width: 1024px) 70vw, 95vw"
+        aspect="12 / 7"
+        loading="eager"
+      />
       <div class="prose space-content">
         <Content />
       </div>
@@ -54,13 +63,12 @@ const dateFormat = new Intl.DateTimeFormat(htmlLang[locale], { dateStyle: 'long'
     font-size: var(--font-size--1);
   }
 
-  .cover {
+  :global(.cover) {
     margin-block-end: var(--space-l);
     border-radius: var(--radius-l);
     inline-size: 100%;
     block-size: auto;
     object-fit: cover;
-    aspect-ratio: 12 / 7;
   }
 
   .prose {

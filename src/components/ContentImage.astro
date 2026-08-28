@@ -1,0 +1,51 @@
+---
+import { Image } from 'astro:assets'
+
+/**
+ * Renders a Keystatic image reference through Astro's asset pipeline.
+ *
+ * Keystatic stores a public-style path (`/uploads/foo.jpg`), but Astro can only
+ * optimise files it can import. The images therefore live in `src/assets/uploads`
+ * and are resolved here at build time, which yields WebP plus responsive widths.
+ */
+interface Props {
+  src?: string | null
+  alt: string
+  widths: number[]
+  sizes: string
+  /** Crops the image to this ratio. Omit to keep the file's own proportions. */
+  aspect?: string
+  loading?: 'eager' | 'lazy'
+  class?: string
+}
+
+const { src, alt, widths, sizes, aspect, loading = 'lazy', class: className } = Astro.props
+
+const uploads = import.meta.glob<{ default: ImageMetadata }>('/src/assets/uploads/*.{jpg,jpeg,png,webp,avif}', {
+  eager: true,
+})
+
+const key = src ? `/src/assets/uploads/${src.replace(/^\/uploads\//, '')}` : null
+const asset = key ? uploads[key]?.default : undefined
+
+if (src && !asset) {
+  throw new Error(`Image "${src}" is missing from src/assets/uploads — upload it through Keystatic.`)
+}
+---
+
+{
+  asset && (
+    <Image
+      class={className}
+      src={asset}
+      alt={alt}
+      widths={widths}
+      sizes={sizes}
+      loading={loading}
+      decoding={loading === 'eager' ? 'sync' : 'async'}
+      fetchpriority={loading === 'eager' ? 'high' : undefined}
+      style={aspect ? `aspect-ratio:${aspect}` : undefined}
+      format="webp"
+    />
+  )
+}

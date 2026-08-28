@@ -1,0 +1,58 @@
+{
+  "heroHeading": "Quelle est l'histoire qui vous touche ?",
+  "heroText": "Bonjour, je suis Ann-Kathrin Rahlwes, historienne à Francfort-sur-le-Main. Je vous aide à trouver des témoignages historiques, à faire des recherches sur l'histoire et à la transmettre de manière simple, claire et passionnante.",
+  "heroCta": "Parlons-en !",
+  "heroImage": "/uploads/portrait-ann-kathrin-rahlwes.jpg",
+  "heroImageAlt": "Ann-Kathrin Rahlwes, historienne",
+  "servicesHeading": "Comment puis-je vous aider ?",
+  "services": [
+    {
+      "title": "Trouver des documents historiques",
+      "text": "Je fais des recherches dans les archives, les collections et les bases de données et je trouve les sources qui attestent de votre histoire.",
+      "icon": "lucide:search"
+    },
+    {
+      "title": "Comprendre les documents & photographies anciens",
+      "text": "Je lis et j'interprète des écrits, des lettres et des images historiques et je les replace dans leur contexte.",
+      "icon": "lucide:book-open"
+    },
+    {
+      "title": "Transmettre l'histoire",
+      "text": "Je raconte l'histoire de manière simple, claire et passionnante - pour les expositions, les formats numériques et l'enseignement.",
+      "icon": "lucide:message-circle"
+    }
+  ],
+  "aboutHeading": "Ma motivation",
+  "aboutBlocks": [
+    {
+      "title": "Mon approche",
+      "text": "Je souhaite passionner les gens pour l'histoire et les encourager à s'intéresser à des sujets historiques. C'est pourquoi il est important pour moi de transmettre l'histoire de manière simple, claire et passionnante. Pour ce faire, je m'appuie sur des connaissances approfondies, des thèmes innovants et des méthodes telles que le storytelling."
+    },
+    {
+      "title": "Ma formation",
+      "text": "J'ai étudié les sciences politiques, l'histoire moyenne et moderne ainsi que la philosophie et je me suis engagée pendant de nombreuses années dans le travail d'éducation historique et politique. Mes concepts d'exposition sont inclusifs & participatifs, dans la recherche je m'intéresse aux approches socio-historiques."
+    },
+    {
+      "title": "Mon objectif",
+      "text": "J'explore les biographies et l'(les) histoire(s) familiale(s) et je m'intéresse aux souvenirs, aux correspondances et aux récits de mémoire. Qui étaient les personnes qui nous ont précédés ? Comment vivaient-ils et travaillaient-ils ? Qu'est-ce qui était important pour eux ?"
+    },
+    {
+      "title": "Transmettre le savoir",
+      "text": "Je trouve de nouvelles impulsions pour mon travail lors de conférences, de formations continues et d'échanges avec des collègues spécialisés. Je transmets mes connaissances à mes clients, aux équipes d'exposition et dans le cadre d'ateliers."
+    }
+  ],
+  "testimonials": [
+    {
+      "quote": "Ann-Kathrin Rahlwes est une professionnelle absolue, extrêmement créative, et elle cultive un style de communication très agréable. Il est agréable et intéressant de travailler avec elle.",
+      "author": "Judith Rosenthal"
+    },
+    {
+      "quote": "Ann-Kathrin Rahlwes est intervenue à un stade avancé dans la conception de notre exposition permanente et a sensiblement enrichi le processus ultérieur grâce à sa solide expertise et à son expérience dans l'enseignement de l'histoire récente de la migration. Il convient de souligner son sens aigu de l'initiative ainsi que sa capacité à identifier les défis à un stade précoce et à les traiter de manière constructive.",
+      "author": "PD Dr. Florian Greiner, Geschäftsführer des Lern- und Erinnerungsort Notaufnahmelager Gießen gGmbH"
+    }
+  ],
+  "seo": {
+    "title": "Parlons de l'histoire ! | Ann-Kathrin Rahlwes, historienne",
+    "description": "J'aide les familles, les entreprises & les musées à trouver des témoignages historiques, à explorer l'histoire & à la raconter. Demandez maintenant !"
+  }
+}

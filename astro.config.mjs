@@ -39,7 +39,13 @@ export default defineConfig({
   compressHTML: true,
   site: 'https://next.rahlwes.eu',
   adapter: cloudflare({ imageService: 'compile' }),
-  integrations: [icon(), mdx(), react(), keystatic(), sitemap({ i18n: { defaultLocale: 'de', locales: { de: 'de-DE', en: 'en-GB', fr: 'fr-FR' } } })],
+  integrations: [
+    icon(),
+    mdx(),
+    react(),
+    keystatic(),
+    sitemap({ i18n: { defaultLocale: 'de', locales: { de: 'de-DE', en: 'en-GB', fr: 'fr-FR' } } }),
+  ],
   i18n: {
     locales: ['de', 'en', 'fr'],
     defaultLocale: 'de',
@@ -51,7 +57,7 @@ export default defineConfig({
       name: 'PT Sans',
       cssVariable: '--font-pt-sans',
       weights: [400, 700],
-      styles: ['normal', 'italic'],
+      styles: ['normal'],
       subsets: ['latin', 'latin-ext'],
       fallbacks: ['ui-sans-serif', 'system-ui', 'sans-serif'],
     },

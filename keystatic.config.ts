@@ -1,15 +1,12 @@
 import { config, fields, collection, singleton } from '@keystatic/core'
 import { locales, localeName, type Locale } from './src/i18n/config'
 
-const isCloudflarePreview = typeof process !== 'undefined' && process.env.KEYSTATIC_STORAGE === 'github'
-
 /**
- * Editing happens on GitHub in production (Pages is read-only at runtime) and on
- * the local filesystem during `astro dev`.
+ * GitHub storage in every environment. `kind: 'local'` writes through Node's fs,
+ * which does not exist in the Cloudflare runtime the adapter uses for both
+ * `astro dev` and production, so it fails with "exports is not defined" there.
  */
-const storage = isCloudflarePreview
-  ? ({ kind: 'github', repo: { owner: 'boredland', name: 'rahlwes' } } as const)
-  : ({ kind: 'local' } as const)
+const storage = { kind: 'github', repo: { owner: 'boredland', name: 'rahlwes' } } as const
 
 const seo = fields.object(
   {
@@ -25,7 +22,7 @@ const seo = fields.object(
 
 const body = fields.mdx({
   label: 'Inhalt',
-  options: { image: { directory: 'public/uploads', publicPath: '/uploads/' } },
+  options: { image: { directory: 'src/assets/uploads', publicPath: '/uploads/' } },
 })
 
 /** One collection per locale keeps translations as separate files the webhook can write. */
@@ -44,7 +41,7 @@ function journalFor(locale: Locale) {
       excerpt: fields.text({ label: 'Teaser', multiline: true }),
       coverImage: fields.image({
         label: 'Titelbild',
-        directory: 'public/uploads',
+        directory: 'src/assets/uploads',
         publicPath: '/uploads/',
       }),
       coverAlt: fields.text({ label: 'Bildbeschreibung (Alt-Text)' }),
@@ -77,7 +74,7 @@ function projectsFor(locale: Locale) {
       excerpt: fields.text({ label: 'Kurzbeschreibung', multiline: true }),
       coverImage: fields.image({
         label: 'Titelbild',
-        directory: 'public/uploads',
+        directory: 'src/assets/uploads',
         publicPath: '/uploads/',
       }),
       coverAlt: fields.text({ label: 'Bildbeschreibung (Alt-Text)' }),
@@ -115,7 +112,7 @@ function homeFor(locale: Locale) {
       heroCta: fields.text({ label: 'Button-Text' }),
       heroImage: fields.image({
         label: 'Portraitfoto',
-        directory: 'public/uploads',
+        directory: 'src/assets/uploads',
         publicPath: '/uploads/',
       }),
       heroImageAlt: fields.text({ label: 'Bildbeschreibung (Alt-Text)' }),

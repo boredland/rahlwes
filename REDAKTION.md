@@ -75,7 +75,8 @@ frei nachbearbeitet werden.
 
 ## Bilder
 
-Bilder direkt in Keystatic hochladen. Sie landen in `public/uploads/`. Der
+Bilder direkt in Keystatic hochladen. Sie landen in `src/assets/uploads/` und
+werden beim Build automatisch verkleinert und in WebP umgewandelt. Der
 **Alt-Text** ist Pflicht: er beschreibt das Bild für blinde Nutzerinnen und für
 Google. Beispiel: „Zwei Ausstellungskataloge auf einem Tisch“ – nicht „Bild“.
 
@@ -87,5 +88,5 @@ npm run dev     # http://localhost:4321, Editor unter /keystatic
 npm run build   # Produktions-Build
 ```
 
-Beim lokalen Start schreibt Keystatic direkt in die Dateien im Projektordner,
-nicht nach GitHub.
+Der Editor arbeitet immer über GitHub – auch lokal. Speichern erzeugt also
+immer einen Commit; es gibt keinen Modus, der nur lokale Dateien anfasst.

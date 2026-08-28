@@ -1,6 +1,7 @@
 ---
 import DefaultLayout from '@layouts/DefaultLayout.astro'
 import PageHeader from '@components/PageHeader.astro'
+import ContentImage from '@components/ContentImage.astro'
 import { Heading, Link } from 'accessible-astro-components'
 import { localizePath, type Locale } from '@i18n/config'
 import { useTranslations } from '@i18n/ui'
@@ -22,19 +23,19 @@ const projects = await getProjects(locale)
       {projects.length === 0 && <p>{t('projects.empty')}</p>}
       <div class="grid grid-cols-1 gap-12 md:grid-cols-2 lg:grid-cols-3">
         {
-          projects.map((project) => {
+          projects.map((project, index) => {
             const slug = project.id.split('/').slice(1).join('/')
             return (
               <article class="teaser">
-                {project.data.coverImage && (
-                  <img
-                    src={project.data.coverImage}
-                    alt={project.data.coverAlt}
-                    width="600"
-                    height="400"
-                    loading="lazy"
-                  />
-                )}
+                <ContentImage
+                  class="teaser-image"
+                  src={project.data.coverImage}
+                  alt={project.data.coverAlt}
+                  widths={[300, 500, 700]}
+                  sizes="(min-width: 1024px) 30vw, (min-width: 768px) 45vw, 90vw"
+                  aspect="3 / 2"
+                  loading={index < 3 ? 'eager' : 'lazy'}
+                />
                 <p class="meta">{t(`projects.category.${project.data.category}`)}</p>
                 <Heading level="h2" size="h5" class="mb-2">
                   <Link href={localizePath(`/projekte/${slug}`, locale)}>{project.data.title}</Link>
@@ -50,17 +51,16 @@ const projects = await getProjects(locale)
 </DefaultLayout>
 
 <style lang="scss">
-  .teaser img {
+  .teaser :global(.teaser-image) {
     border-radius: var(--radius-m);
     inline-size: 100%;
     block-size: auto;
     object-fit: cover;
-    aspect-ratio: 3 / 2;
   }
 
   .meta {
     margin-block-start: var(--space-2xs);
-    color: var(--color-primary-400);
+    color: var(--link-color);
     font-size: var(--font-size--1);
     letter-spacing: 0.04em;
     text-transform: uppercase;
