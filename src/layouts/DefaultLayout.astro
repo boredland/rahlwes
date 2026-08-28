@@ -8,6 +8,8 @@ import Header from '@components/Header.astro'
 import Footer from '@components/Footer.astro'
 import { ClientRouter } from 'astro:transitions'
 import { currentLocale, htmlLang, locales, localizePath, stripLocale } from '@i18n/config'
+import { useTranslations } from '@i18n/ui'
+import { personSchema, websiteSchema } from '@i18n/schema'
 import type { ImageMetadata } from 'astro'
 
 interface Props {
@@ -18,20 +20,39 @@ interface Props {
   author?: string
   type?: 'website' | 'article'
   useTitleTemplate?: boolean
+  /** Page-level JSON-LD, merged into the site-wide graph. */
+  schema?: Record<string, unknown>[]
 }
 
+const locale = currentLocale(Astro.currentLocale)
+const t = useTranslations(locale)
+
 const {
-  title = themeConfig.seo.title,
-  description = themeConfig.seo.description ?? '',
+  title = t('site.title'),
+  description = t('site.description'),
   url = Astro.url.href,
   image = themeConfig.seo.image ?? null,
   author = themeConfig.seo.author ?? '',
   type = 'website',
   useTitleTemplate = true,
+  schema,
 } = Astro.props
 
-const locale = currentLocale(Astro.currentLocale)
 const basePath = stripLocale(Astro.url.pathname)
+
+/**
+ * The staging domain serves the same content as rahlwes.eu. Letting search engines
+ * index it would split ranking signals between two identical sites, so everything
+ * outside production is explicitly excluded.
+ */
+const isProduction = Astro.site?.hostname === 'rahlwes.eu'
+
+// One @graph per page: the Person and WebSite nodes are shared by @id, so page
+// schema can reference them instead of repeating the author on every entry.
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@graph': [personSchema(locale, Astro.site), websiteSchema(locale, Astro.site), ...(schema ?? [])],
+}
 
 const imagePath = image ? (typeof image === 'string' ? image : image.src) : '/social-preview-image.png'
 const imageUrl = new URL(imagePath, Astro.site).href
@@ -71,8 +92,8 @@ const imageUrl = new URL(imagePath, Astro.site).href
 
     <SEO
       title={title}
-      titleTemplate={useTitleTemplate ? `%s — ${themeConfig.seo.title}` : undefined}
-      titleDefault={themeConfig.seo.title}
+      titleTemplate={useTitleTemplate ? `%s — ${themeConfig.name} — ${t('site.tagline')}` : undefined}
+      titleDefault={t('site.title')}
       description={description}
       canonical={url}
       openGraph={{
@@ -80,8 +101,12 @@ const imageUrl = new URL(imagePath, Astro.site).href
         optional: { description, locale: htmlLang[locale] },
       }}
       twitter={{ card: 'summary_large_image', title, description, image: imageUrl }}
+      noindex={!isProduction}
+      nofollow={!isProduction}
       extend={{ meta: [{ name: 'author', content: author }] }}
     />
+
+    <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} is:inline />
 
     <ClientRouter />
   </head>

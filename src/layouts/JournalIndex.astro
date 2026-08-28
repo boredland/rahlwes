@@ -6,6 +6,7 @@ import { Heading, Link } from 'accessible-astro-components'
 import { htmlLang, localizePath, type Locale } from '@i18n/config'
 import { useTranslations } from '@i18n/ui'
 import { getJournal } from '@i18n/content'
+import { breadcrumbSchema } from '@i18n/schema'
 
 interface Props {
   locale: Locale
@@ -17,7 +18,16 @@ const posts = await getJournal(locale)
 const dateFormat = new Intl.DateTimeFormat(htmlLang[locale], { dateStyle: 'long' })
 ---
 
-<DefaultLayout title={t('journal.title')}>
+<DefaultLayout
+  title={t('journal.title')}
+  description={t('journal.description')}
+  schema={[
+    breadcrumbSchema([
+      { name: t('nav.home'), url: new URL(localizePath('/', locale), Astro.site).href },
+      { name: t('journal.title'), url: Astro.url.href },
+    ]),
+  ]}
+>
   <PageHeader title={t('journal.title')} showBreadcrumbs={false} />
   <section class="my-16">
     <div class="container">

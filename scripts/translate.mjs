@@ -182,21 +182,55 @@ async function translateFrontmatter(frontmatter, targetLang) {
   const lines = frontmatter.split('\n')
 
   const jobs = []
-  const shape = lines.map((line) => {
+  const shape = []
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i]
     const match = line.match(/^(\s*)([A-Za-z0-9_]+):\s*(.*)$/)
-    if (!match) return { literal: line }
+    if (!match) {
+      shape.push({ literal: line })
+      continue
+    }
 
     const [, indent, key, value] = match
-    if (!TRANSLATABLE_KEYS.has(key) || !value || value === 'null') return { literal: line }
+    if (!TRANSLATABLE_KEYS.has(key) || value === 'null') {
+      shape.push({ literal: line })
+      continue
+    }
+
+    // Block scalars (`key: >-`) hold their text on the following indented lines.
+    // Collect the whole block, translate it as one string, and re-emit it as a
+    // quoted scalar — earlier versions skipped these, which silently left long
+    // `intro` and `description` fields untranslated.
+    if (/^[>|][-+]?\d*$/.test(value.trim())) {
+      const body = []
+      let j = i + 1
+      while (j < lines.length) {
+        const next = lines[j]
+        if (next.trim() && !next.startsWith(indent + ' ')) break
+        body.push(next.trim())
+        j++
+      }
+      const text = body.join(' ').trim()
+      if (!text) {
+        shape.push({ literal: line })
+        continue
+      }
+      shape.push({ indent, key, jobIndex: jobs.length })
+      jobs.push(text)
+      i = j - 1
+      continue
+    }
+
+    if (!value) {
+      shape.push({ literal: line })
+      continue
+    }
 
     const isQuoted = /^".*"$/.test(value)
-    const rawValue = isQuoted ? JSON.parse(value) : value
-    if (rawValue.startsWith('>') || rawValue.startsWith('|')) return { literal: line }
-
-    const jobIndex = jobs.length
-    jobs.push(rawValue)
-    return { indent, key, jobIndex }
-  })
+    shape.push({ indent, key, jobIndex: jobs.length })
+    jobs.push(isQuoted ? JSON.parse(value) : value)
+  }
 
   const translations = await mapPool(jobs, (text) => translateText(text, targetLang))
 
