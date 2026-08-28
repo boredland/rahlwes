@@ -58,10 +58,13 @@ const projects = await getProjects(locale)
     object-fit: cover;
   }
 
+  // Category eyebrow: -600 is the accent step that clears 4.5:1 on white, since
+  // this is small text rather than a graphic element.
   .meta {
     margin-block-start: var(--space-2xs);
-    color: var(--link-color);
+    color: var(--color-accent-600);
     font-size: var(--font-size--1);
+    font-weight: 700;
     letter-spacing: 0.04em;
     text-transform: uppercase;
   }

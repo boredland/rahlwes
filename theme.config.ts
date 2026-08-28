@@ -20,7 +20,7 @@ export default defineThemeConfig({
     primary: '#6673b6',
     secondary: '#6f534f',
     neutral: '#c4bab4',
-    outline: '#b6664f',
+    accent: '#f17018',
   },
   navigation: {
     darkmode: true,

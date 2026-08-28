@@ -68,11 +68,13 @@ const { icon = 'mdi:rocket', title = 'Title', level = 'h3' }: Props = Astro.prop
       background-color: var(--color-neutral-100);
     }
 
+    // The offset block picks up the brand orange from the illustrations, so the
+    // feature grid carries the same blue/orange pairing they do.
     &::after {
       z-index: 0;
       inset: var(--space-m) -0.85rem -0.85rem 1rem;
       border-radius: var(--radius-l);
-      background-color: var(--link-color);
+      background-color: var(--color-accent-400);
     }
   }
 

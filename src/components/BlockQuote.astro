@@ -15,7 +15,7 @@ interface Props {
 const { author } = Astro.props
 ---
 
-<blockquote class="border-primary-500 border-l-4 pl-4">
+<blockquote class="pl-4">
   <div>
     <Icon aria-hidden="true" name="lucide:quote" size="2rem" />
     <slot />
@@ -26,15 +26,19 @@ const { author } = Astro.props
 
 <style lang="scss" is:global>
   blockquote {
+    border-inline-start: 4px solid var(--color-accent-400);
     font-size: var(--font-size-2);
 
     p {
       display: inline;
     }
 
+    // The quote marks carry the accent; the quoted text stays in body ink so it
+    // keeps full contrast.
     svg {
       display: inline;
       margin-block-start: calc(var(--space-s) * -1);
+      color: var(--color-accent-400);
 
       &:first-child {
         scale: -1 1;

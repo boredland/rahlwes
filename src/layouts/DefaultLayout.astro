@@ -58,14 +58,14 @@ const imageUrl = new URL(imagePath, Astro.site).href
         brandPrimary: themeConfig.colors.primary,
         brandSecondary: themeConfig.colors.secondary,
         brandNeutral: themeConfig.colors.neutral,
-        brandOutline: themeConfig.colors.outline,
+        brandAccent: themeConfig.colors.accent,
       }}
     >
       :global(:root) {
         --brand-primary: var(--brandPrimary);
         --brand-secondary: var(--brandSecondary);
         --brand-neutral: var(--brandNeutral);
-        --brand-outline: var(--brandOutline);
+        --brand-accent: var(--brandAccent);
       }
     </style>
 

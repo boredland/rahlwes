@@ -44,7 +44,7 @@ export type ThemeConfig = {
     primary: string
     secondary: string
     neutral: string
-    outline: string
+    accent: string
   }
   navigation: {
     darkmode?: boolean
@@ -65,7 +65,7 @@ const defaultConfig: Omit<ThemeConfig, 'name' | 'id'> = {
     primary: '#d648ff',
     secondary: '#00d1b7',
     neutral: '#b9bec4',
-    outline: '#ff4500',
+    accent: '#ff4500',
   },
   navigation: {
     darkmode: true,
