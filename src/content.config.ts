@@ -45,6 +45,8 @@ const pages = defineCollection({
   loader: glob({ pattern: '*/*.mdx', base: './src/content/pages' }),
   schema: z.object({
     title: z.string(),
+    /** False for legal texts and anything she wrote herself; see scripts/translate.mjs. */
+    translated: z.boolean().default(true),
     intro: z.string().default(''),
     seo: seoSchema,
   }),

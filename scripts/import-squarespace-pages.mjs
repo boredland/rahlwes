@@ -52,6 +52,8 @@ const pages = [
     order: 10,
   },
   { source: 'museen', collection: 'pages', slug: 'fuer-museen' },
+  { source: 'impressum', collection: 'pages', slug: 'impressum' },
+  { source: 'datenschutz', collection: 'pages', slug: 'datenschutz' },
 ]
 
 /** Trims to a sentence boundary so cards and meta descriptions never cut mid-word. */
@@ -171,16 +173,31 @@ for (const page of pages) {
   const title = (titleBlock?.text ?? page.slug).replace(/\*\*/g, '')
 
   const firstParagraph = blocks.find((b) => b.kind === 'p' && b.text.length > 60)
-  const excerpt = firstParagraph?.text.replace(/\[([^\]]*)\]\([^)]*\)/g, '$1') ?? ''
+  // excerpt and seo.description render as plain text, so strip inline Markdown
+  // rather than shipping literal ** and [] into card copy and meta tags.
+  const excerpt =
+    firstParagraph?.text
+      .replace(/\[([^\]]*)\]\([^)]*\)/g, '$1')
+      .replace(/\*\*([^*]+)\*\*/g, '$1')
+      .replace(/(?<!\*)\*([^*]+)\*(?!\*)/g, '$1') ?? ''
 
   const images = blocks.filter((b) => b.kind === 'img')
   const cover = images[0] ? await downloadImage(images[0].src, page.slug) : null
 
   // Body: everything after the title, images inlined where they appeared.
   const startIndex = titleBlock ? blocks.indexOf(titleBlock) + 1 : 0
+  const headingRanks = [
+    ...new Set(blocks.slice(startIndex).filter((b) => b.kind === 'heading').map((b) => b.level)),
+  ].sort((a, b) => a - b)
   const body = []
   for (const block of blocks.slice(startIndex)) {
-    if (block.kind === 'heading') body.push(`\n${'#'.repeat(Math.max(2, block.level))} ${block.text.replace(/\*\*/g, '')}\n`)
+    if (block.kind === 'heading') {
+      // Squarespace authors pick heading levels visually, so a page can start at
+      // h4 under the h1. Rebase them onto a contiguous scale from h2 — skipped
+      // levels fail the heading-order accessibility check.
+      const rank = headingRanks.indexOf(block.level)
+      body.push(`\n${'#'.repeat(Math.min(6, 2 + rank))} ${block.text.replace(/\*\*/g, '')}\n`)
+    }
     else if (block.kind === 'li') body.push(`- ${block.text}`)
     else if (block.kind === 'p') body.push(`\n${block.text}\n`)
   }

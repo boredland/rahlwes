@@ -17,6 +17,22 @@
     font-family: var(--font-heading);
     font-weight: 700;
     text-wrap: balance;
+
+    // A long German compound can outrun the line box before it has anywhere to
+    // wrap, so allow a mid-word break as a last resort at every size.
+    overflow-wrap: break-word;
+  }
+
+  // Hyphenation only where lines are actually tight: on wide screens there is
+  // room for "Ausstellungsprojekte" and breaking it would just look fussy.
+  // It is language-aware and relies on the `lang` DefaultLayout sets per locale.
+  @media (width < 60rem) {
+    h1,
+    h2,
+    h3 {
+      hyphens: auto;
+      hyphenate-limit-chars: 12 6 5;
+    }
   }
 
   h1 {

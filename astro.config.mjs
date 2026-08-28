@@ -7,6 +7,7 @@ import react from '@astrojs/react'
 import sitemap from '@astrojs/sitemap'
 import keystatic from '@keystatic/astro'
 import tailwindcss from '@tailwindcss/vite'
+import { legacyRedirects } from './src/redirects.ts'
 
 const viteConfig = {
   css: {
@@ -46,6 +47,8 @@ export default defineConfig({
     keystatic(),
     sitemap({ i18n: { defaultLocale: 'de', locales: { de: 'de-DE', en: 'en-GB', fr: 'fr-FR' } } }),
   ],
+  // 301s from the Squarespace URLs; see src/redirects.ts.
+  redirects: legacyRedirects,
   i18n: {
     locales: ['de', 'en', 'fr'],
     defaultLocale: 'de',

@@ -284,8 +284,14 @@ for (const [locale, deeplCode] of Object.entries(targets)) {
       continue
     }
 
-    // Some locales have copy Ann-Kathrin wrote herself rather than a translation.
-    // Machine output must never replace it, so those files opt out permanently.
+    // Two opt-outs, both meaning "do not machine-translate this":
+    //   - the source is marked, e.g. legal texts where a DeepL rendering must not
+    //     be presented as the binding privacy policy;
+    //   - the target is marked, e.g. an English article she wrote herself.
+    if (await isAuthored(sourcePath)) {
+      console.log(`· skip ${relative('.', sourcePath)} (marked do-not-translate)`)
+      continue
+    }
     if (await isAuthored(targetPath)) {
       console.log(`· keep ${relative('.', targetPath)} (authored, not a translation)`)
       continue
