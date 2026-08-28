@@ -43,12 +43,14 @@
   ],
   "testimonials": [
     {
-      "quote": "Ann-Kathrin Rahlwes est une professionnelle absolue, extrêmement créative, et elle cultive un style de communication très agréable. Il est agréable et intéressant de travailler avec elle.",
-      "author": "Judith Rosenthal"
+      "quote": "Ann-Kathrin Rahlwes est une professionnelle absolue, extrêmement créative et adopte un style de communication très agréable. C'est amusant et intéressant de travailler avec elle.",
+      "author": "Judith Rosenthal",
+      "role": ""
     },
     {
       "quote": "Ann-Kathrin Rahlwes est intervenue à un stade avancé dans la conception de notre exposition permanente et a sensiblement enrichi le processus ultérieur grâce à sa solide expertise et à son expérience dans l'enseignement de l'histoire récente de la migration. Il convient de souligner son sens aigu de l'initiative ainsi que sa capacité à identifier les défis à un stade précoce et à les traiter de manière constructive.",
-      "author": "PD Dr. Florian Greiner, Geschäftsführer des Lern- und Erinnerungsort Notaufnahmelager Gießen gGmbH"
+      "author": "PD Dr. Florian Greiner",
+      "role": "Directeur du lieu d'apprentissage et de mémoire Notaufnahmelager Gießen gGmbH"
     }
   ],
   "seo": {

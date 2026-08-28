@@ -48,6 +48,8 @@ const TRANSLATABLE_KEYS = new Set([
   'servicesHeading',
   'aboutHeading',
   'quote',
+  // A person's name must never be translated, but the role attached to it should be.
+  'role',
 ])
 
 const cache = new Map()

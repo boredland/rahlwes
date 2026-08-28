@@ -10,9 +10,14 @@ interface Props {
    * The name of the person who said the quote
    */
   author?: string
+  /**
+   * Their role or institution, kept separate from the name so it can be
+   * translated without touching the name itself.
+   */
+  role?: string
 }
 
-const { author } = Astro.props
+const { author, role } = Astro.props
 ---
 
 <blockquote class="pl-4">
@@ -21,7 +26,14 @@ const { author } = Astro.props
     <slot />
     <Icon aria-hidden="true" name="lucide:quote" size="2rem" />
   </div>
-  {author && <cite class="block text-sm font-medium">{author}</cite>}
+  {
+    author && (
+      <cite class="attribution">
+        <span class="attribution-name">{author}</span>
+        {role && <span class="attribution-role">{role}</span>}
+      </cite>
+    )
+  }
 </blockquote>
 
 <style lang="scss" is:global>
@@ -46,8 +58,21 @@ const { author } = Astro.props
     }
 
     cite {
+      display: block;
       margin-block-start: var(--space-s);
       font-size: var(--font-size-1);
+    }
+
+    .attribution-name {
+      display: block;
+      font-weight: 700;
+      font-style: normal;
+    }
+
+    .attribution-role {
+      display: block;
+      color: var(--color-neutral-700);
+      font-size: var(--font-size--1);
     }
   }
 </style>

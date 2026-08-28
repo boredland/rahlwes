@@ -62,7 +62,9 @@ const home = defineCollection({
       .default([]),
     aboutHeading: z.string(),
     aboutBlocks: z.array(z.object({ title: z.string(), text: z.string() })).default([]),
-    testimonials: z.array(z.object({ quote: z.string(), author: z.string() })).default([]),
+    testimonials: z
+      .array(z.object({ quote: z.string(), author: z.string(), role: z.string().default('') }))
+      .default([]),
     seo: seoSchema,
   }),
 })

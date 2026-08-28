@@ -147,6 +147,9 @@ function homeFor(locale: Locale) {
         fields.object({
           quote: fields.text({ label: 'Zitat', multiline: true }),
           author: fields.text({ label: 'Wer hat das gesagt?' }),
+          // Kept apart from the name so translations can render the role in the
+          // reader's language while the person's name stays untouched.
+          role: fields.text({ label: 'Funktion / Institution', multiline: true }),
         }),
         { label: 'Stimmen', itemLabel: (props) => props.fields.author.value || 'Stimme' },
       ),
