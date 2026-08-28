@@ -23,7 +23,7 @@ const ALPHA_THRESHOLD = 110
  * visually identical to 8x at every size the logo is rendered, for half the bytes
  * (the tiny "Historical Research Service" line dominates the contour count).
  */
-const SCALE = 4
+const SCALE = 8
 
 function decodePng(buffer) {
   if (buffer.readUInt32BE(0) !== 0x89504e47) throw new Error('not a PNG')
@@ -138,9 +138,9 @@ async function tracePaths(alpha, width, height) {
   const trace = new Potrace({
     threshold: 128,
     turdSize: SCALE, // discard specks smaller than one source pixel
-    alphaMax: 1,
+    alphaMax: 0.4,
     optCurve: true,
-    optTolerance: 1.5,
+    optTolerance: 0.2,
   })
 
   const traced = await new Promise((resolve, reject) => {
