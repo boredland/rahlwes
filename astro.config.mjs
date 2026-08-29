@@ -8,6 +8,7 @@ import sitemap from '@astrojs/sitemap'
 import keystatic from '@keystatic/astro'
 import tailwindcss from '@tailwindcss/vite'
 import { legacyRedirects } from './src/redirects.ts'
+import { queueConsumer } from './src/newsletter/integration.ts'
 
 const viteConfig = {
   css: {
@@ -31,6 +32,7 @@ const viteConfig = {
       '@public': fileURLToPath(new URL('./public', import.meta.url)),
       '@utils': fileURLToPath(new URL('./src/utils', import.meta.url)),
       '@i18n': fileURLToPath(new URL('./src/i18n', import.meta.url)),
+      '@newsletter': fileURLToPath(new URL('./src/newsletter', import.meta.url)),
       '@theme-config': fileURLToPath(new URL('./theme.config.ts', import.meta.url)),
     },
   },
@@ -45,7 +47,12 @@ export default defineConfig({
     mdx(),
     react(),
     keystatic(),
-    sitemap({ i18n: { defaultLocale: 'de', locales: { de: 'de-DE', en: 'en-GB', fr: 'fr-FR' } } }),
+    sitemap({
+      i18n: { defaultLocale: 'de', locales: { de: 'de-DE', en: 'en-GB', fr: 'fr-FR' } },
+      filter: (page) => !page.includes('/admin/'),
+    }),
+    // Must come after the adapter has registered, so it can wrap the worker entry.
+    queueConsumer(),
   ],
   // 301s from the Squarespace URLs; see src/redirects.ts.
   redirects: legacyRedirects,

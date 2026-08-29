@@ -1,6 +1,7 @@
 import type { APIRoute } from 'astro'
 import { env } from 'cloudflare:workers'
 import { currentLocale, type Locale } from '@i18n/config'
+import { matchLocale } from '@i18n/accept-language'
 
 export const prerender = false
 
@@ -107,6 +108,11 @@ export const POST: APIRoute = async ({ request, clientAddress }) => {
   const locale = currentLocale(payload.locale)
   const t = replies[locale]
 
+  // The on-page reply follows the page; the confirmation mail follows the browser,
+  // which is the better guess at what the reader actually understands. They differ
+  // when someone reads the German page with a French browser.
+  const mailLocale = matchLocale(request.headers.get('accept-language')) ?? locale
+
   // Silently accept honeypot hits: telling a bot it failed only helps it adapt.
   if (payload.website) return Response.json({ ok: true, message: t.ok })
 
@@ -136,6 +142,9 @@ export const POST: APIRoute = async ({ request, clientAddress }) => {
 
   const sender = `${fname} ${lname}`
   const received = new Date().toISOString()
+  // Both are worth reporting when they disagree: the page tells her what he read,
+  // the browser suggests which language to answer in.
+  const languageNote = mailLocale === locale ? locale : `${locale} (Browser: ${mailLocale})`
 
   try {
     await env.EMAIL.send({
@@ -146,7 +155,7 @@ export const POST: APIRoute = async ({ request, clientAddress }) => {
       text: [
         `Name:      ${sender}`,
         `E-Mail:    ${email}`,
-        `Sprache:   ${locale}`,
+        `Sprache:   ${languageNote}`,
         `Empfangen: ${received}`,
         '',
         message,
@@ -156,7 +165,7 @@ export const POST: APIRoute = async ({ request, clientAddress }) => {
         '<table cellpadding="4">',
         `<tr><td><strong>Name</strong></td><td>${escapeHtml(sender)}</td></tr>`,
         `<tr><td><strong>E-Mail</strong></td><td><a href="mailto:${escapeHtml(email)}">${escapeHtml(email)}</a></td></tr>`,
-        `<tr><td><strong>Sprache</strong></td><td>${locale}</td></tr>`,
+        `<tr><td><strong>Sprache</strong></td><td>${languageNote}</td></tr>`,
         `<tr><td><strong>Empfangen</strong></td><td>${received}</td></tr>`,
         '</table>',
         `<p style="white-space:pre-wrap">${escapeHtml(message)}</p>`,
@@ -169,7 +178,7 @@ export const POST: APIRoute = async ({ request, clientAddress }) => {
 
   // The confirmation is a courtesy; a failure here must not tell the sender their
   // message was lost, because it was not.
-  const confirmation = confirmations[locale]
+  const confirmation = confirmations[mailLocale]
   try {
     await env.EMAIL.send({
       to: email,

@@ -8,10 +8,49 @@
   //
   // `remote: true` proxies local dev sends to the real service; without it the
   // binding is a local stub and nothing is delivered.
-  "send_email": [{ "name": "EMAIL", "remote": true }],
-  // Per-IP throttle on the contact endpoint: cheap, credential-free protection that
-  // holds even if the Turnstile widget is missing or its script fails to load.
-  "ratelimits": [{ "name": "CONTACT_LIMIT", "namespace_id": "1001", "simple": { "limit": 5, "period": 60 } }],
+  //
+  // Two bindings, one per sending domain, each restricted to the addresses it may use.
+  // Receivers score sender reputation per domain: keeping bulk newsletter mail on
+  // marketing.rahlwes.eu means spam complaints there cannot sink the contact-form
+  // replies sent from send.rahlwes.eu. The allow-lists make that split enforced by the
+  // runtime rather than by whichever constant a call site happens to import.
+  "send_email": [
+    { "name": "EMAIL", "remote": true, "allowed_sender_addresses": ["kontakt@send.rahlwes.eu"] },
+    {
+      "name": "NEWSLETTER_EMAIL",
+      "remote": true,
+      "allowed_sender_addresses": ["newsletter@marketing.rahlwes.eu"]
+    }
+  ],
+  "ratelimits": [
+    // Per-IP throttle on the contact endpoint: cheap, credential-free protection that
+    // holds even if the Turnstile widget is missing or its script fails to load.
+    { "name": "CONTACT_LIMIT", "namespace_id": "1001", "simple": { "limit": 5, "period": 60 } },
+    // Newsletter signup carries no captcha, so it gets its own tighter bucket rather
+    // than sharing the contact form's allowance.
+    { "name": "NEWSLETTER_LIMIT", "namespace_id": "1002", "simple": { "limit": 3, "period": 60 } }
+  ],
+  "d1_databases": [
+    {
+      "binding": "NEWSLETTER_DB",
+      "database_name": "rahlwes-newsletter",
+      "database_id": "d4f27b52-5ca4-4417-9f6f-50448e5091dd",
+      "migrations_dir": "migrations"
+    }
+  ],
+  // One message per subscriber. `max_concurrency` bounds how many sends run at once so
+  // a large dispatch cannot outrun the Email Sending rate limit.
+  "queues": {
+    "producers": [{ "queue": "send-newsletter-queue", "binding": "NEWSLETTER_QUEUE" }],
+    "consumers": [{ "queue": "send-newsletter-queue", "max_batch_size": 10, "max_concurrency": 2, "max_retries": 3 }]
+  },
+  // Hard bounces appear on the account suppression list hours after a send, with no
+  // webhook to subscribe to, so they are polled once a day.
+  "triggers": { "crons": ["17 4 * * *"] },
+  // Lets the dispatcher render a newsletter through its own SSR routes. Fetching the
+  // public hostname from inside the Worker loops back out through the edge and fails
+  // with a 522; a self binding dispatches the request internally instead.
+  "services": [{ "binding": "SELF", "service": "rahlwes" }],
   "routes": [{ "pattern": "next.rahlwes.eu", "custom_domain": true }],
   "observability": { "enabled": true }
 }

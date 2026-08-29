@@ -166,11 +166,38 @@ function homeFor(locale: Locale) {
   })
 }
 
+/** Dispatch renders these through the same MDX pipeline as the rest of the site. */
+function newslettersFor(locale: Locale) {
+  return collection({
+    label: `Newsletter (${localeName[locale]})`,
+    slugField: 'subject',
+    path: `src/content/newsletters/${locale}/*`,
+    format: { contentField: 'body' },
+    columns: ['subject', 'status'],
+    entryLayout: 'content',
+    schema: {
+      subject: fields.slug({ name: { label: 'Betreff', description: 'Die Betreffzeile der E-Mail.' } }),
+      status: fields.select({
+        label: 'Status',
+        description: 'Nur „Bereit zum Versand“ erscheint auf der Versandseite.',
+        options: [
+          { label: 'Entwurf', value: 'draft' },
+          { label: 'Bereit zum Versand', value: 'ready' },
+          { label: 'Versendet', value: 'sent' },
+        ],
+        defaultValue: 'draft',
+      }),
+      body,
+    },
+  })
+}
+
 const collectionsByLocale = Object.fromEntries(
   locales.flatMap((locale) => [
     [`journal_${locale}`, journalFor(locale)],
     [`projects_${locale}`, projectsFor(locale)],
     [`pages_${locale}`, pagesFor(locale)],
+    [`newsletters_${locale}`, newslettersFor(locale)],
   ]),
 )
 
@@ -181,9 +208,9 @@ export default config({
   ui: {
     brand: { name: 'Rahlwes — Redaktion' },
     navigation: {
-      Deutsch: ['home_de', 'pages_de', 'projects_de', 'journal_de'],
-      English: ['home_en', 'pages_en', 'projects_en', 'journal_en'],
-      Français: ['home_fr', 'pages_fr', 'projects_fr', 'journal_fr'],
+      Deutsch: ['home_de', 'pages_de', 'projects_de', 'journal_de', 'newsletters_de'],
+      English: ['home_en', 'pages_en', 'projects_en', 'journal_en', 'newsletters_en'],
+      Français: ['home_fr', 'pages_fr', 'projects_fr', 'journal_fr', 'newsletters_fr'],
     },
   },
   collections: collectionsByLocale,

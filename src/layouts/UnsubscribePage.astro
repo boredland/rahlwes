@@ -1,0 +1,134 @@
+---
+import DefaultLayout from '@layouts/DefaultLayout.astro'
+import PageHeader from '@components/PageHeader.astro'
+import { type Locale } from '@i18n/config'
+import { useTranslations } from '@i18n/ui'
+import { env } from 'cloudflare:workers'
+import { isToken } from '@newsletter/tokens'
+
+interface Props {
+  locale: Locale
+}
+
+export const prerender = false
+
+const { locale } = Astro.props
+const t = useTranslations(locale)
+
+/**
+ * A token in the URL means the reader followed the link in a mail, so the
+ * unsubscribe happens here rather than behind another button: asking someone to
+ * confirm twice is how unsubscribes get abandoned.
+ *
+ * Mail clients prefetch links, which is why the mail links here — a GET page —
+ * while the RFC 8058 one-click header points at the POST endpoint instead.
+ */
+const token = Astro.url.searchParams.get('token')
+let done = Astro.url.searchParams.get('status') === 'done'
+
+if (isToken(token)) {
+  await env.NEWSLETTER_DB.prepare('DELETE FROM subscribers WHERE unsubscribe_token = ?').bind(token).run()
+  done = true
+}
+---
+
+<DefaultLayout title={t('newsletter.unsubscribe')} description={t('newsletter.unsubscribeIntro')}>
+  <PageHeader title={t('newsletter.unsubscribe')} showBreadcrumbs={false} />
+  <section class="my-16">
+    <div class="container space-content">
+      {
+        done ? (
+          <p class="notice is-success">{t('newsletter.unsubscribeDone')}</p>
+        ) : (
+          <>
+            <p class="lead">{t('newsletter.unsubscribeIntro')}</p>
+            <form class="unsubscribe-form" method="post" action="/api/newsletter/unsubscribe">
+              <input type="hidden" name="locale" value={locale} />
+              <p class="field">
+                <label for="unsubscribe-email">{t('newsletter.email')}</label>
+                <input id="unsubscribe-email" name="email" type="email" autocomplete="email" required maxlength="254" />
+              </p>
+              <p class="actions">
+                <button type="submit">{t('newsletter.unsubscribeSubmit')}</button>
+              </p>
+            </form>
+          </>
+        )
+      }
+    </div>
+  </section>
+</DefaultLayout>
+
+<style lang="scss">
+  .lead {
+    max-inline-size: var(--font-measure);
+    font-size: var(--font-size-1);
+  }
+
+  .notice {
+    border-inline-start: 3px solid currentcolor;
+    padding-inline-start: var(--space-s);
+    max-inline-size: var(--font-measure);
+    font-weight: 700;
+
+    &.is-success {
+      color: var(--color-accent-600);
+    }
+  }
+
+  .unsubscribe-form {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-s);
+    max-inline-size: 34rem;
+  }
+
+  .field {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3xs);
+    margin: 0;
+  }
+
+  label {
+    font-size: var(--font-size--1);
+    font-weight: 700;
+  }
+
+  input[type='email'] {
+    border: 2px solid var(--border-color-subtle);
+    border-radius: var(--radius-s);
+    background-color: var(--background-color);
+    padding: var(--space-2xs) var(--space-xs);
+    color: var(--foreground-color);
+    font-family: inherit;
+    font-size: var(--font-size-0);
+
+    &:focus-visible {
+      outline: 3px dotted var(--outline-color);
+      outline-offset: 2px;
+      border-color: var(--link-color);
+    }
+  }
+
+  .actions {
+    margin: 0;
+  }
+
+  button[type='submit'] {
+    border: 2px solid var(--color-accent-600);
+    border-radius: var(--radius-s);
+    background-color: var(--color-accent-600);
+    padding: var(--space-2xs) var(--space-m);
+    color: #fff;
+    font-family: inherit;
+    font-size: var(--font-size-0);
+    font-weight: 700;
+    cursor: pointer;
+
+    &:where(:hover, :focus-visible) {
+      background-color: transparent;
+      color: var(--color-accent-600);
+    }
+  }
+</style>

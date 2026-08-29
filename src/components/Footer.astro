@@ -3,7 +3,7 @@ import Logo from './Logo.astro'
 import { Heading, Link } from 'accessible-astro-components'
 import { Icon } from 'astro-icon/components'
 import themeConfig from '@theme-config'
-import { currentLocale } from '@i18n/config'
+import { currentLocale, localizePath } from '@i18n/config'
 import { useTranslations } from '@i18n/ui'
 import { getNavItems } from '@i18n/nav'
 
@@ -40,6 +40,7 @@ const currentYear = new Date().getFullYear()
               </li>
             ))
           }
+          <li><Link href={localizePath('/newsletter/', locale)}>{t('footer.newsletter')}</Link></li>
           {/* German-only: an automatic translation must not stand in for the
               binding imprint and privacy policy, so every locale links the original. */}
           <li><Link href="/impressum/" hreflang="de">{t('footer.imprint')}</Link></li>

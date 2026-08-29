@@ -1,0 +1,33 @@
+---
+/**
+ * Renders one newsletter body to bare HTML for the dispatcher.
+ *
+ * MDX needs the component pipeline to become HTML, and that pipeline does not run
+ * inside a queue consumer. Rendering through an ordinary SSR route reuses it as-is;
+ * the dispatcher fetches this once per campaign and stores the result, so the extra
+ * request costs nothing per subscriber.
+ *
+ * The entry is picked by query string rather than path segments: a nested dynamic
+ * route under /admin is shadowed by the site-wide `/[locale]/` route and never runs.
+ * It sits under /admin so the middleware keeps it off the public site.
+ */
+import { getCollection, render } from 'astro:content'
+import { isLocale } from '@i18n/config'
+
+export const prerender = false
+export const partial = true
+
+const locale = Astro.url.searchParams.get('locale')
+const slug = Astro.url.searchParams.get('slug')
+
+if (!isLocale(locale) || !slug) return new Response('Unknown newsletter', { status: 404 })
+
+const newsletters = await getCollection('newsletters')
+const entry = newsletters.find((candidate) => candidate.id === `${locale}/${slug}`)
+
+if (!entry) return new Response('Unknown newsletter', { status: 404 })
+
+const { Content } = await render(entry)
+---
+
+<Content />

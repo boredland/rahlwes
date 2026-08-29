@@ -1,0 +1,196 @@
+---
+import { type Locale } from '@i18n/config'
+import { useTranslations } from '@i18n/ui'
+
+interface Props {
+  locale: Locale
+}
+
+const { locale } = Astro.props
+const t = useTranslations(locale)
+---
+
+<form
+  class="newsletter-form"
+  novalidate
+  data-locale={locale}
+  data-sending={t('newsletter.sending')}
+  data-network-error={t('form.networkError')}
+>
+  <p class="field">
+    <label for="newsletter-email">{t('newsletter.email')} <span aria-hidden="true">*</span></label>
+    <input id="newsletter-email" name="email" type="email" autocomplete="email" required maxlength="254" />
+  </p>
+
+  {/* Honeypot: off-screen and hidden from assistive tech, so only bots reach it. */}
+  <p class="honeypot" aria-hidden="true">
+    <label for="newsletter-website">Website</label>
+    <input id="newsletter-website" name="website" type="text" tabindex="-1" autocomplete="off" />
+  </p>
+
+  <p class="field consent">
+    <input id="newsletter-consent" name="consent" type="checkbox" required />
+    <label for="newsletter-consent">{t('newsletter.consent')} <span aria-hidden="true">*</span></label>
+  </p>
+
+  <p class="actions">
+    <button type="submit">{t('newsletter.submit')}</button>
+  </p>
+
+  <p class="form-status" role="status" aria-live="polite"></p>
+</form>
+
+<script>
+  document.addEventListener('astro:page-load', () => {
+    const form = document.querySelector<HTMLFormElement>('.newsletter-form')
+    if (!form) return
+
+    const status = form.querySelector<HTMLParagraphElement>('.form-status')!
+    const button = form.querySelector<HTMLButtonElement>('button[type="submit"]')!
+    const idle = button.textContent ?? ''
+
+    form.addEventListener('submit', async (event) => {
+      event.preventDefault()
+
+      // Native validation first, so the browser handles focus and messaging.
+      if (!form.reportValidity()) return
+
+      const data = new FormData(form)
+      status.textContent = ''
+      status.classList.remove('is-error', 'is-success')
+      button.disabled = true
+      button.textContent = form.dataset.sending ?? idle
+
+      try {
+        const response = await fetch('/api/newsletter/subscribe', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({
+            email: data.get('email'),
+            website: data.get('website'),
+            consent: data.get('consent') === 'on',
+            locale: form.dataset.locale,
+          }),
+        })
+        const result = (await response.json()) as { ok: boolean; message: string }
+
+        status.textContent = result.message
+        status.classList.add(result.ok ? 'is-success' : 'is-error')
+        if (result.ok) form.reset()
+      } catch {
+        status.textContent = form.dataset.networkError ?? 'Network error'
+        status.classList.add('is-error')
+      } finally {
+        button.disabled = false
+        button.textContent = idle
+      }
+    })
+  })
+</script>
+
+<style lang="scss">
+  .newsletter-form {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-s);
+    max-inline-size: 34rem;
+  }
+
+  .field {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3xs);
+    margin: 0;
+  }
+
+  label {
+    font-size: var(--font-size--1);
+    font-weight: 700;
+  }
+
+  input[type='email'] {
+    border: 2px solid var(--border-color-subtle);
+    border-radius: var(--radius-s);
+    background-color: var(--background-color);
+    padding: var(--space-2xs) var(--space-xs);
+    color: var(--foreground-color);
+    font-family: inherit;
+    font-size: var(--font-size-0);
+
+    &:focus-visible {
+      outline: 3px dotted var(--outline-color);
+      outline-offset: 2px;
+      border-color: var(--link-color);
+    }
+  }
+
+  .consent {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    align-items: start;
+    gap: var(--space-2xs);
+
+    label {
+      font-weight: 400;
+      font-size: var(--font-size--1);
+      line-height: 1.5;
+    }
+
+    input {
+      margin-block-start: 0.2em;
+      inline-size: 1.15rem;
+      block-size: 1.15rem;
+      accent-color: var(--color-accent-500);
+    }
+  }
+
+  // Kept in the layout for bots to find, but out of sight and out of the tab order.
+  .honeypot {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+    inline-size: 1px;
+    block-size: 1px;
+    overflow: hidden;
+  }
+
+  .actions {
+    margin: 0;
+  }
+
+  button[type='submit'] {
+    border: 2px solid var(--color-accent-600);
+    border-radius: var(--radius-s);
+    background-color: var(--color-accent-600);
+    padding: var(--space-2xs) var(--space-m);
+    color: #fff;
+    font-family: inherit;
+    font-size: var(--font-size-0);
+    font-weight: 700;
+    cursor: pointer;
+    transition: background-color var(--animation-speed-fast) var(--cubic-bezier);
+
+    &:where(:hover, :focus-visible) {
+      background-color: transparent;
+      color: var(--color-accent-600);
+    }
+
+    &[disabled] {
+      opacity: 0.6;
+      cursor: progress;
+    }
+  }
+
+  .form-status {
+    margin: 0;
+    font-weight: 700;
+
+    &.is-success {
+      color: var(--color-accent-600);
+    }
+
+    &.is-error {
+      color: #b3261e;
+    }
+  }
+</style>

@@ -9,6 +9,7 @@
       "@assets/*": ["./src/assets/*"],
       "@utils/*": ["./src/utils/*"],
       "@i18n/*": ["./src/i18n/*"],
+      "@newsletter/*": ["./src/newsletter/*"],
       "@theme-config": ["./theme.config.ts"]
     }
   }

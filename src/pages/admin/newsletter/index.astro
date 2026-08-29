@@ -1,0 +1,182 @@
+---
+import DefaultLayout from '@layouts/DefaultLayout.astro'
+import { env } from 'cloudflare:workers'
+import { getCollection } from 'astro:content'
+import { currentLocale, localeName } from '@i18n/config'
+import { listVerified } from '@newsletter/db'
+
+export const prerender = false
+
+const [newsletters, recipients] = await Promise.all([
+  getCollection('newsletters'),
+  listVerified(env.NEWSLETTER_DB),
+])
+
+/** Ready-to-send first: the whole point of this page is dispatching those. */
+const entries = newsletters
+  .map((entry) => {
+    const [locale, slug] = entry.id.split('/')
+    return { entry, locale: currentLocale(locale), slug: slug ?? '' }
+  })
+  .sort((a, b) => Number(b.entry.data.status === 'ready') - Number(a.entry.data.status === 'ready'))
+
+const statusLabel: Record<string, string> = {
+  draft: 'Entwurf',
+  ready: 'Bereit zum Versand',
+  sent: 'Versendet',
+}
+---
+
+<DefaultLayout title="Newsletter versenden" description="Newsletter an bestätigte Abonnenten senden">
+  <section class="my-16">
+    <div class="container admin space-content">
+      <h1>Newsletter versenden</h1>
+      <p class="summary">
+        {recipients.length} bestätigte Empfänger.
+        <a href="/admin/subscribers/">Abonnenten verwalten</a>
+      </p>
+
+      {
+        entries.length === 0 ? (
+          <p>Noch keine Newsletter angelegt. Legen Sie einen im <a href="/keystatic">Redaktionsbereich</a> an.</p>
+        ) : (
+          <table class="newsletters">
+            <thead>
+              <tr>
+                <th scope="col">Betreff</th>
+                <th scope="col">Sprache</th>
+                <th scope="col">Status</th>
+                <th scope="col"><span class="sr-only">Aktion</span></th>
+              </tr>
+            </thead>
+            <tbody>
+              {entries.map(({ entry, locale, slug }) => (
+                <tr>
+                  <td>{entry.data.subject}</td>
+                  <td>{localeName[locale]}</td>
+                  <td>{statusLabel[entry.data.status] ?? entry.data.status}</td>
+                  <td>
+                    <a class="preview" href={`/admin/preview?locale=${locale}&slug=${slug}`} target="_blank">
+                      Vorschau
+                    </a>
+                    <button
+                      type="button"
+                      class="dispatch"
+                      data-slug={slug}
+                      data-locale={locale}
+                      data-subject={entry.data.subject}
+                      disabled={entry.data.status !== 'ready' || recipients.length === 0}
+                    >
+                      Versenden
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )
+      }
+
+      <p class="form-status" role="status" aria-live="polite"></p>
+      <p class="hint">
+        Nur Newsletter mit dem Status „Bereit zum Versand“ lassen sich verschicken. Der Versand geht
+        ausschließlich an bestätigte Abonnenten und lässt sich nicht rückgängig machen.
+      </p>
+    </div>
+  </section>
+</DefaultLayout>
+
+<script>
+  document.addEventListener('astro:page-load', () => {
+    const status = document.querySelector<HTMLParagraphElement>('.form-status')
+    if (!status) return
+
+    for (const button of document.querySelectorAll<HTMLButtonElement>('button.dispatch')) {
+      button.addEventListener('click', async () => {
+        const { slug, locale, subject } = button.dataset
+        if (!confirm(`„${subject}“ jetzt an alle bestätigten Abonnenten senden?`)) return
+
+        button.disabled = true
+        status.textContent = 'Versand wird gestartet…'
+
+        try {
+          const response = await fetch('/api/admin/newsletter/dispatch', {
+            method: 'POST',
+            headers: { 'content-type': 'application/json' },
+            body: JSON.stringify({ slug, locale }),
+          })
+          const result = (await response.json()) as { ok: boolean; queued?: number; message?: string }
+
+          if (result.ok) {
+            status.textContent = `${result.queued} E-Mails wurden in die Warteschlange gestellt.`
+          } else {
+            status.textContent = result.message ?? 'Versand fehlgeschlagen.'
+            button.disabled = false
+          }
+        } catch {
+          status.textContent = 'Verbindung fehlgeschlagen.'
+          button.disabled = false
+        }
+      })
+    }
+  })
+</script>
+
+<style lang="scss">
+  .admin {
+    max-inline-size: 60rem;
+  }
+
+  .summary {
+    font-weight: 700;
+  }
+
+  .hint {
+    max-inline-size: var(--font-measure);
+    color: var(--color-neutral-700);
+    font-size: var(--font-size--1);
+  }
+
+  .newsletters {
+    inline-size: 100%;
+    border-collapse: collapse;
+    font-size: var(--font-size--1);
+
+    th,
+    td {
+      border-block-end: 1px solid var(--border-color-subtle);
+      padding: var(--space-2xs);
+      text-align: start;
+    }
+  }
+
+  .preview {
+    margin-inline-end: var(--space-2xs);
+  }
+
+  button {
+    border: 2px solid var(--color-accent-600);
+    border-radius: var(--radius-s);
+    background-color: var(--color-accent-600);
+    padding: var(--space-3xs) var(--space-xs);
+    color: #fff;
+    font-family: inherit;
+    font-size: var(--font-size--1);
+    font-weight: 700;
+    cursor: pointer;
+
+    &:where(:hover, :focus-visible) {
+      background-color: transparent;
+      color: var(--color-accent-600);
+    }
+
+    &[disabled] {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+  }
+
+  .form-status {
+    font-weight: 700;
+  }
+</style>

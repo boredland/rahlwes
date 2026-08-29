@@ -52,6 +52,15 @@ const pages = defineCollection({
   }),
 })
 
+/** Authored in Keystatic, rendered to HTML at dispatch time; never routed on the site. */
+const newsletters = defineCollection({
+  loader: glob({ pattern: '*/*.mdx', base: './src/content/newsletters' }),
+  schema: z.object({
+    subject: z.string(),
+    status: z.enum(['draft', 'ready', 'sent']).default('draft'),
+  }),
+})
+
 const home = defineCollection({
   loader: glob({ pattern: '*/index.json', base: './src/content/home' }),
   schema: z.object({
@@ -76,5 +85,5 @@ const home = defineCollection({
   }),
 })
 
-export const collections = { journal, projects, pages, home }
+export const collections = { journal, projects, pages, home, newsletters }
 export { localeEnum }

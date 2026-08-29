@@ -1,0 +1,317 @@
+---
+import DefaultLayout from '@layouts/DefaultLayout.astro'
+import { env } from 'cloudflare:workers'
+import { locales, localeName } from '@i18n/config'
+import { listAll } from '@newsletter/db'
+
+export const prerender = false
+
+const subscribers = await listAll(env.NEWSLETTER_DB)
+const verified = subscribers.filter((s) => s.verified && !s.bounced_at).length
+const bounced = subscribers.filter((s) => s.bounced_at).length
+---
+
+<DefaultLayout title="Abonnenten" description="Newsletter-Abonnenten verwalten">
+  <section class="my-16">
+    <div class="container admin space-content">
+      <h1>Abonnenten</h1>
+      <p class="summary">
+        {subscribers.length} Einträge, davon {verified} empfangsbereit{bounced > 0 && `, ${bounced} unzustellbar`}.
+        <a href="/admin/newsletter/">Zum Versand</a>
+      </p>
+
+      <h2>Unzustellbare Adressen</h2>
+      <p class="hint">
+        Adressen, die dauerhaft nicht erreichbar sind (Postfach gelöscht, Domain existiert nicht) oder
+        den Newsletter als Spam gemeldet haben. Sie bekommen keine E-Mails mehr, bleiben aber in der
+        Liste. Der Abgleich läuft automatisch einmal täglich.
+      </p>
+      <p class="actions">
+        <button type="button" class="reconcile">Jetzt abgleichen</button>
+        <span class="bounce-status" role="status" aria-live="polite"></span>
+      </p>
+
+      <h2>Importieren</h2>
+      <p class="hint">
+        E-Mail-Adressen durch Komma, Semikolon, Leerzeichen oder Zeilenumbruch getrennt. Importierte
+        Adressen gelten als bestätigt — bitte nur Listen einfügen, die dem Newsletter bereits
+        zugestimmt haben.
+      </p>
+      <form class="import-form">
+        <p class="field">
+          <label for="import-emails">Adressen</label>
+          <textarea id="import-emails" name="emails" rows="6" required></textarea>
+        </p>
+        <p class="field">
+          <label for="import-locale">Sprache</label>
+          <select id="import-locale" name="locale">
+            {locales.map((locale) => <option value={locale}>{localeName[locale]}</option>)}
+          </select>
+        </p>
+        <p class="actions">
+          <button type="submit">Importieren</button>
+        </p>
+        <p class="form-status" role="status" aria-live="polite"></p>
+      </form>
+
+      <h2>Liste</h2>
+      {
+        subscribers.length === 0 ? (
+          <p>Noch keine Abonnenten.</p>
+        ) : (
+          <table class="subscribers">
+            <thead>
+              <tr>
+                <th scope="col">E-Mail</th>
+                <th scope="col">Sprache</th>
+                <th scope="col">Status</th>
+                <th scope="col">Angemeldet</th>
+                <th scope="col"><span class="sr-only">Aktion</span></th>
+              </tr>
+            </thead>
+            <tbody>
+              {subscribers.map((subscriber) => (
+                <tr data-id={subscriber.id}>
+                  <td>{subscriber.email}</td>
+                  <td>
+                    {localeName[subscriber.locale] ?? subscriber.locale}
+                    {subscriber.browser_locale &&
+                      subscriber.browser_locale.split('-')[0] !== subscriber.locale && (
+                        <span class="browser-locale" title="Sprache des Browsers">
+                          {subscriber.browser_locale}
+                        </span>
+                      )}
+                  </td>
+                  <td>
+                    {subscriber.bounced_at
+                      ? `unzustellbar (${subscriber.bounce_reason ?? 'Bounce'})`
+                      : subscriber.verified
+                        ? 'bestätigt'
+                        : 'unbestätigt'}
+                  </td>
+                  <td>{subscriber.created_at}</td>
+                  <td>
+                    {subscriber.bounced_at && (
+                      <button type="button" class="restore" data-email={subscriber.email}>
+                        Reaktivieren
+                      </button>
+                    )}
+                    <button type="button" class="delete" data-email={subscriber.email}>
+                      Löschen
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )
+      }
+    </div>
+  </section>
+</DefaultLayout>
+
+<script>
+  document.addEventListener('astro:page-load', () => {
+    const form = document.querySelector<HTMLFormElement>('.import-form')
+
+    form?.addEventListener('submit', async (event) => {
+      event.preventDefault()
+      if (!form.reportValidity()) return
+
+      const status = form.querySelector<HTMLParagraphElement>('.form-status')!
+      const button = form.querySelector<HTMLButtonElement>('button[type="submit"]')!
+      const data = new FormData(form)
+
+      button.disabled = true
+      status.textContent = 'Import läuft…'
+
+      try {
+        const response = await fetch('/api/admin/subscribers', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ emails: data.get('emails'), locale: data.get('locale') }),
+        })
+        const result = (await response.json()) as {
+          ok: boolean
+          imported?: number
+          skipped?: number
+          rejected?: number
+          message?: string
+        }
+
+        if (result.ok) {
+          status.textContent = `${result.imported} importiert, ${result.skipped} bereits vorhanden, ${result.rejected} ungültig.`
+          location.reload()
+        } else {
+          status.textContent = result.message ?? 'Import fehlgeschlagen.'
+        }
+      } catch {
+        status.textContent = 'Verbindung fehlgeschlagen.'
+      } finally {
+        button.disabled = false
+      }
+    })
+
+    const reconcile = document.querySelector<HTMLButtonElement>('button.reconcile')
+    const bounceStatus = document.querySelector<HTMLSpanElement>('.bounce-status')
+
+    reconcile?.addEventListener('click', async () => {
+      reconcile.disabled = true
+      if (bounceStatus) bounceStatus.textContent = 'Abgleich läuft…'
+
+      try {
+        const response = await fetch('/api/admin/bounces', { method: 'POST' })
+        const result = (await response.json()) as {
+          ok: boolean
+          checked?: number
+          flagged?: number
+          message?: string
+        }
+
+        if (result.ok) {
+          if (bounceStatus) {
+            bounceStatus.textContent = `${result.checked} geprüft, ${result.flagged} neu markiert.`
+          }
+          if (result.flagged) location.reload()
+        } else if (bounceStatus) {
+          bounceStatus.textContent = result.message ?? 'Abgleich fehlgeschlagen.'
+        }
+      } catch {
+        if (bounceStatus) bounceStatus.textContent = 'Verbindung fehlgeschlagen.'
+      } finally {
+        reconcile.disabled = false
+      }
+    })
+
+    for (const button of document.querySelectorAll<HTMLButtonElement>('button.restore')) {
+      button.addEventListener('click', async () => {
+        const row = button.closest<HTMLTableRowElement>('tr')!
+        button.disabled = true
+
+        const response = await fetch('/api/admin/subscribers', {
+          method: 'PATCH',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ id: Number(row.dataset.id) }),
+        })
+
+        if (response.ok) location.reload()
+        else button.disabled = false
+      })
+    }
+
+    for (const button of document.querySelectorAll<HTMLButtonElement>('button.delete')) {
+      button.addEventListener('click', async () => {
+        const row = button.closest<HTMLTableRowElement>('tr')!
+        if (!confirm(`${button.dataset.email} wirklich löschen?`)) return
+
+        button.disabled = true
+        const response = await fetch('/api/admin/subscribers', {
+          method: 'DELETE',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ id: Number(row.dataset.id) }),
+        })
+
+        if (response.ok) row.remove()
+        else button.disabled = false
+      })
+    }
+  })
+</script>
+
+<style lang="scss">
+  .admin {
+    max-inline-size: 60rem;
+  }
+
+  .summary {
+    font-weight: 700;
+  }
+
+  .hint {
+    max-inline-size: var(--font-measure);
+    color: var(--color-neutral-700);
+    font-size: var(--font-size--1);
+  }
+
+  .import-form {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-s);
+    max-inline-size: 40rem;
+  }
+
+  .field {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3xs);
+    margin: 0;
+  }
+
+  label {
+    font-size: var(--font-size--1);
+    font-weight: 700;
+  }
+
+  textarea,
+  select {
+    border: 2px solid var(--border-color-subtle);
+    border-radius: var(--radius-s);
+    background-color: var(--background-color);
+    padding: var(--space-2xs) var(--space-xs);
+    color: var(--foreground-color);
+    font-family: inherit;
+    font-size: var(--font-size-0);
+  }
+
+  .actions {
+    margin: 0;
+  }
+
+  button {
+    border: 2px solid var(--color-accent-600);
+    border-radius: var(--radius-s);
+    background-color: var(--color-accent-600);
+    padding: var(--space-3xs) var(--space-xs);
+    color: #fff;
+    font-family: inherit;
+    font-size: var(--font-size--1);
+    font-weight: 700;
+    cursor: pointer;
+
+    &:where(:hover, :focus-visible) {
+      background-color: transparent;
+      color: var(--color-accent-600);
+    }
+
+    &[disabled] {
+      opacity: 0.6;
+      cursor: progress;
+    }
+  }
+
+  // Only shown when it disagrees with the mailing language, so the column stays
+  // scannable and the difference is what draws the eye.
+  .browser-locale {
+    margin-inline-start: var(--space-3xs);
+    color: var(--color-neutral-700);
+    font-size: var(--font-size--2);
+  }
+
+  .subscribers {
+    inline-size: 100%;
+    border-collapse: collapse;
+    font-size: var(--font-size--1);
+
+    th,
+    td {
+      border-block-end: 1px solid var(--border-color-subtle);
+      padding: var(--space-2xs);
+      text-align: start;
+    }
+  }
+
+  .form-status {
+    margin: 0;
+    font-weight: 700;
+  }
+</style>
