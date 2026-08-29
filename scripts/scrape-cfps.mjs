@@ -597,7 +597,49 @@ async function scrapeEvz() {
     .filter((c) => isRelevant(c.title, c.description))
 }
 
+
+/**
+ * Museumsbund — German Museums Association. WP REST API carries DigAMus Award
+ * and other calls. Deadline is in the title or content.
+ */
+async function scrapeMuseumsbund() {
+  const res = await fetchText(
+    'https://www.museumsbund.de/wp-json/wp/v2/posts?per_page=20&_fields=title,link,content',
+  )
+  let posts
+  try { posts = JSON.parse(res) } catch { return [] }
+  return posts
+    .map((p) => {
+      const title = stripTags(p.title?.rendered ?? '')
+      const content = stripTags(p.content?.rendered ?? '')
+      const blob = title + ' ' + content
+      const dl = blob.match(/(?:Bewerbungsfrist|Einreichungen bis|bis zum|bis Ende)s*:?\s*(\d{1,2}\.\s*(?:\d{1,2}\.|[A-Za-zäöü]+)\s*\d{4})/i)
+      return { title, url: p.link ?? '', date: p.date?.slice(0, 10) ?? '', description: content.slice(0, 400), deadline: dl ? normaliseGermanDate(dl[1]) : '' }
+    })
+    .filter((item) => item.url && item.deadline && isRelevant(item.title, item.description))
+}
+
+/**
+ * Kulturstiftung des Bundes — federal cultural foundation. Projektförderung
+ * page lists active calls with deadlines.
+ */
+async function scrapeKulturstiftungBund() {
+  const text = stripTags(
+    (await fetchText('https://www.kulturstiftung-des-bundes.de/de/foerder_check_antrag/aktuelle_antragsmoeglichkeiten.html'))
+      .replace(/<script[sS]*?<\/script>/gi, '')
+      .replace(/<style[sS]*?<\/style>/gi, ''),
+  )
+  const calls = []
+  for (const section of text.split(/(?=Allgemeine Projektförderung|Programmförderung)/i)) {
+    const dl = section.match(/(?:Bewerbungsfrist|Frist|Antragsfrist)s*:?\s*(\d{1,2}\.\s*(?:\d{1,2}\.|[A-Za-zäöü]+)\s*\d{4})/i)
+    if (!dl) continue
+    calls.push({ title: 'Kulturstiftung des Bundes – aktuelle Antragsmöglichkeit', url: 'https://www.kulturstiftung-des-bundes.de/de/foerder_check_antrag/aktuelle_antragsmoeglichkeiten.html', date: '', description: section.slice(0, 400), deadline: normaliseGermanDate(dl[1]) })
+  }
+  return calls.filter((c) => isRelevant(c.title, c.description))
+}
 const SOURCES = {
+  museumsbund: scrapeMuseumsbund,
+  'kulturstiftung-bund': scrapeKulturstiftungBund,
   'h-soz-kult': scrapeHSozKult,
   'h-net': scrapeHNet,
   icom: feedScraper('https://icom-deutschland.de/feed'),
