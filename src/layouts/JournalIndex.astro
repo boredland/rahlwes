@@ -29,7 +29,7 @@ const dateFormat = new Intl.DateTimeFormat(htmlLang[locale], { dateStyle: 'long'
     ]),
   ]}
 >
-  <PageHeader title={t('journal.title')} showBreadcrumbs={false} />
+  <PageHeader title={t('journal.title')} subtitle={t('journal.description')} showBreadcrumbs={false} />
   <section class="my-16">
     <div class="container">
       {posts.length === 0 && <p>{t('journal.empty')}</p>}

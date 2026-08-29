@@ -34,7 +34,7 @@ const grouped = categories
     ]),
   ]}
 >
-  <PageHeader title={t('projects.title')} showBreadcrumbs={false} />
+  <PageHeader title={t('projects.title')} subtitle={t('projects.description')} showBreadcrumbs={false} />
   <section class="my-16">
     <div class="container">
       {projects.length === 0 && <p>{t('projects.empty')}</p>}
