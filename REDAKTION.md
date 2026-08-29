@@ -73,6 +73,99 @@ sollte `--only-missing` verwenden.
 Übersetzungen dürfen anschließend in Keystatic unter *English* bzw. *Français*
 frei nachbearbeitet werden.
 
+## Newsletter
+
+Der Newsletter läuft vollständig auf dieser Seite – kein Mailchimp, keine
+Fremdanbieter. Anmeldungen liegen in einer Cloudflare-Datenbank, der Versand
+läuft über Cloudflare Email Sending.
+
+### Anmeldung und Abmeldung
+
+Leserinnen und Leser melden sich unter `/newsletter/` an (je Sprache eine Seite).
+Sie bekommen zuerst eine Bestätigungsmail und stehen erst nach dem Klick auf den
+Link auf der Liste – das ist gesetzlich vorgeschrieben (Double Opt-in).
+**Unbestätigte Adressen bekommen nie eine E-Mail.**
+
+Jede versendete Mail enthält unten einen Abmeldelink, zusätzlich den technischen
+Abmelde-Header, den Gmail und Outlook als eigenen „Abbestellen“-Knopf anzeigen.
+Abmelden löscht die Adresse sofort.
+
+### Absenderadresse
+
+Newsletter verschicken sich von **newsletter@marketing.rahlwes.eu**, das
+Kontaktformular dagegen von `kontakt@send.rahlwes.eu`. Das ist Absicht: E-Mail-Anbieter
+bewerten den Ruf einer Absenderdomain getrennt. Landet ein Newsletter einmal bei
+vielen Empfängern im Spam, zieht das die Antworten aus dem Kontaktformular nicht mit
+herunter.
+
+### Newsletter schreiben
+
+1. In Keystatic unter **Newsletter** einen Eintrag anlegen.
+2. **Betreff** ist die Betreffzeile der E-Mail.
+3. Den Text unter **Inhalt** schreiben – wie bei einem Journal-Beitrag.
+4. **Status** steht zunächst auf *Entwurf*.
+
+Solange der Status *Entwurf* ist, lässt sich der Newsletter nicht verschicken.
+
+### Versenden
+
+1. Status in Keystatic auf **Bereit zum Versand** setzen und speichern.
+2. Etwa eine Minute warten, bis die Seite neu gebaut ist.
+3. `https://next.rahlwes.eu/admin/newsletter/` öffnen (Anmeldung über GitHub,
+   dieselbe wie bei Keystatic).
+4. Mit **Vorschau** prüfen, wie der Text in der Mail aussieht.
+5. **Versenden** klicken und bestätigen.
+
+Der Versand geht ausschließlich an bestätigte Abonnenten und **lässt sich nicht
+rückgängig machen**. Danach den Status in Keystatic auf *Versendet* setzen, damit
+klar bleibt, was schon raus ist.
+
+Die Mails werden in einer Warteschlange nacheinander verschickt; bei einer
+größeren Liste dauert das ein paar Minuten. Ein zweiter Klick auf *Versenden*
+verschickt den Newsletter erneut an alle – also nur einmal klicken.
+
+### Sprache der Abonnenten
+
+Jede Anmeldung merkt sich, welche Sprache der Browser des Lesers eingestellt hat.
+Danach richtet sich, in welcher Sprache die E-Mails ankommen — wer mit französischem
+Browser auf der deutschen Seite unterschreibt, bekommt französische Post.
+
+In der Liste steht hinter der Sprache manchmal noch ein zweites Kürzel, etwa
+`Deutsch pt-BR`. Das heißt: Diese Person liest eigentlich Portugiesisch, bekommt aber
+Deutsch, weil es die Seite auf Portugiesisch nicht gibt. Tauchen solche Kürzel häufiger
+auf, lohnt sich vielleicht eine weitere Sprache.
+
+### Unzustellbare Adressen
+
+Manche Adressen existieren irgendwann nicht mehr – das Postfach wurde gelöscht, die
+Firma hat gewechselt. Solche Adressen erkennt das System selbst und markiert sie als
+**unzustellbar**. Sie bekommen keine E-Mails mehr, bleiben aber in der Liste, damit
+nachvollziehbar ist, warum jemand nichts mehr erhält.
+
+Das passiert automatisch einmal pro Nacht. Vor einem Versand lässt sich der Abgleich
+mit **Jetzt abgleichen** auch von Hand anstoßen.
+
+Warum das wichtig ist: Wer dauerhaft an tote Adressen schickt, landet mit der Zeit
+bei allen anderen im Spam-Ordner. Die Liste sauber zu halten schützt also die
+Zustellung an alle übrigen Abonnenten.
+
+**Reaktivieren** hebt die Markierung auf – sinnvoll etwa, wenn ein Postfach nur
+vorübergehend voll war. War die Adresse dauerhaft nicht erreichbar, markiert der
+nächste Abgleich sie wieder.
+
+### Abonnenten verwalten
+
+Unter `https://next.rahlwes.eu/admin/subscribers/`:
+
+- Die Liste zeigt alle Adressen mit Status (*bestätigt* / *unbestätigt*).
+- **Löschen** entfernt eine Adresse sofort.
+- **Importieren** übernimmt eine bestehende Liste: Adressen durch Komma,
+  Semikolon oder Zeilenumbruch trennen.
+
+Importierte Adressen gelten sofort als bestätigt. Deshalb dort **nur Listen
+einfügen, die dem Newsletter schon einmal ausdrücklich zugestimmt haben** – alles
+andere ist rechtlich Spam und schadet der Zustellbarkeit.
+
 ## Bilder
 
 Bilder direkt in Keystatic hochladen. Sie landen in `src/assets/uploads/` und
