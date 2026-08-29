@@ -1,0 +1,47 @@
+---
+import ContentImage from '@components/ContentImage.astro'
+
+/**
+ * Stands in for `<img>` inside MDX bodies.
+ *
+ * A markdown image written as `![alt](/uploads/foo.webp)` emits a plain `<img>` with
+ * that literal path, which does not exist in the build: uploads live in `src/assets`
+ * so they can go through the asset pipeline. Routing them here gives markdown images
+ * the same WebP and responsive widths as the ones placed by components, instead of a
+ * 404.
+ *
+ * Anything already absolute or external is passed through untouched.
+ */
+interface Props {
+  src?: string
+  alt?: string
+  title?: string
+}
+
+const { src = '', alt = '', title } = Astro.props
+const isUpload = src.startsWith('/uploads/')
+---
+
+{
+  isUpload ? (
+    <ContentImage
+      class="prose-image"
+      src={src}
+      alt={alt}
+      widths={[480, 768, 1024]}
+      sizes="(min-width: 60rem) 44rem, 92vw"
+    />
+  ) : (
+    <img src={src} alt={alt} title={title} loading="lazy" decoding="async" />
+  )
+}
+
+<style lang="scss">
+  :global(.prose-image) {
+    display: block;
+    margin-block: var(--space-m);
+    border-radius: var(--radius-m);
+    inline-size: 100%;
+    block-size: auto;
+  }
+</style>

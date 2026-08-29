@@ -2,6 +2,7 @@
 import DefaultLayout from '@layouts/DefaultLayout.astro'
 import PageHeader from '@components/PageHeader.astro'
 import ContentImage from '@components/ContentImage.astro'
+import ProseImage from '@components/ProseImage.astro'
 import ContactCta from '@components/ContactCta.astro'
 import { htmlLang, localizePath, type Locale } from '@i18n/config'
 import { articleSchema, breadcrumbSchema } from '@i18n/schema'
@@ -82,7 +83,8 @@ const section =
         loading="eager"
       />
       <div class="prose space-content">
-        <Content />
+        {/* Markdown images resolve through the asset pipeline; see ProseImage. */}
+        <Content components={{ img: ProseImage }} />
       </div>
     </div>
 
