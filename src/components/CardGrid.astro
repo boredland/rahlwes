@@ -1,0 +1,78 @@
+---
+/**
+ * Equal-width grid for the illustrated cards below. Kept separate from the cards
+ * themselves so MDX can wrap any number of them without also carrying layout.
+ */
+interface Props {
+  /** Columns at the widest breakpoint; below that the grid collapses on its own. */
+  columns?: 2 | 3 | 4 | 5
+  class?: string
+}
+
+const { columns = 3, class: className } = Astro.props
+---
+
+<div class:list={['card-grid', `cols-${columns}`, className]}>
+  <slot />
+</div>
+
+<style lang="scss">
+  .card-grid {
+    display: grid;
+    gap: var(--space-l);
+    grid-template-columns: 1fr;
+    margin-block: var(--space-xl);
+    // Sits directly under the heading it belongs to; the extra space above would
+    // otherwise read as a gap between the heading and its own content.
+    margin-block-start: var(--space-l);
+
+    // The article column is capped at the reading measure (70ch), which is right for
+    // prose and far too narrow for a row of cards. This breaks out of that column and
+    // re-centres on the viewport, so the text stays readable while the grid uses the
+    // page. `margin-inline: auto` cannot do this: it resolves to 0 once the element is
+    // wider than its parent, which would push the grid off to the right.
+    inline-size: min(68rem, 100vw - 2 * var(--grid-gutter));
+    max-inline-size: none;
+    // Grows to the right only. The prose column starts at the container's left edge,
+    // so keeping that edge and extending into the empty space beside the measure keeps
+    // the grid aligned with the headings above it.
+    margin-inline-end: calc(100% - min(68rem, 100vw - 2 * var(--grid-gutter)));
+
+    @media (min-width: 34rem) {
+      &.cols-2,
+      &.cols-4,
+      &.cols-5 {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      &.cols-3 {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
+    @media (min-width: 44rem) {
+      &.cols-5 {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+    }
+
+    @media (min-width: 52rem) {
+      &.cols-3 {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+
+      &.cols-4 {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+      }
+    }
+
+    // The five offer icons only go on one line once each card has room to breathe;
+    // squeezed into a narrower viewport they stay in the two- and three-column steps
+    // above rather than shrinking to thumbnails.
+    @media (min-width: 64rem) {
+      &.cols-5 {
+        grid-template-columns: repeat(5, minmax(0, 1fr));
+      }
+    }
+  }
+</style>

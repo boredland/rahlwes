@@ -1,22 +1,33 @@
 ---
 title: "History education for museums"
 intro: "Are you planning an exhibition? Find out here how I can support you as a freelance historian with research, exhibition concepts and the communication of historical topics."
+translated: true
 seo:
   title: "History education for museums"
   description: "Are you planning an exhibition? Find out here how I can help you as a freelance historian with research and research, exhibition concepts and..."
 ---
 
-Are you planning an exhibition? Find out here how I can support you as a freelance historian with research, exhibition concepts and the communication of historical topics.
+import CardGrid from '@components/CardGrid.astro'
+import ImageCard from '@components/ImageCard.astro'
+import Illustration from '@components/Illustration.astro'
+
+<Illustration
+  src="/uploads/digitales-storytelling.png"
+  alt={"Hand holds a smartphone with a quote from Arno Lustiger in the Jewish Museum Frankfurt. A speech bubble with a net pattern floats above the phone. The background is black and white and minimalist."}
+  aspect="4/5"
+/>
 
 ## How I can support you as a historian
 
-**Research contemporary witness reports**
+<CardGrid columns={3}>
+  <ImageCard src="/uploads/museen-zeitzeugen.webp" alt={"Empty wooden picture frame. It stands for the many unknown stories of people who have gone before us."} title="Research contemporary witness reports" />
+  <ImageCard src="/uploads/museen-bildmaterial.webp" alt={"Hand holding a magnifying glass pointing at a black and white photograph of a couple with a dog, in the background a graphic illustration of a globe with a grid pattern."} title="Find historical images" />
+  <ImageCard src="/uploads/museen-konzepte.webp" alt={"A hand holding an open book. This is about communicating history."} title="Develop concepts for exciting history education" />
+</CardGrid>
 
-**Find historical images**
+## Three steps to the exhibition
 
-**Develop concepts for exciting history education**
-
-### Three steps to the exhibition
+<Illustration src="/uploads/museen-forschen.webp" alt={"Two women, one with glasses holding a box of books, the other looking through a microscope, in between a photo of a teapot, all in a collage style with graphic elements."} />
 
 ### Research
 
@@ -24,34 +35,46 @@ I research historical topics, families and biographies, places and buildings as 
 
 I conduct research for you in archives, libraries and museums throughout Europe. On request, I can search internationally for key documents and images, sound and film recordings and exhibition objects for your project. You benefit from my knowledge of English and French. I also carry out fact checks for texts, documentaries and films on historical topics. My results are scientifically sound and verifiable.
 
-**Understand**
+<Illustration src="/uploads/museen-verstehen.webp" alt={"Graphic with a blue teapot, a hand holding an orange notebook and a hand holding a wooden spoon."} />
+
+### Understand
 
 Written documents, works of art and everyday objects can only be understood in their historical context: Which manufactory does the tea service come from? What does the decoration show? Is the previous owner known? On what occasions was it uncovered? What do we learn about the previous owner's self-image and lifestyle?
 
 I help you to trace the history of memorabilia and collection objects and decipher their meaning. I decipher old manuscripts and date photographs. I place key documents such as letters and diaries in their historical context. I present my findings in a comprehensible and understandable way.
 
-**Mediate**
+<Illustration src="/uploads/museen-vermitteln.webp" alt={"A museum or art gallery exhibition space with a person holding a smartphone. The person is looking at a painting while the cell phone shows a digital version."} />
+
+### Mediate
 
 How we tell history determines how it is remembered. That's why good knowledge communication is important to me. Based on my research findings, I develop innovative and target group-oriented content and concepts for exhibitions. I communicate sensitive topics and complex historical contexts simply and clearly.
 
-### Projects
+## Projects
+
+<Illustration src="/uploads/museen-projekte.webp" alt={"Two brochures entitled Bought Collected Looted, showing various objects such as a necklace, a small statue and a chair."} />
 
 Find out more about my references here.
 
-### My offer at a glance
+[Find out more](/en/projekte/ausstellung-und-forschung/)
 
-75.00 Euro net per hour
+## My offer at a glance
+
+<CardGrid columns={5}>
+  <ImageCard src="/uploads/museen-beratung.webp" alt={"Graphic of a speech bubble"} title="Consulting" level="h3" />
+  <ImageCard src="/uploads/museen-konzepte.webp" alt={"A hand holding an open book. This is about communicating history."} title="Fact check" level="h3" />
+  <ImageCard src="/uploads/familienerforschen.png" alt={"Hand holding a magnifying glass. This is about exploring history."} title="Research" level="h3" />
+  <ImageCard src="/uploads/museen-recherchen.webp" alt={"An orange colored pencil. This is about writing down history."} title="Investigation" level="h3" />
+  <ImageCard src="/uploads/museen-vermittlung.webp" alt={"Hand holding a smartphone with a headphone symbol on the screen and a pair of headphones next to it."} title="Mediation" level="h3" />
+</CardGrid>
+
+**75.00 Euro net per hour**
 
 The fee does not include incidental costs (office expenses, ancillary production costs, travel expenses, accommodation costs) and does not include the applicable statutory VAT. This is based on the fee recommendation for freelancers drawn up by the German Association of Historians together with the German Association for Art History and the Federal Association of Freelance Cultural Scientists (BfK) in November 2022.
 
-#### Consulting
+<Illustration src="/uploads/museen-dialog.webp" alt={"Two speech bubbles in dialog"} aspect="25/11" />
 
-#### Fact check
+## Let’s talk about history!
 
-#### Research
+I research historical topics and help to convey knowledge in a simple, clear and exciting way.
 
-#### Mediation
-
-Let’s talk about history!
-
-#### I research historical topics and help to convey knowledge in a simple, clear and exciting way.
+[Get in touch](/en/kontakt/)

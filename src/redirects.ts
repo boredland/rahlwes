@@ -36,6 +36,4 @@ export const legacyRedirects = {
   '/journal-en': '/en/journal/',
   '/journal-en/the-frankfurt-history-app': '/en/journal/orteerforschen/',
 
-  // No newsletter here yet; the contact page is the closest intent.
-  '/newsletter': '/kontakt/',
 } as const satisfies Record<string, string>

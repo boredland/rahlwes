@@ -1,22 +1,33 @@
 ---
 title: "Médiation historique pour les musées"
 intro: "Vous prévoyez une exposition ? Découvrez ici comment, en tant qu'historienne indépendante, je peux vous aider dans vos recherches, la conception d'expositions et la médiation de thèmes historiques."
+translated: true
 seo:
   title: "Médiation historique pour les musées"
   description: "Vous prévoyez une exposition ? Découvrez ici comment, en tant qu'historienne indépendante, je peux vous aider dans vos recherches, dans la conception de l'exposition et..."
 ---
 
-Vous prévoyez une exposition ? Découvrez ici comment, en tant qu'historienne indépendante, je peux vous aider dans vos recherches, la conception d'expositions et la médiation de thèmes historiques.
+import CardGrid from '@components/CardGrid.astro'
+import ImageCard from '@components/ImageCard.astro'
+import Illustration from '@components/Illustration.astro'
+
+<Illustration
+  src="/uploads/digitales-storytelling.png"
+  alt={"Une main tient un smartphone avec une citation d'Arno Lustiger au Musée juif de Francfort. Une bulle avec un motif de filet flotte au-dessus du téléphone. L'arrière-plan est en noir et blanc et minimaliste."}
+  aspect="4/5"
+/>
 
 ## Voici comment je peux vous aider en tant qu'historienne
 
-**Rechercher des témoignages**
+<CardGrid columns={3}>
+  <ImageCard src="/uploads/museen-zeitzeugen.webp" alt={"Cadre photo vide en bois. Il représente les nombreuses histoires inconnues de personnes qui nous ont précédés."} title="Rechercher des témoignages" />
+  <ImageCard src="/uploads/museen-bildmaterial.webp" alt={"Main tenant une loupe pointant vers une photographie noire et blanche d'un couple avec un chien, avec en arrière-plan une illustration graphique d'un globe avec un motif de grille."} title="Trouver des images historiques" />
+  <ImageCard src="/uploads/museen-konzepte.webp" alt={"main qui tient un livre ouvert. Il s'agit ici de transmettre l'histoire."} title="Élaborer des concepts pour une médiation passionnante de l'histoire" />
+</CardGrid>
 
-**Trouver des images historiques**
+## L'exposition en trois étapes
 
-**Élaborer des concepts pour une médiation passionnante de l'histoire**.
-
-### L'exposition en trois étapes
+<Illustration src="/uploads/museen-forschen.webp" alt={"Deux femmes, l'une avec des lunettes tenant une boîte de livres, l'autre regardant à travers un microscope, avec une photo de théière entre les deux, le tout dans un style de collage avec des éléments graphiques."} />
 
 ### Recherche
 
@@ -24,34 +35,46 @@ Je fais des recherches sur des thèmes historiques, sur des familles et des biog
 
 Je fais pour vous des recherches dans les archives, les bibliothèques et les musées de toute l'Europe. Si vous le souhaitez, je peux rechercher des documents et des images clés, des enregistrements sonores et des films ainsi que des objets d'exposition au niveau international pour votre projet. Vous profitez de mes connaissances en anglais et en français. Je fais également des vérifications de faits pour des textes, des documentaires et des films sur des sujets historiques. Mes résultats sont scientifiquement fondés et vérifiables.
 
-**Compréhension**
+<Illustration src="/uploads/museen-verstehen.webp" alt={"Graphisme représentant une théière bleue, une main tenant un carnet orange et une main tenant une cuillère en bois."} />
+
+### Compréhension
 
 Les écrits, les objets d'art et de la vie quotidienne ne sont compréhensibles qu'à partir de leur contexte historique : de quelle manufacture provient le service à thé ? Que montre le décor ? Le propriétaire précédent est-il connu ? À quelles occasions a-t-il été découvert ? Qu'apprenons-nous sur la conception que l'ancien propriétaire avait de lui-même et de son habitat ?
 
 Je vous aide à retracer l'histoire des souvenirs et des objets de collection et à décrypter leur signification. Je déchiffre les manuscrits anciens et date les photographies. Je replace les documents clés tels que les lettres et les journaux intimes dans leur contexte historique. Je présente mes résultats de manière compréhensible et intelligible.
 
-**Médiation**
+<Illustration src="/uploads/museen-vermitteln.webp" alt={"Un musée ou une salle d'exposition de galerie d'art avec une personne tenant un smartphone. La personne regarde un tableau tandis que le téléphone portable en montre une version numérique."} />
+
+### Médiation
 
 La manière dont nous racontons l'histoire détermine la façon dont elle sera mémorisée. C'est pourquoi une bonne communication des connaissances me tient à cœur. Sur la base des résultats de mes recherches, je développe pour vous des contenus et des concepts d'exposition innovants et adaptés aux groupes cibles. Je communique des thèmes sensibles et des contextes historiques complexes de manière simple et claire.
 
-### Projets
+## Projets
+
+<Illustration src="/uploads/museen-projekte.webp" alt={"Deux brochures intitulées Bought Collected Looted, montrant différents objets tels qu'un collier, une petite statue et une chaise."} />
 
 Informez-vous ici sur mes références.
 
-### Aperçu de mon offre
+[En savoir plus](/fr/projekte/ausstellung-und-forschung/)
 
-75,00 euros net par heure
+## Aperçu de mon offre
+
+<CardGrid columns={5}>
+  <ImageCard src="/uploads/museen-beratung.webp" alt={"Graphique d'une bulle de texte"} title="Conseil" level="h3" />
+  <ImageCard src="/uploads/museen-konzepte.webp" alt={"main qui tient un livre ouvert. Il s'agit ici de transmettre l'histoire."} title="Vérification des faits" level="h3" />
+  <ImageCard src="/uploads/familienerforschen.png" alt={"La main tient une loupe. Il s'agit ici d'explorer l'histoire."} title="Recherches" level="h3" />
+  <ImageCard src="/uploads/museen-recherchen.webp" alt={"Un crayon de couleur orange. Il s'agit ici d'écrire l'histoire."} title="Recherche historique" level="h3" />
+  <ImageCard src="/uploads/museen-vermittlung.webp" alt={"La main tient un smartphone avec une icône d'écouteurs sur l'écran, à côté d'une paire d'écouteurs."} title="Médiation" level="h3" />
+</CardGrid>
+
+**75,00 euros net par heure**
 
 Les honoraires s'entendent hors frais annexes (frais de bureau, frais annexes de fabrication, frais de déplacement, frais d'hébergement) et hors TVA légale en vigueur. Je me base ainsi sur la recommandation d'honoraires pour les indépendants, élaborée en novembre 2022 par l'Association des historiens et historiennes d'Allemagne avec l'Association allemande d'histoire de l'art (Deutscher Verband für Kunstgeschichte e. V.) et l'Association fédérale des chercheurs culturels indépendants (Bundesverband freiberuflicher Kulturwissenschaftler e. V., BfK).
 
-#### Conseil
+<Illustration src="/uploads/museen-dialog.webp" alt={"Deux bulles de dialogue"} aspect="25/11" />
 
-#### Vérification des faits
+## Parlons d'histoire !
 
-#### Recherches
+Je fais des recherches sur des sujets historiques et j'aide à transmettre des connaissances de manière simple, claire et passionnante.
 
-#### Opérateur
-
-Parlons d'histoire !
-
-#### Je fais des recherches sur des sujets historiques et j'aide à transmettre des connaissances de manière simple, claire et passionnante.
+[Me contacter](/fr/kontakt/)

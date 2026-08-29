@@ -1,0 +1,79 @@
+---
+import ContentImage from '@components/ContentImage.astro'
+import { Heading } from 'accessible-astro-components'
+
+/**
+ * An illustration above a short label, the layout the Squarespace site used
+ * throughout. The importer kept only the labels, which is why these pages read as
+ * stray bold lines until the cards were restored.
+ */
+interface Props {
+  src: string
+  alt: string
+  title?: string
+  /** Square by default: the illustrations were drawn on a square canvas. */
+  aspect?: string
+  level?: 'h2' | 'h3' | 'h4' | 'h5' | 'h6'
+}
+
+const { src, alt, title, aspect = '1/1', level = 'h3' } = Astro.props
+---
+
+<figure class="image-card">
+  <ContentImage
+    src={src}
+    alt={alt}
+    aspect={aspect}
+    widths={[320, 480, 640]}
+    sizes="(min-width: 52rem) 20rem, (min-width: 34rem) 45vw, 90vw"
+  />
+  {
+    title && (
+      <figcaption>
+        <Heading level={level} size="h6">
+          {title}
+        </Heading>
+      </figcaption>
+    )
+  }
+  <slot />
+</figure>
+
+<style lang="scss">
+  .image-card {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-xs);
+    margin: 0;
+    // Short labels under a square illustration; centred they read as captions rather
+    // than as the start of a paragraph.
+    text-align: center;
+    align-items: center;
+  }
+
+  .image-card :global(img) {
+    border-radius: var(--radius-l);
+    inline-size: 100%;
+    block-size: auto;
+    object-fit: cover;
+  }
+
+  figcaption :global(h2),
+  figcaption :global(h3),
+  figcaption :global(h4),
+  figcaption :global(h5),
+  figcaption :global(h6) {
+    margin: 0;
+  }
+
+  .image-card :global(p) {
+    margin-block-start: var(--space-3xs);
+    font-size: var(--font-size--1);
+    text-wrap: balance;
+  }
+
+  figcaption {
+    // Keeps a three-word caption from breaking after the first word.
+    text-wrap: balance;
+  }
+</style>

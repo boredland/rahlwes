@@ -1,0 +1,43 @@
+---
+import ContentImage from '@components/ContentImage.astro'
+
+/**
+ * A full-width illustration between prose blocks. Breaks out of the article's
+ * reading measure, because these drawings carry detail that is lost at text width.
+ */
+interface Props {
+  src: string
+  alt: string
+  aspect?: string
+}
+
+const { src, alt, aspect } = Astro.props
+---
+
+<figure class="illustration">
+  <ContentImage
+    src={src}
+    alt={alt}
+    aspect={aspect}
+    widths={[480, 768, 1024, 1280]}
+    sizes="(min-width: 60rem) 52rem, 92vw"
+  />
+</figure>
+
+<style lang="scss">
+  .illustration {
+    margin-block: var(--space-xl);
+    // Breaks out of the 70ch reading column and re-centres on the viewport, the same
+    // way .card-grid does. Narrower than the grids, because a single drawing beside
+    // running text reads better when it does not span the whole page.
+    inline-size: min(52rem, 100vw - 2 * var(--grid-gutter));
+    max-inline-size: none;
+    margin-inline-end: calc(100% - min(52rem, 100vw - 2 * var(--grid-gutter)));
+  }
+
+  .illustration :global(img) {
+    border-radius: var(--radius-l);
+    inline-size: 100%;
+    block-size: auto;
+  }
+</style>

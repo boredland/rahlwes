@@ -1,21 +1,48 @@
 ---
 title: "Geschichtsvermittlung für Museen"
 intro: "Sie planen eine Ausstellung? Erfahren Sie hier, wie ich Sie als freiberufliche Historikerin bei Recherche und Forschung, Ausstellungskonzept und Vermittlung von historischen Themen unterstützen kann."
+translated: false
 seo:
   title: "Geschichtsvermittlung für Museen"
   description: "Sie planen eine Ausstellung? Erfahren Sie hier, wie ich Sie als freiberufliche Historikerin bei Recherche und Forschung, Ausstellungskonzept und…"
 ---
-Sie planen eine Ausstellung? Erfahren Sie hier, wie ich Sie als freiberufliche Historikerin bei Recherche und Forschung, Ausstellungskonzept und Vermittlung von historischen Themen unterstützen kann.
+
+import CardGrid from '@components/CardGrid.astro'
+import ImageCard from '@components/ImageCard.astro'
+import Illustration from '@components/Illustration.astro'
+
+<Illustration
+  src="/uploads/digitales-storytelling.png"
+  alt="Hand hält ein Smartphone mit einem Zitat von Arno Lustiger im Jüdischen Museum Frankfurt. Über dem Telefon schwebt eine Sprechblase mit einem Netzmuster. Der Hintergrund ist schwarz-weiß und minimalistisch gehalten."
+  aspect="4/5"
+/>
 
 ## So kann ich Sie als Historikerin unterstützen
 
-**Zeitzeugenberichte recherchieren**
+<CardGrid columns={3}>
+  <ImageCard
+    src="/uploads/museen-zeitzeugen.webp"
+    alt="Leerer Bilderrahmen aus Holz. Es steht für die vielen unbekannten Geschichten von Menschen, die uns vorausgingen."
+    title="Zeitzeugenberichte recherchieren"
+  />
+  <ImageCard
+    src="/uploads/museen-bildmaterial.webp"
+    alt="Hand hält eine Lupe, die auf eine schwarze und weiße Fotografie eines Paares mit einem Hund zeigt, im Hintergrund eine grafische Illustration eines Globus mit einem Gittermuster."
+    title="Historisches Bildmaterial finden"
+  />
+  <ImageCard
+    src="/uploads/museen-konzepte.webp"
+    alt="Hand, die ein offenes Buch hält. Hier geht es um Geschichtsvermittlung."
+    title="Konzepte für spannende Geschichtsvermittlung ausarbeiten"
+  />
+</CardGrid>
 
-**Historisches Bildmaterial finden**
+## In drei Schritten zur Ausstellung
 
-**Konzepte für spannende Geschichtsvermittlung ausarbeiten**
-
-### In drei Schritten zur Ausstellung
+<Illustration
+  src="/uploads/museen-forschen.webp"
+  alt="Zwei Frauen, eine mit Brille hält einen Kasten mit Büchern, die andere schaut durch ein Mikroskop, dazwischen ein Foto einer Teekanne, alles in einem Collage-Stil mit grafischen Elementen."
+/>
 
 ### Forschen
 
@@ -23,34 +50,84 @@ Ich forsche zu historischen Themen, zu Familien und Biografien, zu Orten und Bau
 
 Ich recherchiere für Sie europaweit in Archiven, Bibliotheken und Museen. Auf Wunsch suche ich für Ihr Projekt international nach Schlüsseldokumenten und Bildern, Ton- und Filmaufnahmen sowie Ausstellungsobjekten. Sie profitieren von meinen Englisch- und Französischkenntnissen. Ich mache auch Faktenchecks für Texte, Dokumentationen und Filmen zu historischen Themen. Meine Ergebnisse sind wissenschaftlich fundiert und nachprüfbar.
 
-**Verstehen**
+<Illustration
+  src="/uploads/museen-verstehen.webp"
+  alt="Grafik mit einer blauen Teekanne, einer Hand, die ein orangefarbenes Notizbuch hält, und einer Hand, die einen Holzlöffel hält. In der Grafik sind Skizzen, eine alte Fotografie, eine Landkarte, eine Pflanze und ein Notizblatt mit der Aufschrift „Manufaktur?“ verbunden."
+/>
+
+### Verstehen
 
 Schriftstücke, Kunst- und Alltagsgegenstände sind nur aus ihrem historischen Kontext heraus verständlich: Aus welcher Manufaktur stammt das Teeservice? Was zeigt das Dekor? Ist der Vorbesitzer bekannt? Zu welchen Anlässen wurde es aufgedeckt? Was erfahren wir über das Selbstverständnis und die Wohnkultur des Vorbesitzers?
 
 Ich helfe Ihnen, die Geschichte von Erinnerungsstücken und Sammlungsobjekten nachzuzeichnen und ihre Bedeutung zu entschlüsseln. Ich entziffere alte Handschriften und datiere Fotografien. Schlüsseldokumente wie Briefe und Tagebücher ordne ich in ihren historischen Kontext ein. Meine Ergebnisse bereite ich nachvollziehbar und verständlich auf.
 
-**Vermitteln**
+<Illustration
+  src="/uploads/museen-vermitteln.webp"
+  alt="Ein Museum oder Kunstgalerie Ausstellungsraum mit einer Person, die ein Smartphone hält. In der Ausstellung befinden sich ein Gemälde eines Stilllebens mit Früchten, ein blauer Teekanne-Exponat, ein QR-Code, ein Kopfhörer und ein Textstück. Die Person betrachtet das Gemälde, während das Handy eine digitale Version mit Teekanne zeigt."
+/>
+
+### Vermitteln
 
 Wie wir Geschichte erzählen, entscheidet, wie sie erinnert wird. Deshalb liegt mir gute Wissenskommunikation am Herzen. Auf Basis meiner Forschungsergebnisse entwickle für Sie innovative und zielgruppengerechte Inhalte und Konzepte für Ausstellungen. Sensible Themen und komplexe historische Zusammenhänge vermittle ich einfach und klar.
 
-### Projekte
+## Projekte
+
+<Illustration
+  src="/uploads/museen-projekte.webp"
+  alt="Zwei Broschüren mit dem Titel „Bought Collected Looted?“ und „Eingekauft Gesammelt Geraubt?“, die verschiedene Gegenstände wie eine Halskette, eine kleine Statue, ein Schmuckstück und einen Stuhl zeigen."
+/>
 
 Informieren Sie sich hier über meine Referenzen.
 
-### Mein Angebot im Überblick
+[Mehr erfahren](/projekte/ausstellung-und-forschung/)
 
-75,00 Euro netto pro Stunde
+## Mein Angebot im Überblick
+
+<CardGrid columns={5}>
+  <ImageCard
+    src="/uploads/museen-beratung.webp"
+    alt="Grafik einer Sprechblase"
+    title="Beratung"
+    level="h3"
+  />
+  <ImageCard
+    src="/uploads/museen-konzepte.webp"
+    alt="Hand, die ein offenes Buch hält. Hier geht es um Geschichtsvermittlung."
+    title="Faktencheck"
+    level="h3"
+  />
+  <ImageCard
+    src="/uploads/familienerforschen.png"
+    alt="Hand hält eine Lupe. Hier geht es um das Erforschen von Geschichte."
+    title="Recherchen"
+    level="h3"
+  />
+  <ImageCard
+    src="/uploads/museen-recherchen.webp"
+    alt="Ein orangefarbener Buntstift. Hier geht es darum, Geschichte aufzuschreiben."
+    title="Forschen"
+    level="h3"
+  />
+  <ImageCard
+    src="/uploads/museen-vermittlung.webp"
+    alt="Hand hält ein Smartphone mit Kopfhörersymbol auf dem Bildschirm, daneben ein Paar Kopfhörer."
+    title="Vermittlung"
+    level="h3"
+  />
+</CardGrid>
+
+**75,00 Euro netto pro Stunde**
 
 Das Honorar versteht sich zuzüglich der Nebenkosten (Büronebenkosten, Herstellungsnebenkosten, Fahrtkosten, Übernachtungskosten) und zuzüglich der geltenden gesetzlichen Mehrwertsteuer. Damit orientiere ich mich an der Honorarempfehlung für Freiberufler, die der Verband der Historiker und Historikerinnen Deutschlands mit dem Deutschen Verband für Kunstgeschichte e. V. und dem Bundesverband freiberuflicher Kulturwissenschaftler e. V. (BfK) im November 2022 erarbeitet hat.
 
-#### Beratung
+<Illustration
+  src="/uploads/museen-dialog.webp"
+  alt="Zwei Sprechblasen im Dialog"
+  aspect="25/11"
+/>
 
-#### Faktencheck
+## Let’s talk about history!
 
-#### Recherchen
+Ich forsche zu historischen Themen und helfe, Wissen einfach, klar und spannend zu vermitteln.
 
-#### Vermittlung
-
-Let’s talk about history!
-
-#### Ich forsche zu historischen Themen und helfe, Wissen einfach, klar und spannend zu vermitteln.
+[Jetzt anfragen](/kontakt/)
