@@ -49,6 +49,7 @@ the same URLs work against `http://localhost:4321`.
 | Subscribers | [/admin/subscribers/](https://next.rahlwes.eu/admin/subscribers/) | List, import, delete, reactivate bounced addresses |
 | Dispatch | [/admin/newsletter/](https://next.rahlwes.eu/admin/newsletter/) | Send a newsletter marked *Bereit zum Versand* |
 | Mail preview | [/admin/preview?locale=de&slug=…](https://next.rahlwes.eu/admin/preview?locale=de&slug=example) | Renders one newsletter body as bare HTML |
+| Ausschreibungen | [/admin/cfps/](https://next.rahlwes.eu/admin/cfps/) | Collected calls (Stipendien, Preise, Residenzen, Aufträge) + digest recipients |
 
 The endpoints behind those pages, for when something needs poking by hand:
 
@@ -59,11 +60,19 @@ The endpoints behind those pages, for when something needs poking by hand:
 | `/api/admin/subscribers` | `PATCH` | Clear a bounce flag (`{ id }`) |
 | `/api/admin/bounces` | `POST` | Run the suppression-list reconciliation now |
 | `/api/admin/newsletter/dispatch` | `POST` | Queue a campaign (`{ slug, locale }`) |
+| `/api/admin/cfps/subscribe` | `POST` | Add a digest recipient (`{ email }`) |
+| `/api/admin/cfps/subscribe` | `DELETE` | Remove a digest recipient (`{ email }`) |
 
 Public newsletter routes, for reference: `/newsletter/` (signup),
 `/newsletter/abmelden/` (unsubscribe), `/api/newsletter/subscribe`,
 `/api/newsletter/verify`, `/api/newsletter/unsubscribe`. Each exists per locale under
 `/en/` and `/fr/` as well.
+
+Two Ausschreibungen routes sit outside `/api/admin` on purpose, and carry their own
+credential instead: `/api/cfps/notify` (`POST`) is called by the scrape workflow with
+the `CFP_WEBHOOK_SECRET` bearer token, because a GitHub Action has no Keystatic
+cookie to present, and `/api/cfps/unsubscribe?token=…` is followed by a digest
+recipient who was never an admin.
 
 Unauthenticated requests redirect to the GitHub login (pages) or answer `401` (APIs).
 The API routes sit behind Astro's CSRF check, so a manual `curl` needs
