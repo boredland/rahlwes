@@ -9,17 +9,23 @@
     {
       "title": "Find historical documents",
       "text": "I research archives, collections and databases and find the sources that prove your story.",
-      "icon": "lucide:search"
+      "icon": "lucide:search",
+      "image": "/uploads/museen-forschen.webp",
+      "imageAlt": "A woman examines something under a microscope, another holds a box of books."
     },
     {
       "title": "Understanding old documents & photographs",
       "text": "I read and interpret historical writings, letters and pictures and place them in their context.",
-      "icon": "lucide:book-open"
+      "icon": "lucide:book-open",
+      "image": "/uploads/museen-verstehen.webp",
+      "imageAlt": "A teapot in the centre, a hand holding a notebook."
     },
     {
       "title": "Communicating history",
       "text": "I tell history simply, clearly and excitingly - for exhibitions, digital formats and teaching.",
-      "icon": "lucide:message-circle"
+      "icon": "lucide:message-circle",
+      "image": "/uploads/museen-konzepte.webp",
+      "imageAlt": "A hand holding an open book. This is about communicating history."
     }
   ],
   "aboutHeading": "My motivation",

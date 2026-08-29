@@ -9,17 +9,23 @@
     {
       "title": "Trouver des documents historiques",
       "text": "Je fais des recherches dans les archives, les collections et les bases de données et je trouve les sources qui attestent de votre histoire.",
-      "icon": "lucide:search"
+      "icon": "lucide:search",
+      "image": "/uploads/museen-forschen.webp",
+      "imageAlt": "Une femme examine quelque chose au microscope, une autre tient une boîte de livres."
     },
     {
       "title": "Comprendre les documents & photographies anciens",
       "text": "Je lis et j'interprète des écrits, des lettres et des images historiques et je les replace dans leur contexte.",
-      "icon": "lucide:book-open"
+      "icon": "lucide:book-open",
+      "image": "/uploads/museen-verstehen.webp",
+      "imageAlt": "Une théière au centre, une main tenant un carnet."
     },
     {
       "title": "Transmettre l'histoire",
       "text": "Je raconte l'histoire de manière simple, claire et passionnante - pour les expositions, les formats numériques et l'enseignement.",
-      "icon": "lucide:message-circle"
+      "icon": "lucide:message-circle",
+      "image": "/uploads/museen-konzepte.webp",
+      "imageAlt": "Une main tient un livre ouvert. Il s’agit de la médiation de l’histoire."
     }
   ],
   "aboutHeading": "Ma motivation",

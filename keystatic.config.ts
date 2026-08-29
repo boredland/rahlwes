@@ -136,6 +136,13 @@ function homeFor(locale: Locale) {
         fields.object({
           title: fields.text({ label: 'Titel' }),
           text: fields.text({ label: 'Beschreibung', multiline: true }),
+          image: fields.image({
+            label: 'Illustration',
+            description: 'Ersetzt das Symbol. Die Illustrationen der alten Website liegen bereits im Upload-Ordner.',
+            directory: 'src/assets/uploads',
+            publicPath: '/uploads/',
+          }),
+          imageAlt: fields.text({ label: 'Bildbeschreibung (Alt-Text)' }),
           icon: fields.select({
             label: 'Symbol',
             options: [

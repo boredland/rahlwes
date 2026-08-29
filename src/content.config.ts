@@ -87,7 +87,15 @@ const home = defineCollection({
     heroImageAlt: z.string().default(''),
     servicesHeading: z.string(),
     services: z
-      .array(z.object({ title: z.string(), text: z.string(), icon: z.string() }))
+      .array(
+        z.object({
+          title: z.string(),
+          text: z.string(),
+          icon: z.string(),
+          image: z.string().nullable().optional(),
+          imageAlt: z.string().default(''),
+        }),
+      )
       .default([]),
     aboutHeading: z.string(),
     aboutText: z.string().default(''),

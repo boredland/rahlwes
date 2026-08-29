@@ -1,6 +1,7 @@
 ---
 import { Heading } from 'accessible-astro-components'
 import { Icon } from 'astro-icon/components'
+import ContentImage from '@components/ContentImage.astro'
 
 /**
  * Feature Component
@@ -9,9 +10,15 @@ import { Icon } from 'astro-icon/components'
  */
 interface Props {
   /**
-   * The icon to display
+   * The icon to display, used when no illustration is given.
    */
   icon: string
+  /**
+   * Her own illustration for this service. The Squarespace site used these rather
+   * than icons, and they carry far more of the site's character.
+   */
+  image?: string | null
+  imageAlt?: string
   /**
    * The title to display
    */
@@ -23,11 +30,23 @@ interface Props {
   level?: 'h2' | 'h3' | 'h4' | 'h5' | 'h6'
 }
 
-const { icon = 'mdi:rocket', title = 'Title', level = 'h3' }: Props = Astro.props
+const { icon = 'mdi:rocket', image, imageAlt = '', title = 'Title', level = 'h3' }: Props = Astro.props
 ---
 
 <div class="feature flex flex-col gap-4">
-  <Icon aria-hidden="true" name={icon} />
+  {
+    image ? (
+      <ContentImage
+        class="feature-image"
+        src={image}
+        alt={imageAlt}
+        widths={[240, 360, 480]}
+        sizes="(min-width: 64rem) 20rem, (min-width: 40rem) 40vw, 80vw"
+      />
+    ) : (
+      <Icon aria-hidden="true" name={icon} />
+    )
+  }
   <div class="content">
     <Heading level={level} size="h6" class="mb-2">{title}</Heading>
     <p>
@@ -76,6 +95,17 @@ const { icon = 'mdi:rocket', title = 'Title', level = 'h3' }: Props = Astro.prop
       border-radius: var(--radius-l);
       background-color: var(--color-accent-400);
     }
+  }
+
+  .feature :global(.feature-image) {
+    // The card paints its background in ::before at z-index 1. Direct children get
+    // z-index 2 from the rule above, but this more specific selector would otherwise
+    // leave the image on the default layer, hidden behind that background.
+    position: relative;
+    z-index: 2;
+    inline-size: 100%;
+    block-size: auto;
+    border-radius: var(--radius-m);
   }
 
   :global(.feature [data-icon]) {

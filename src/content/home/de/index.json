@@ -9,17 +9,23 @@
     {
       "title": "Historische Unterlagen finden",
       "text": "Ich recherchiere in Archiven, Sammlungen und Datenbanken und finde die Quellen, die Ihre Geschichte belegen.",
-      "icon": "lucide:search"
+      "icon": "lucide:search",
+      "image": "/uploads/museen-forschen.webp",
+      "imageAlt": "Eine Frau untersucht etwas am Mikroskop, eine andere hält einen Kasten mit Büchern."
     },
     {
       "title": "Alte Dokumente & Fotografien verstehen",
       "text": "Ich lese und deute historische Schriften, Briefe und Bilder und ordne sie in ihren Zusammenhang ein.",
-      "icon": "lucide:book-open"
+      "icon": "lucide:book-open",
+      "image": "/uploads/museen-verstehen.webp",
+      "imageAlt": "Eine Teekanne steht in der Mitte, eine Hand hält ein Notizbuch."
     },
     {
       "title": "Geschichte vermitteln",
       "text": "Ich erzähle Geschichte einfach, klar und spannend – für Ausstellungen, digitale Formate und den Unterricht.",
-      "icon": "lucide:message-circle"
+      "icon": "lucide:message-circle",
+      "image": "/uploads/museen-konzepte.webp",
+      "imageAlt": "Eine Hand hält ein offenes Buch. Hier geht es um Geschichtsvermittlung."
     }
   ],
   "aboutHeading": "Meine Motivation",
