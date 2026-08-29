@@ -58,9 +58,10 @@ const posts = (await getJournal(locale)).slice(0, 3)
     data.aboutBlocks.length > 0 && (
       <section class="my-16 md:my-24">
         <div class="container">
-          <Heading level="h2" class="mb-12">
+          <Heading level="h2" class="mb-6">
             {data.aboutHeading}
           </Heading>
+          {data.aboutText && <p class="about-lead mb-12">{data.aboutText}</p>}
           <div class="grid grid-cols-1 gap-8 md:grid-cols-2">
             {data.aboutBlocks.map((block) => (
               <article class="about-block">
@@ -132,9 +133,10 @@ const posts = (await getJournal(locale)).slice(0, 3)
     posts.length > 0 && (
       <section class="my-16 md:my-24">
         <div class="container">
-          <Heading level="h2" class="mb-12">
-            {t('journal.title')}
+          <Heading level="h2" class="mb-6">
+            {data.journalHeading || t('journal.title')}
           </Heading>
+          {data.journalText && <p class="about-lead mb-12">{data.journalText}</p>}
           <div class="grid grid-cols-1 gap-8 md:grid-cols-3">
             {posts.map((post) => (
               <article class="teaser">
@@ -165,6 +167,11 @@ const posts = (await getJournal(locale)).slice(0, 3)
 </DefaultLayout>
 
 <style lang="scss">
+  .about-lead {
+    max-inline-size: var(--font-measure);
+    font-size: var(--font-size-1);
+  }
+
   .about-block {
     border-inline-start: 3px solid var(--color-accent-400);
     padding-inline-start: var(--space-s);

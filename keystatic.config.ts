@@ -141,6 +141,9 @@ function homeFor(locale: Locale) {
         { label: 'Leistungen', itemLabel: (props) => props.fields.title.value || 'Leistung' },
       ),
       aboutHeading: fields.text({ label: 'Überschrift Über mich' }),
+      aboutText: fields.text({ label: 'Einleitung Über mich', multiline: true }),
+      journalHeading: fields.text({ label: 'Überschrift Journal' }),
+      journalText: fields.text({ label: 'Einleitung Journal', multiline: true }),
       aboutBlocks: fields.array(
         fields.object({
           title: fields.text({ label: 'Titel' }),

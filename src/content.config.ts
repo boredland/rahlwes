@@ -65,6 +65,9 @@ const home = defineCollection({
       .array(z.object({ title: z.string(), text: z.string(), icon: z.string() }))
       .default([]),
     aboutHeading: z.string(),
+    aboutText: z.string().default(''),
+    journalHeading: z.string().default(''),
+    journalText: z.string().default(''),
     aboutBlocks: z.array(z.object({ title: z.string(), text: z.string() })).default([]),
     testimonials: z
       .array(z.object({ quote: z.string(), author: z.string(), role: z.string().default('') }))

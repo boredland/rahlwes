@@ -30,11 +30,11 @@
     },
     {
       "title": "Ma formation",
-      "text": "J'ai étudié les sciences politiques, l'histoire moyenne et moderne ainsi que la philosophie et je me suis engagée pendant de nombreuses années dans le travail d'éducation historique et politique. Mes concepts d'exposition sont inclusifs & participatifs, dans la recherche je m'intéresse aux approches socio-historiques."
+      "text": "J'ai étudié les sciences politiques, l'histoire moyenne et moderne ainsi que la philosophie et je me suis engagée pendant de nombreuses années dans le travail d'éducation historique et politique. Cela influence encore mon travail aujourd'hui : mes concepts d'exposition sont inclusifs et participatifs, dans la recherche je m'intéresse aux approches socio-historiques."
     },
     {
       "title": "Mon objectif",
-      "text": "J'explore les biographies et l'(les) histoire(s) familiale(s) et je m'intéresse aux souvenirs, aux correspondances et aux récits de mémoire. Qui étaient les personnes qui nous ont précédés ? Comment vivaient-ils et travaillaient-ils ? Qu'est-ce qui était important pour eux ?"
+      "text": "J'explore les biographies et l'(les) histoire(s) familiale(s) et je m'intéresse aux souvenirs, aux correspondances et aux récits de mémoire. Qui étaient les personnes qui nous ont précédés ? Comment vivaient-ils et travaillaient-ils ? Qu'est-ce qui était important pour eux ? Que faisaient-ils pour changer leur situation ? Ces questions nous aident à explorer et à comprendre l'image que les gens ont d'eux-mêmes et de leur vie."
     },
     {
       "title": "Transmettre le savoir",
@@ -48,7 +48,7 @@
       "role": ""
     },
     {
-      "quote": "Ann-Kathrin Rahlwes est intervenue à un stade avancé dans la conception de notre exposition permanente et a sensiblement enrichi le processus ultérieur grâce à sa solide expertise et à son expérience dans l'enseignement de l'histoire récente de la migration. Il convient de souligner son sens aigu de l'initiative ainsi que sa capacité à identifier les défis à un stade précoce et à les traiter de manière constructive.",
+      "quote": "Ann-Kathrin Rahlwes est intervenue à un stade avancé dans la conception de notre exposition permanente et a sensiblement enrichi le processus ultérieur grâce à sa solide expertise et à son expérience dans l'enseignement de l'histoire récente de la migration. Il convient de souligner son sens aigu de l'initiative ainsi que sa capacité à identifier les défis à un stade précoce et à les traiter de manière constructive. La collaboration avec elle a toujours été productive et, en plus, très amusante.",
       "author": "PD Dr. Florian Greiner",
       "role": "Directeur du lieu d'apprentissage et de mémoire Notaufnahmelager Gießen gGmbH"
     }
@@ -56,5 +56,8 @@
   "seo": {
     "title": "Parlons de l'histoire ! | Ann-Kathrin Rahlwes, historienne",
     "description": "J'aide les familles, les entreprises & les musées à trouver des témoignages historiques, à explorer l'histoire & à la raconter. Demandez maintenant !"
-  }
+  },
+  "aboutText": "Celui qui s'intéresse à l'histoire comprend les liens entre le passé et le présent et peut développer des stratégies pour l'avenir. La question centrale est la suivante : comment pouvons-nous façonner l'avenir selon nos valeurs et nos idées ?",
+  "journalHeading": "Journal",
+  "journalText": "Dans mon journal, je fais régulièrement état de mon travail et donne des conseils pour la recherche historique sur les biographies et la transmission des connaissances historiques."
 }

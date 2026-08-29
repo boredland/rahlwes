@@ -47,6 +47,9 @@ const TRANSLATABLE_KEYS = new Set([
   'heroImageAlt',
   'servicesHeading',
   'aboutHeading',
+  'aboutText',
+  'journalHeading',
+  'journalText',
   'quote',
   // A person's name must never be translated, but the role attached to it should be.
   'role',

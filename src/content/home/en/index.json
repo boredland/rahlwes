@@ -30,11 +30,11 @@
     },
     {
       "title": "My training",
-      "text": "I studied political science, medieval and modern history and philosophy and have been involved in historical and political education work for many years. My exhibition concepts are inclusive and participatory, and in my research I am interested in social-historical approaches."
+      "text": "I studied political science, medieval and modern history and philosophy and was involved in historical and political education work for many years. This still influences my work today: my exhibition concepts are inclusive and participatory, and in my research I am interested in social-historical approaches."
     },
     {
       "title": "My focus",
-      "text": "I research biographies and family histories and deal with memorabilia, correspondence and memoirs. Who were the people who preceded us? How did they live and work? What was important to them?"
+      "text": "I research biographies and family histories and deal with memorabilia, correspondence and memoirs. Who were the people who preceded us? How did they live and work? What was important to them? What did they do to change their situation? These questions help us to explore and understand how people saw themselves and the world they lived in."
     },
     {
       "title": "Passing on knowledge",
@@ -48,7 +48,7 @@
       "role": ""
     },
     {
-      "quote": "Ann-Kathrin Rahlwes joined the design of our permanent exhibition at an advanced stage and has noticeably enriched the further process with her in-depth expertise and experience in communicating recent migration history. Her strong sense of initiative and her ability to recognize challenges early on and deal with them constructively deserve special mention.",
+      "quote": "Ann-Kathrin Rahlwes joined the design of our permanent exhibition at an advanced stage and has noticeably enriched the further process with her in-depth expertise and experience in communicating recent migration history. Her strong sense of initiative and her ability to recognize challenges early on and deal with them constructively deserve special mention. Working with her was always productive and also great fun.",
       "author": "PD Dr. Florian Greiner",
       "role": "Managing Director of the Learning and Remembrance Site Notaufnahmelager Gießen gGmbH"
     }
@@ -56,5 +56,8 @@
   "seo": {
     "title": "Let's talk about history! | Ann-Kathrin Rahlwes, historian",
     "description": "I support families, companies & museums in finding historical evidence, researching & telling history. Inquire now!"
-  }
+  },
+  "aboutText": "Anyone who studies history understands the connections between past and present and can develop strategies for the future. The central question is: How can we shape the future according to our values and ideas?",
+  "journalHeading": "Journal",
+  "journalText": "In my journal, I regularly report on my work and give tips for historical research on biographies and the communication of historical knowledge."
 }

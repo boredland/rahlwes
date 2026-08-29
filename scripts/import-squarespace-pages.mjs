@@ -126,11 +126,14 @@ function extractBlocks(html) {
       continue
     }
 
-    const inner = /<(h[1-6])[^>]*>([\s\S]*?)<\/\1>|<p[^>]*>([\s\S]*?)<\/p>|<li[^>]*>([\s\S]*?)<\/li>/gi
+    // `<pre><code>` carries real prose here — publication citations and photo
+    // credits — not source code, so it is read as text rather than a code block.
+    const inner =
+      /<(h[1-6])[^>]*>([\s\S]*?)<\/\1>|<p[^>]*>([\s\S]*?)<\/p>|<li[^>]*>([\s\S]*?)<\/li>|<pre[^>]*>([\s\S]*?)<\/pre>/gi
     let node
     while ((node = inner.exec(content))) {
-      const [, heading, headingText, paragraph, listItem] = node
-      const text = inlineToMarkdown(heading ? headingText : (paragraph ?? listItem))
+      const [, heading, headingText, paragraph, listItem, preformatted] = node
+      const text = inlineToMarkdown(heading ? headingText : (paragraph ?? listItem ?? preformatted))
       if (!text) continue
       if (/^Folie \d/.test(text) || text === 'Ausstellungsprojekt') continue
 
@@ -138,6 +141,13 @@ function extractBlocks(html) {
       else if (listItem) push({ kind: 'li', text }, text)
       else push({ kind: 'p', text }, text)
     }
+  }
+
+  // Gallery slideshows keep their captions in an embedded JSON payload rather
+  // than in the DOM, so they are invisible to the markup pass above.
+  for (const raw of cleaned.matchAll(/&quot;title&quot;:\s*&quot;((?:[^&]|&(?!quot;))+)&quot;/g)) {
+    const caption = decode(raw[1].replace(/&quot;/g, '"')).trim()
+    if (caption.length > 60) push({ kind: 'p', text: caption }, caption)
   }
 
   return blocks
@@ -172,7 +182,11 @@ for (const page of pages) {
     headings[0]
   const title = (titleBlock?.text ?? page.slug).replace(/\*\*/g, '')
 
-  const firstParagraph = blocks.find((b) => b.kind === 'p' && b.text.length > 60)
+  // Photo credits and captions are long enough to pass a naive length test but
+  // make a poor description, so skip them when choosing the excerpt.
+  const isCredit = (text) =>
+    /^(Illustration|Foto|Fotos|Bild|Bilder|Abbildung|Quelle|Copyright|©)\s*[:.]/i.test(text.trim())
+  const firstParagraph = blocks.find((b) => b.kind === 'p' && b.text.length > 60 && !isCredit(b.text))
   // excerpt and seo.description render as plain text, so strip inline Markdown
   // rather than shipping literal ** and [] into card copy and meta tags.
   const excerpt =

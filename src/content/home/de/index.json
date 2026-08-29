@@ -30,11 +30,11 @@
     },
     {
       "title": "Meine Ausbildung",
-      "text": "Ich habe Politikwissenschaft, Mittlere und Neuere Geschichte sowie Philosophie studiert und mich viele Jahre in der historisch-politischen Bildungsarbeit engagiert. Meine Ausstellungskonzepte sind inklusiv & partizipativ, in der Forschung interessieren mich sozialgeschichtliche Ansätze."
+      "text": "Ich habe Politikwissenschaft, Mittlere und Neuere Geschichte sowie Philosophie studiert und mich viele Jahre in der historisch-politischen Bildungsarbeit engagiert. Das beeinflusst meine Arbeit bis heute: Meine Ausstellungskonzepte sind inklusiv und partizipativ, in der Forschung interessieren mich sozialgeschichtliche Ansätze."
     },
     {
       "title": "Mein Fokus",
-      "text": "Ich erforsche Biografien und Familiengeschichte(n) und beschäftige mich mit Erinnerungsstücken, Briefwechseln und Erinnerungsberichten. Wer waren die Menschen, die uns vorausgingen? Wie lebten und arbeiteten sie? Was war ihnen wichtig?"
+      "text": "Ich erforsche Biografien und Familiengeschichte(n) und beschäftige mich mit Erinnerungsstücken, Briefwechseln und Erinnerungsberichten. Wer waren die Menschen, die uns vorausgingen? Wie lebten und arbeiteten sie? Was war ihnen wichtig? Was unternahmen sie, um ihre Situation zu verändern? Diese Fragen helfen uns dabei, das Selbstverständnis und die Lebenswelt von Menschen zu erforschen und zu verstehen."
     },
     {
       "title": "Wissen weitergeben",
@@ -48,7 +48,7 @@
       "role": ""
     },
     {
-      "quote": "Ann-Kathrin Rahlwes ist in einer fortgeschrittenen Phase in die Gestaltung unserer Dauerausstellung eingestiegen und hat den weiteren Prozess mit ihrer fundierten Expertise sowie Erfahrung in der Vermittlung der jüngsten Migrationsgeschichte spürbar bereichert. Besonders hervorzuheben sind ihre ausgeprägte Eigeninitiative sowie ihre Fähigkeit, Herausforderungen frühzeitig zu erkennen und konstruktiv zu bearbeiten.",
+      "quote": "Ann-Kathrin Rahlwes ist in einer fortgeschrittenen Phase in die Gestaltung unserer Dauerausstellung eingestiegen und hat den weiteren Prozess mit ihrer fundierten Expertise sowie Erfahrung in der Vermittlung der jüngsten Migrationsgeschichte spürbar bereichert. Besonders hervorzuheben sind ihre ausgeprägte Eigeninitiative sowie ihre Fähigkeit, Herausforderungen frühzeitig zu erkennen und konstruktiv zu bearbeiten. Die Zusammenarbeit mit ihr war stets produktiv und hat nebenbei auch noch großen Spaß gemacht.",
       "author": "PD Dr. Florian Greiner",
       "role": "Geschäftsführer des Lern- und Erinnerungsorts Notaufnahmelager Gießen gGmbH"
     }
@@ -56,5 +56,8 @@
   "seo": {
     "title": "Let’s talk about history! | Ann-Kathrin Rahlwes, Historikerin",
     "description": "Ich unterstütze Familien, Unternehmen & Museen dabei, historische Zeugnisse zu finden, Geschichte zu erforschen & zu erzählen. Jetzt anfragen!"
-  }
+  },
+  "aboutText": "Wer sich mit Geschichte beschäftigt, versteht die Zusammenhänge zwischen Vergangenheit und Gegenwart und kann Strategien für die Zukunft entwickeln. Zentral ist die Frage: Wie können wir die Zukunft nach unseren Werten und Ideen gestalten?",
+  "journalHeading": "Journal",
+  "journalText": "In meinem Journal berichte ich regelmäßig aus meiner Arbeit und gebe Tipps für die historische Forschung zu Biografien und die Vermittlung von historischem Wissen."
 }
