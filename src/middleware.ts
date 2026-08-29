@@ -39,6 +39,11 @@ export const onRequest = defineMiddleware(async (context, next) => {
   const isAdmin = pathname.startsWith('/admin') || pathname.startsWith('/api/admin')
   if (!isAdmin) return next()
 
+  // /api/cfps/* is deliberately not under /api/admin: the digest webhook is called
+  // by a GitHub Action holding a shared secret rather than a login cookie, and the
+  // unsubscribe link is followed by a recipient who was never an admin. Both carry
+  // their own credential and are checked in their own handlers.
+
   const token = context.cookies.get('keystatic-gh-access-token')?.value
   if (token && (await hasRepoAccess(token))) return next()
 

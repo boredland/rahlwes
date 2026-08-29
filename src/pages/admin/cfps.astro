@@ -1,0 +1,243 @@
+---
+import DefaultLayout from '@layouts/DefaultLayout.astro'
+import { env } from 'cloudflare:workers'
+import { cfpSourceName, listCfpSubscribers, type Cfp } from '@cfp/db'
+import collected from '../../data/cfps.json'
+
+export const prerender = false
+
+const cfps = collected as Cfp[]
+const subscribers = await listCfpSubscribers(env.NEWSLETTER_DB)
+
+const formatDate = (value: string) => {
+  const date = new Date(value)
+  return Number.isNaN(date.getTime())
+    ? value
+    : date.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' })
+}
+---
+
+<DefaultLayout title="Ausschreibungen" description="Gesammelte Calls for Proposals">
+  <section class="my-16">
+    <div class="container admin space-content">
+      <h1>Ausschreibungen</h1>
+      <p class="summary">
+        {cfps.length} gesammelte Ausschreibungen, {subscribers.length} Empfänger für den täglichen Überblick.
+        <a href="/admin/subscribers/">Abonnenten verwalten</a>
+      </p>
+
+      <h2>Tägliche E-Mail</h2>
+      <p class="hint">
+        Ein automatischer Abgleich sucht einmal täglich nach neuen Ausschreibungen und schickt die
+        Funde an die hier eingetragenen Adressen. Gibt es nichts Neues, wird auch keine E-Mail
+        verschickt.
+      </p>
+      <form class="subscribe-form">
+        <p class="field">
+          <label for="cfp-email">E-Mail-Adresse</label>
+          <input id="cfp-email" name="email" type="email" required />
+        </p>
+        <p class="actions">
+          <button type="submit">Eintragen</button>
+        </p>
+        <p class="form-status" role="status" aria-live="polite"></p>
+      </form>
+
+      {
+        subscribers.length > 0 && (
+          <ul class="recipients">
+            {subscribers.map((subscriber) => (
+              <li>
+                {subscriber.email}
+                <button type="button" class="remove" data-email={subscriber.email}>
+                  Entfernen
+                </button>
+              </li>
+            ))}
+          </ul>
+        )
+      }
+
+      <h2>Gefundene Ausschreibungen</h2>
+      {
+        cfps.length === 0 ? (
+          <p>
+            Noch nichts gesammelt. Der Abgleich läuft täglich über GitHub Actions und trägt seine
+            Funde hier ein.
+          </p>
+        ) : (
+          <ul class="cfps">
+            {cfps.map((cfp) => (
+              <li>
+                <a href={cfp.url} target="_blank" rel="noopener">
+                  {cfp.title}
+                </a>
+                <p class="meta">
+                  {cfpSourceName[cfp.source] ?? cfp.source} · {formatDate(cfp.date)}
+                  {cfp.deadline && <strong class="deadline">Einsendeschluss {cfp.deadline}</strong>}
+                  {cfp.remote && <span class="remote">ortsunabhängig</span>}
+                </p>
+                {cfp.description && <p class="description">{cfp.description}</p>}
+              </li>
+            ))}
+          </ul>
+        )
+      }
+    </div>
+  </section>
+</DefaultLayout>
+
+<script>
+  document.addEventListener('astro:page-load', () => {
+    const form = document.querySelector<HTMLFormElement>('.subscribe-form')
+
+    form?.addEventListener('submit', async (event) => {
+      event.preventDefault()
+      if (!form.reportValidity()) return
+
+      const status = form.querySelector<HTMLParagraphElement>('.form-status')!
+      const button = form.querySelector<HTMLButtonElement>('button[type="submit"]')!
+      const data = new FormData(form)
+
+      button.disabled = true
+      status.textContent = 'Wird eingetragen…'
+
+      try {
+        const response = await fetch('/api/admin/cfps/subscribe', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ email: data.get('email') }),
+        })
+        const result = (await response.json()) as { ok: boolean; added?: number; message?: string }
+
+        if (result.ok) {
+          status.textContent = result.added
+            ? 'Adresse eingetragen.'
+            : 'Diese Adresse ist bereits eingetragen.'
+          if (result.added) location.reload()
+        } else {
+          status.textContent = result.message ?? 'Eintragen fehlgeschlagen.'
+        }
+      } catch {
+        status.textContent = 'Verbindung fehlgeschlagen.'
+      } finally {
+        button.disabled = false
+      }
+    })
+
+    for (const button of document.querySelectorAll<HTMLButtonElement>('button.remove')) {
+      button.addEventListener('click', async () => {
+        button.disabled = true
+
+        const response = await fetch('/api/admin/cfps/subscribe', {
+          method: 'DELETE',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ email: button.dataset.email }),
+        })
+
+        if (response.ok) location.reload()
+        else button.disabled = false
+      })
+    }
+  })
+</script>
+
+<style lang="scss">
+  .admin {
+    max-inline-size: 60rem;
+  }
+
+  .summary {
+    font-weight: 700;
+  }
+
+  .hint {
+    max-inline-size: var(--font-measure);
+    color: var(--color-neutral-700);
+    font-size: var(--font-size--1);
+  }
+
+  .recipients {
+    padding: 0;
+    list-style: none;
+
+    li {
+      display: flex;
+      align-items: center;
+      gap: var(--space-2xs);
+      border-block-end: 1px solid var(--border-color-subtle);
+      padding: var(--space-3xs) 0;
+      font-size: var(--font-size--1);
+    }
+  }
+
+  .cfps {
+    padding: 0;
+    list-style: none;
+
+    li {
+      border-block-end: 1px solid var(--border-color-subtle);
+      padding-block: var(--space-xs);
+    }
+
+    a {
+      font-weight: 700;
+    }
+  }
+
+  .meta,
+  .description {
+    margin-block: var(--space-3xs) 0;
+    max-inline-size: var(--font-measure);
+    font-size: var(--font-size--1);
+  }
+
+  .meta {
+    color: var(--color-neutral-700);
+  }
+
+  .deadline {
+    margin-inline-start: var(--space-2xs);
+    color: var(--color-accent-600);
+  }
+
+  .remote {
+    margin-inline-start: var(--space-2xs);
+    border-radius: var(--radius-s);
+    background-color: var(--color-neutral-200);
+    padding: 0 var(--space-3xs);
+  }
+
+  .field {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3xs);
+    max-inline-size: 24rem;
+  }
+
+  button {
+    border: 2px solid var(--color-accent-600);
+    border-radius: var(--radius-s);
+    background-color: var(--color-accent-600);
+    padding: var(--space-3xs) var(--space-xs);
+    color: #fff;
+    font-family: inherit;
+    font-size: var(--font-size--1);
+    font-weight: 700;
+    cursor: pointer;
+
+    &:where(:hover, :focus-visible) {
+      background-color: transparent;
+      color: var(--color-accent-600);
+    }
+
+    &[disabled] {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+  }
+
+  .form-status {
+    font-weight: 700;
+  }
+</style>

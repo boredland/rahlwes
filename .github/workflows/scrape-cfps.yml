@@ -1,0 +1,75 @@
+name: Ausschreibungen sammeln
+
+on:
+  schedule:
+    # 05:00 UTC, after the sources have published their overnight batch and well
+    # clear of the 04:17 bounce-reconciliation cron.
+    - cron: '0 5 * * *'
+  workflow_dispatch:
+
+# The job commits the updated JSON back to the branch it ran on.
+permissions:
+  contents: write
+
+concurrency:
+  group: scrape-cfps
+  cancel-in-progress: false
+
+jobs:
+  scrape:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+
+      # unpdf is the scraper's only dependency, for reading PDF-only calls.
+      - run: npm ci
+
+      # AI_PROXY_URL is optional: without it the scraper still collects every
+      # call, it just cannot read a deadline out of an attached PDF.
+      - name: Nach neuen Ausschreibungen suchen
+        id: scrape
+        env:
+          AI_PROXY_URL: ${{ secrets.AI_PROXY_URL }}
+        run: |
+          echo "cfps<<CFPS_EOF" >> "$GITHUB_OUTPUT"
+          node scripts/scrape-cfps.mjs >> "$GITHUB_OUTPUT"
+          echo "" >> "$GITHUB_OUTPUT"
+          echo "CFPS_EOF" >> "$GITHUB_OUTPUT"
+
+      - name: Funde committen
+        id: commit
+        run: |
+          # --porcelain rather than `git diff`: diff reports no change for a file
+          # git is not yet tracking, which would silently skip the first run.
+          if [ -z "$(git status --porcelain -- src/data/cfps.json)" ]; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add src/data/cfps.json
+          git commit -m 'Neue Ausschreibungen gesammelt'
+          git push
+          echo "changed=true" >> "$GITHUB_OUTPUT"
+
+      # Only mails when the commit step actually found something, so an unchanged
+      # day sends nothing rather than an empty digest.
+      - name: Überblick verschicken
+        if: steps.commit.outputs.changed == 'true'
+        env:
+          SECRET: ${{ secrets.CFP_WEBHOOK_SECRET }}
+          CFPS: ${{ steps.scrape.outputs.cfps }}
+        run: |
+          status=$(jq -n --argjson cfps "$CFPS" '{cfps: $cfps}' | curl -sS -o /tmp/notify.log -w '%{http_code}' \
+            -X POST 'https://next.rahlwes.eu/api/cfps/notify' \
+            -H "authorization: Bearer $SECRET" \
+            -H 'content-type: application/json' \
+            --data-binary @-)
+
+          cat /tmp/notify.log
+          test "$status" = "200"
