@@ -1,0 +1,89 @@
+---
+import ContentImage from '@components/ContentImage.astro'
+
+/**
+ * An image beside a block of prose, the pairing the Squarespace pages used for the
+ * portrait and the podcast illustration. The importer flattened these into plain
+ * paragraphs, which is why those pages read as one undifferentiated column.
+ *
+ * Unlike the theme's own ContentMedia this resolves an uploads path through the
+ * asset pipeline, so the image gets WebP and responsive widths like every other
+ * image on the site.
+ */
+interface Props {
+  src: string
+  alt: string
+  /** Image on the right instead of the left. */
+  reverse?: boolean
+  /** Crops the image; omit to keep its own proportions. */
+  aspect?: string
+  /** Narrower image column, for square illustrations beside longer text. */
+  balance?: 'even' | 'image-narrow'
+}
+
+const { src, alt, reverse = false, aspect, balance = 'even' } = Astro.props
+---
+
+<div class:list={['media-text', { reverse }, balance]}>
+  <div class="media">
+    <ContentImage
+      src={src}
+      alt={alt}
+      aspect={aspect}
+      widths={[320, 480, 720]}
+      sizes="(min-width: 48rem) 26rem, 90vw"
+    />
+  </div>
+  <div class="text space-content">
+    <slot />
+  </div>
+</div>
+
+<style lang="scss">
+  .media-text {
+    display: grid;
+    gap: var(--space-l);
+    grid-template-columns: 1fr;
+    margin-block: var(--space-xl);
+    align-items: start;
+
+    // The article column is capped at the reading measure, which is right for a
+    // paragraph and too narrow for a picture beside one. Growing to the right uses
+    // the space the measure deliberately leaves empty, the same way the card grids
+    // on Für Museen do.
+    @media (min-width: 60rem) {
+      inline-size: min(60rem, 100% + 12rem);
+      max-inline-size: none;
+    }
+
+    @media (min-width: 48rem) {
+      // The image takes the smaller share: a portrait beside a paragraph should not
+      // squeeze the text into a column too narrow to read comfortably.
+      grid-template-columns: minmax(0, 2fr) minmax(0, 3fr);
+      align-items: center;
+
+      &.image-narrow {
+        grid-template-columns: minmax(0, 1fr) minmax(0, 2fr);
+      }
+
+      // Source order stays image-then-text so the reading order is unchanged for
+      // screen readers and on mobile; only the visual column swaps.
+      &.reverse .media {
+        order: 2;
+      }
+    }
+  }
+
+  .media :global(img) {
+    border-radius: var(--radius-l);
+    inline-size: 100%;
+    block-size: auto;
+    object-fit: cover;
+  }
+
+  // The prose inside already carries its own rhythm; drop the leading margin so the
+  // first line sits level with the top of the image.
+  .text :global(> :first-child) {
+    margin-block-start: 0;
+  }
+</style>
