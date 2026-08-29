@@ -3,9 +3,8 @@ import { env } from 'cloudflare:workers'
 import { currentLocale, type Locale } from '@i18n/config'
 import { browserLocaleTag, matchLocale } from '@i18n/accept-language'
 import { newsletterCopy } from '@newsletter/messages'
-import { isEmail, normalizeEmail, type Subscriber } from '@newsletter/db'
-import { createToken } from '@newsletter/tokens'
-import { confirmationEmail, NEWSLETTER_SENDER, NEWSLETTER_SENDER_NAME } from '@newsletter/email'
+import { isEmail, normalizeEmail } from '@newsletter/db'
+import { enrollSubscriber } from '@newsletter/enroll'
 
 export const prerender = false
 
@@ -48,42 +47,10 @@ export const POST: APIRoute = async ({ request, clientAddress }) => {
   const { success } = await env.NEWSLETTER_LIMIT.limit({ key: clientAddress ?? 'unknown' })
   if (!success) return Response.json({ ok: false, message: t.rateLimited }, { status: 429 })
 
-  const db = env.NEWSLETTER_DB
-  const verifyToken = createToken()
-
   try {
-    const existing = await db
-      .prepare('SELECT * FROM subscribers WHERE email = ?')
-      .bind(email)
-      .first<Subscriber>()
-
-    // Already confirmed: stop here. Re-sending a confirmation would let anyone use
-    // this endpoint to mail a third party repeatedly. The reply is the same either
-    // way so the response never reveals who is on the list.
-    if (existing?.verified) return Response.json({ ok: true, message: t.ok })
-
-    if (existing) {
-      await db
-        .prepare('UPDATE subscribers SET verify_token = ?, locale = ?, browser_locale = ? WHERE id = ?')
-        .bind(verifyToken, locale, browserLocale, existing.id)
-        .run()
-    } else {
-      await db
-        .prepare(
-          'INSERT INTO subscribers (email, locale, browser_locale, verified, verify_token, unsubscribe_token) VALUES (?, ?, ?, 0, ?, ?)',
-        )
-        .bind(email, locale, browserLocale, verifyToken, createToken())
-        .run()
-    }
-
-    const message = confirmationEmail(locale, verifyToken)
-    await env.NEWSLETTER_EMAIL.send({
-      to: email,
-      from: { email: NEWSLETTER_SENDER, name: NEWSLETTER_SENDER_NAME },
-      subject: message.subject,
-      text: message.text,
-      html: message.html,
-    })
+    // The reply is the same whether this started a confirmation or the address was
+    // already on the list, so the response never reveals who is subscribed.
+    await enrollSubscriber({ env, email, locale, browserLocale })
   } catch (error) {
     console.error('newsletter signup failed', error)
     return Response.json({ ok: false, message: t.error }, { status: 502 })

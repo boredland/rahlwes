@@ -90,6 +90,20 @@ Jede versendete Mail enthält unten einen Abmeldelink, zusätzlich den technisch
 Abmelde-Header, den Gmail und Outlook als eigenen „Abbestellen“-Knopf anzeigen.
 Abmelden löscht die Adresse sofort.
 
+### Anmeldung über das Kontaktformular
+
+Unter jedem Kontaktformular steht ein zweites, leeres Kästchen: „Ich möchte
+zusätzlich den Newsletter erhalten.“ Wer es anhakt, bekommt dieselbe
+Bestätigungsmail wie bei einer normalen Anmeldung und steht erst nach dem Klick auf
+den Link auf der Liste.
+
+Das Kästchen ist absichtlich nie vorausgefüllt und getrennt von der
+Datenschutz-Zustimmung. Beides zusammenzulegen wäre rechtlich keine gültige
+Einwilligung.
+
+Wer bereits angemeldet ist, bekommt nichts doppelt: Die Anfrage wird einfach
+ignoriert.
+
 ### Absenderadresse
 
 Newsletter verschicken sich von **newsletter@marketing.rahlwes.eu**, das

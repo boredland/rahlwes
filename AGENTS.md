@@ -95,6 +95,16 @@ Human translations already in the repo beat machine output: when restructuring a
   wrong for RFC 8058 unsubscribe, which is why that one path is answered in
   `src/worker.ts` ahead of the framework.
 
+## Newsletter consent is not a detail
+
+The opt-in box on the contact forms must stay separate from the contact consent and
+must stay unticked. Merging them, defaulting it to checked, or skipping the
+confirmation mail all turn a valid double opt-in into unlawful list-building, and the
+bounced complaints land on a sending domain that also carries her contact replies.
+
+Both entry points go through `enrollSubscriber` for that reason. If you add a third
+one, use it rather than writing the insert again.
+
 ## Conventions
 
 - Comments explain **why**, never what. Delete restating comments in code you touch.

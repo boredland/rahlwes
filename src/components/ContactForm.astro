@@ -4,10 +4,19 @@ import { useTranslations } from '@i18n/ui'
 
 interface Props {
   locale: Locale
+  /** Overrides the generated id prefix; only needed for stable ids in tests. */
+  id?: string
 }
 
-const { locale } = Astro.props
+const { locale, id } = Astro.props
 const t = useTranslations(locale)
+
+/**
+ * A page can carry two of these — the contact page's own form and the closing band —
+ * and duplicate ids would break every label's association with its field. Callers
+ * that render a second instance pass their own prefix.
+ */
+const uid = id ?? 'contact'
 
 // Empty in dev until the widget exists; the endpoint then skips verification.
 const sitekey = import.meta.env.PUBLIC_TURNSTILE_SITEKEY ?? ''
@@ -22,34 +31,41 @@ const sitekey = import.meta.env.PUBLIC_TURNSTILE_SITEKEY ?? ''
 >
   <div class="field-row">
     <p class="field">
-      <label for="fname">{t('form.firstName')} <span aria-hidden="true">*</span></label>
-      <input id="fname" name="fname" type="text" autocomplete="given-name" required maxlength="100" />
+      <label for={`${uid}-fname`}>{t('form.firstName')} <span aria-hidden="true">*</span></label>
+      <input id={`${uid}-fname`} name="fname" type="text" autocomplete="given-name" required maxlength="100" />
     </p>
     <p class="field">
-      <label for="lname">{t('form.lastName')} <span aria-hidden="true">*</span></label>
-      <input id="lname" name="lname" type="text" autocomplete="family-name" required maxlength="100" />
+      <label for={`${uid}-lname`}>{t('form.lastName')} <span aria-hidden="true">*</span></label>
+      <input id={`${uid}-lname`} name="lname" type="text" autocomplete="family-name" required maxlength="100" />
     </p>
   </div>
 
   <p class="field">
-    <label for="email">{t('form.email')} <span aria-hidden="true">*</span></label>
-    <input id="email" name="email" type="email" autocomplete="email" required maxlength="254" />
+    <label for={`${uid}-email`}>{t('form.email')} <span aria-hidden="true">*</span></label>
+    <input id={`${uid}-email`} name="email" type="email" autocomplete="email" required maxlength="254" />
   </p>
 
   <p class="field">
-    <label for="message">{t('form.message')} <span aria-hidden="true">*</span></label>
-    <textarea id="message" name="message" rows="7" required maxlength="5000"></textarea>
+    <label for={`${uid}-message`}>{t('form.message')} <span aria-hidden="true">*</span></label>
+    <textarea id={`${uid}-message`} name="message" rows="7" required maxlength="5000"></textarea>
   </p>
 
   {/* Honeypot: off-screen and hidden from assistive tech, so only bots reach it. */}
   <p class="honeypot" aria-hidden="true">
-    <label for="website">Website</label>
-    <input id="website" name="website" type="text" tabindex="-1" autocomplete="off" />
+    <label for={`${uid}-website`}>Website</label>
+    <input id={`${uid}-website`} name="website" type="text" tabindex="-1" autocomplete="off" />
   </p>
 
   <p class="field consent">
-    <input id="consent" name="consent" type="checkbox" required />
-    <label for="consent">{t('form.consent')} <span aria-hidden="true">*</span></label>
+    <input id={`${uid}-consent`} name="consent" type="checkbox" required />
+    <label for={`${uid}-consent`}>{t('form.consent')} <span aria-hidden="true">*</span></label>
+  </p>
+
+  {/* Separate and unticked on purpose: bundling a newsletter opt-in into the
+      contact consent is not valid consent, and a pre-ticked box is not either. */}
+  <p class="field consent">
+    <input id={`${uid}-newsletter`} name="newsletter" type="checkbox" />
+    <label for={`${uid}-newsletter`}>{t('form.newsletter')}</label>
   </p>
 
   {sitekey && <div class="cf-turnstile" data-sitekey={sitekey} data-action="turnstile-spin-v1" data-language={locale} />}
@@ -95,6 +111,7 @@ const sitekey = import.meta.env.PUBLIC_TURNSTILE_SITEKEY ?? ''
             message: data.get('message'),
             website: data.get('website'),
             consent: data.get('consent') === 'on',
+            newsletter: data.get('newsletter') === 'on',
             locale: form.dataset.locale,
             'cf-turnstile-response': data.get('cf-turnstile-response'),
           }),

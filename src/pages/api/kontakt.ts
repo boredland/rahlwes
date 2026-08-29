@@ -1,7 +1,8 @@
 import type { APIRoute } from 'astro'
 import { env } from 'cloudflare:workers'
 import { currentLocale, type Locale } from '@i18n/config'
-import { matchLocale } from '@i18n/accept-language'
+import { browserLocaleTag, matchLocale } from '@i18n/accept-language'
+import { enrollSubscriber } from '@newsletter/enroll'
 
 export const prerender = false
 
@@ -12,6 +13,8 @@ type ContactPayload = {
   email: string
   message: string
   consent: boolean
+  /** Separate, unticked opt-in for the newsletter; never implied by `consent`. */
+  newsletter?: boolean
   locale: Locale
   /** Honeypot: a real person never fills this, bots fill everything. */
   website?: string
@@ -195,6 +198,23 @@ export const POST: APIRoute = async ({ request, clientAddress }) => {
     })
   } catch (error) {
     console.error('contact confirmation failed', error)
+  }
+
+  // The opt-in box starts a normal double opt-in: the address only joins the list
+  // once its confirmation link is followed, so a contact form cannot be used to
+  // subscribe somebody else. A failure here must not tell the sender their message
+  // was lost, because it was not.
+  if (payload.newsletter) {
+    try {
+      await enrollSubscriber({
+        env,
+        email,
+        locale: mailLocale,
+        browserLocale: browserLocaleTag(request.headers.get('accept-language')),
+      })
+    } catch (error) {
+      console.error('newsletter opt-in from contact form failed', error)
+    }
   }
 
   return Response.json({ ok: true, message: t.ok })

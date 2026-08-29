@@ -44,7 +44,7 @@ const { locale, heading, text, image, imageAlt = '' } = Astro.props
   <div class="inner">
     <Heading level="h2" size="h2" class="cta-heading">{heading}</Heading>
     {text && <p class="cta-text">{text}</p>}
-    <ContactForm locale={locale} />
+    <ContactForm locale={locale} id="contact-cta" />
   </div>
 </section>
 

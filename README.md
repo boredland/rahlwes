@@ -146,6 +146,19 @@ contact-form confirmation are sent in the reader's own language, while the on-pa
 reply stays in the language of the page they are looking at. The contact notification
 to Ann-Kathrin reports both when they differ, so she knows which language to answer in.
 
+**Contact-form opt-in.** Every contact form carries a second, unticked checkbox
+that starts a newsletter subscription. It runs the same double opt-in as the signup
+form — `src/newsletter/enroll.ts` is shared by both — so the address only joins the
+list once its confirmation link is followed, and a contact form cannot be used to
+subscribe somebody else. An address that has already confirmed is left untouched:
+no duplicate row, no second confirmation, and its unsubscribe token survives so the
+links in mail it already received keep working.
+
+The box is deliberately separate from the contact consent and never pre-ticked;
+bundling the two would not be valid consent. Enrolment failures are logged and
+swallowed, because a newsletter problem must not tell someone their message was
+lost when it was already delivered.
+
 **Sending domains.** Two `send_email` bindings, one per domain, each restricted
 to the addresses it may use:
 
