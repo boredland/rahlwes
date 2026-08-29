@@ -25,6 +25,13 @@ const body = fields.mdx({
   options: { image: { directory: 'src/assets/uploads', publicPath: '/uploads/' } },
 })
 
+/** The illustrated "Let's talk" block with the contact form, at the end of an entry. */
+const contactCta = fields.checkbox({
+  label: 'Kontaktformular am Seitenende',
+  description: 'Zeigt unten den illustrierten Block mit Kontaktformular.',
+  defaultValue: true,
+})
+
 /** One collection per locale keeps translations as separate files the webhook can write. */
 function journalFor(locale: Locale) {
   return collection({
@@ -50,6 +57,7 @@ function journalFor(locale: Locale) {
         publicPath: '/uploads/',
       }),
       coverAlt: fields.text({ label: 'Bildbeschreibung (Alt-Text)' }),
+      contactCta,
       body,
       seo,
     },
@@ -83,6 +91,7 @@ function projectsFor(locale: Locale) {
         publicPath: '/uploads/',
       }),
       coverAlt: fields.text({ label: 'Bildbeschreibung (Alt-Text)' }),
+      contactCta,
       body,
       seo,
     },
@@ -100,11 +109,7 @@ function pagesFor(locale: Locale) {
     schema: {
       title: fields.slug({ name: { label: 'Titel' } }),
       intro: fields.text({ label: 'Einleitung', multiline: true }),
-      contactCta: fields.checkbox({
-        label: 'Kontaktformular am Seitenende',
-        description: 'Zeigt unten den illustrierten Block „Let’s talk about history!“ mit Formular.',
-        defaultValue: false,
-      }),
+      contactCta,
       body,
       seo,
     },

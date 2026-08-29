@@ -3,6 +3,7 @@ import ContactForm from '@components/ContactForm.astro'
 import ContentImage from '@components/ContentImage.astro'
 import { Heading } from 'accessible-astro-components'
 import { type Locale } from '@i18n/config'
+import { useTranslations } from '@i18n/ui'
 
 /**
  * The closing "Let's talk about history!" block from the Squarespace site: a
@@ -24,9 +25,12 @@ interface Props {
 }
 
 const { locale, heading, text, image, imageAlt = '' } = Astro.props
+const t = useTranslations(locale)
+
+const DIRECT_EMAIL = 'info@rahlwes.eu'
 ---
 
-<section class="contact-cta">
+<section class="contact-cta" id="kontakt">
   {
     image && (
       <div class="backdrop" aria-hidden="true">
@@ -45,6 +49,13 @@ const { locale, heading, text, image, imageAlt = '' } = Astro.props
     <Heading level="h2" size="h2" class="cta-heading">{heading}</Heading>
     {text && <p class="cta-text">{text}</p>}
     <ContactForm locale={locale} id="contact-cta" />
+
+    {/* Carried over from the contact page this replaced: some people would rather
+        use their own mail client than a form. */}
+    <p class="cta-direct">
+      <span>{t('form.required')}: *</span>
+      <a href={`mailto:${DIRECT_EMAIL}`}>{DIRECT_EMAIL}</a>
+    </p>
   </div>
 </section>
 
@@ -98,6 +109,16 @@ const { locale, heading, text, image, imageAlt = '' } = Astro.props
     margin-block: var(--space-xs) var(--space-l);
     margin-inline: auto;
     max-inline-size: var(--font-measure);
+  }
+
+  .cta-direct {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: var(--space-2xs) var(--space-s);
+    margin-block-start: var(--space-m);
+    font-size: var(--font-size--1);
+    text-align: center;
   }
 
   // The form is left-aligned by default; centring it keeps it under the heading.

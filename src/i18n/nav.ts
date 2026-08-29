@@ -9,7 +9,6 @@ const routes: NavRoute[] = [
   { key: 'nav.museums', path: '/fuer-museen' },
   { key: 'nav.projects', path: '/projekte' },
   { key: 'nav.journal', path: '/journal' },
-  { key: 'nav.contact', path: '/kontakt' },
 ]
 
 export function getNavItems(locale: Locale) {

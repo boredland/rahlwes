@@ -1,5 +1,6 @@
 ---
 import DefaultLayout from '@layouts/DefaultLayout.astro'
+import ContactCta from '@components/ContactCta.astro'
 import PageHeader from '@components/PageHeader.astro'
 import ContentImage from '@components/ContentImage.astro'
 import { Heading, Link } from 'accessible-astro-components'
@@ -64,6 +65,8 @@ const dateFormat = new Intl.DateTimeFormat(htmlLang[locale], { dateStyle: 'long'
       </div>
     </div>
   </section>
+
+  <ContactCta locale={locale} heading={t('contact.title')} text={t('contact.intro')} />
 </DefaultLayout>
 
 <style lang="scss">

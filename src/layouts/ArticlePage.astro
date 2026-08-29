@@ -24,7 +24,7 @@ const coverAlt = 'coverAlt' in entry.data ? entry.data.coverAlt : ''
 const excerpt = 'excerpt' in entry.data ? entry.data.excerpt : 'intro' in entry.data ? entry.data.intro : ''
 const dateFormat = new Intl.DateTimeFormat(htmlLang[locale], { dateStyle: 'long' })
 
-// Opt-in per page; see the `contactCta` flag in the pages collection.
+// On by default for pages, projects and journal entries; legal pages opt out.
 const showContactCta = 'contactCta' in entry.data && entry.data.contactCta
 const ctaHeading = ('contactCtaHeading' in entry.data && entry.data.contactCtaHeading) || t('contact.title')
 const ctaText = ('contactCtaText' in entry.data && entry.data.contactCtaText) || t('contact.intro')

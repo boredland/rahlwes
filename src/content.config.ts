@@ -12,6 +12,19 @@ const seoSchema = z
   })
   .default({})
 
+/**
+ * Appends the illustrated contact band to the end of an entry. It renders outside the
+ * article's reading column, which is why it is a flag rather than a component the MDX
+ * body could place. Heading and text fall back to the generic contact strings.
+ */
+const contactCtaFields = {
+  // Defaults on: every page that sells her work should offer a way to write. Legal
+  // pages and the newsletter opt out explicitly.
+  contactCta: z.boolean().default(true),
+  contactCtaHeading: z.string().default(''),
+  contactCtaText: z.string().default(''),
+}
+
 /** Locale lives in the first path segment (`de/my-post.mdx`), written by Keystatic. */
 const journal = defineCollection({
   loader: glob({ pattern: '*/*.mdx', base: './src/content/journal' }),
@@ -24,6 +37,7 @@ const journal = defineCollection({
     excerpt: z.string().default(''),
     coverImage: z.string().nullable().optional(),
     coverAlt: z.string().default(''),
+    ...contactCtaFields,
     seo: seoSchema,
   }),
 })
@@ -37,6 +51,7 @@ const projects = defineCollection({
     excerpt: z.string().default(''),
     coverImage: z.string().nullable().optional(),
     coverAlt: z.string().default(''),
+    ...contactCtaFields,
     seo: seoSchema,
   }),
 })
@@ -48,15 +63,7 @@ const pages = defineCollection({
     /** False for legal texts and anything she wrote herself; see scripts/translate.mjs. */
     translated: z.boolean().default(true),
     intro: z.string().default(''),
-    /**
-     * Appends the illustrated contact band to the end of the page. It renders outside
-     * the article's reading column, which is why it is a flag here rather than a
-     * component the MDX body could place.
-     */
-    contactCta: z.boolean().default(false),
-    /** Overrides the generic contact heading/intro when the band carries page-specific copy. */
-    contactCtaHeading: z.string().default(''),
-    contactCtaText: z.string().default(''),
+    ...contactCtaFields,
     seo: seoSchema,
   }),
 })

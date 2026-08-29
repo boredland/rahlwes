@@ -146,6 +146,12 @@ contact-form confirmation are sent in the reader's own language, while the on-pa
 reply stays in the language of the page they are looking at. The contact notification
 to Ann-Kathrin reports both when they differ, so she knows which language to answer in.
 
+**Where the contact form lives.** There is no standalone contact page — the original
+Squarespace site had none either. `ContactCta` closes every page that sells her work,
+driven by a `contactCta` flag that defaults to on for pages, projects and journal
+entries; the legal pages set it to `false`. The index layouts render the band
+directly. `/kontakt` 301s to `/#kontakt` so older links still land on a form.
+
 **Contact-form opt-in.** Every contact form carries a second, unticked checkbox
 that starts a newsletter subscription. It runs the same double opt-in as the signup
 form — `src/newsletter/enroll.ts` is shared by both — so the address only joins the

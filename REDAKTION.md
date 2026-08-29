@@ -180,6 +180,18 @@ Importierte Adressen gelten sofort als bestätigt. Deshalb dort **nur Listen
 einfügen, die dem Newsletter schon einmal ausdrücklich zugestimmt haben** – alles
 andere ist rechtlich Spam und schadet der Zustellbarkeit.
 
+## Kontaktformular auf einer Seite
+
+Unter jeder Seite, jedem Projekt und jedem Journal-Beitrag steht der illustrierte
+Block „Let's talk!“ mit dem Kontaktformular. In Keystatic gibt es dafür das Häkchen
+**Kontaktformular am Seitenende** — es ist standardmäßig gesetzt.
+
+Abwählen lohnt sich nur dort, wo eine Kontaktaufnahme nicht passt; bei Impressum und
+Datenschutz ist es deshalb bereits abgewählt.
+
+Eine eigene Kontaktseite gibt es nicht mehr, weil das Formular jetzt ohnehin überall
+steht. Alte Links auf `/kontakt` leiten automatisch weiter.
+
 ## Bilder
 
 Bilder direkt in Keystatic hochladen. Sie landen in `src/assets/uploads/` und
