@@ -43,6 +43,12 @@
  * ordinary web pages with no feed, so they need a page parser rather than a
  * reader, and they change layout often enough that it should be its own job.
  *
+ * arthist.net was a source until its whole yield turned out to be excluded:
+ * the feed prefixes each subject with its type, and CFP (paper solicitations)
+ * and STIP (stipends) are both out of scope, while CONF/JOB/ANN are somebody
+ * else's conference, salaried post or notice. Nothing there is a commission, so
+ * the source was dropped rather than left fetching for nothing.
+ *
  * Gedenkstätten surveyed. All permit crawling; only EVZ carries open calls:
  *
  *   press digest, not calls   gedenkstaettenforum.de (a news round-up about
@@ -193,6 +199,19 @@ const IS_FREELANCE =
  * write-up, a conference review. They mention "Preis" or "residency" as often as
  * a real call does, so the tense and framing are what separates them.
  */
+/**
+ * Personal awards — a stipend, fellowship or scholarship you are granted to
+ * pursue your own work — as opposed to a commission, a project grant or a paid
+ * engagement.
+ *
+ * Matched against the title alone on purpose. The Royal Historical Society's
+ * research-funding call lists "Early Career Fellowship Grants" among its
+ * schemes; that is a grant programme worth seeing, and testing the body text
+ * would throw it away.
+ */
+const IS_STIPEND =
+  /\b(stipendi(?:um|en|at)|residenz-?stipendi|stipends?|fellowships?|scholarships?|atelierstipendi)\b/i
+
 const IS_RETROSPECTIVE =
   /\b(gewinner|preisträger|preistraeger|ausgezeichnet|verliehen|wurde vergeben|winners?\b|awarded|has been awarded|rückblick|nachbericht|bilanz|explored|reflected on|their experiences?)\b/i
 
@@ -393,6 +412,7 @@ async function withAbstracts(calls) {
       await sleep(CRAWL_DELAY)
       const { abstract, deadline } = await fetchAbstract(call.url, call.title.slice(0, 30))
       if (IS_PAPER_CALL.test(`${call.title} ${abstract}`)) continue
+      if (IS_STIPEND.test(call.title)) continue
       if (!isRelevant(call.title, abstract)) continue
 
       kept.push({
@@ -404,35 +424,11 @@ async function withAbstracts(calls) {
       // A detail page that will not load should not silently drop a call that
       // the title already shows to be relevant.
       console.error(`    detail failed for ${call.url}: ${error.message}`)
-      if (isRelevant(call.title)) kept.push(call)
+      if (!IS_STIPEND.test(call.title) && isRelevant(call.title)) kept.push(call)
     }
   }
 
   return kept
-}
-
-/**
- * ArtHist.net: the moderated art-history list. Its Atom feed prefixes every
- * subject with the announcement type, so `CFP:` alone is a reliable filter and
- * the CONF/JOB/STIP entries drop out without guessing.
- */
-async function scrapeArtHist() {
-  const xml = await fetchText('https://arthist.net/rss.xml')
-
-  const calls = items(xml, 'entry')
-    .map((entry) => ({
-      title: tag(entry, 'title'),
-      url: entry.match(/<link[^>]*href="([^"]+)"/i)?.[1] ?? '',
-      date: toIsoDate(tag(entry, 'published') || tag(entry, 'updated')),
-      description: '',
-    }))
-    // The feed prefixes every subject with its type. STIP is the stipend and
-    // fellowship stream — the applicable-for opportunities. CFP is paper
-    // solicitation, CONF/JOB/ANN are somebody else's conference, post or notice.
-    .filter((item) => item.url && /^STIP:/i.test(item.title))
-    .map((item) => ({ ...item, title: item.title.replace(/^STIP:\s*/i, '') }))
-
-  return withAbstracts(calls)
 }
 
 /**
@@ -466,6 +462,7 @@ function feedScraper(url) {
       .filter((item) => item.url && CFP_PATTERN.test(`${item.title} ${item.description}`))
       .filter((item) => !IS_PAPER_CALL.test(`${item.title} ${item.description}`))
       .filter((item) => !IS_RETROSPECTIVE.test(`${item.title} ${item.description}`))
+      .filter((item) => !IS_STIPEND.test(item.title))
       .filter((item) => !IS_JOB_AD.test(`${item.title} ${item.description}`))
       .filter((item) => !IS_ROUNDUP.test(`${item.title} ${item.description}`))
       .filter((item) => isRelevant(item.title, item.description))
@@ -489,6 +486,7 @@ async function scrapeKulturmanagement() {
     .filter((item) => item.url && CFP_PATTERN.test(item.title))
     .filter((item) => !IS_PAPER_CALL.test(`${item.title} ${item.description}`))
       .filter((item) => !IS_RETROSPECTIVE.test(`${item.title} ${item.description}`))
+      .filter((item) => !IS_STIPEND.test(item.title))
     .filter((item) => isRelevant(item.title, item.description))
 }
 
@@ -510,6 +508,7 @@ async function scrapeStadtKoeln() {
     .filter((item) => item.url && CFP_PATTERN.test(`${item.title} ${item.description}`))
     .filter((item) => !IS_PAPER_CALL.test(`${item.title} ${item.description}`))
       .filter((item) => !IS_RETROSPECTIVE.test(`${item.title} ${item.description}`))
+      .filter((item) => !IS_STIPEND.test(item.title))
     .filter((item) => isRelevant(item.title, item.description))
 }
 
@@ -597,6 +596,7 @@ async function scrapeKoelnFoerderung() {
   return calls
     .filter((c) => !IS_PAPER_CALL.test(`${c.title} ${c.description}`))
     .filter((c) => !IS_RETROSPECTIVE.test(`${c.title} ${c.description}`))
+    .filter((c) => !IS_STIPEND.test(c.title))
     .filter((c) => isRelevant(c.title, c.description))
 }
 
@@ -692,11 +692,11 @@ async function scrapeEvz() {
   return calls
     .filter((c) => !IS_PAPER_CALL.test(`${c.title} ${c.description}`))
     .filter((c) => !IS_RETROSPECTIVE.test(`${c.title} ${c.description}`))
+    .filter((c) => !IS_STIPEND.test(c.title))
     .filter((c) => isRelevant(c.title, c.description))
 }
 
 const SOURCES = {
-  arthist: scrapeArtHist,
   'h-net': scrapeHNet,
   // Regional and institutional feeds, each verified to carry real calls rather
   // than only exhibition news. All three permit automated access in robots.txt.
