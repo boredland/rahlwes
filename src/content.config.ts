@@ -48,6 +48,15 @@ const pages = defineCollection({
     /** False for legal texts and anything she wrote herself; see scripts/translate.mjs. */
     translated: z.boolean().default(true),
     intro: z.string().default(''),
+    /**
+     * Appends the illustrated contact band to the end of the page. It renders outside
+     * the article's reading column, which is why it is a flag here rather than a
+     * component the MDX body could place.
+     */
+    contactCta: z.boolean().default(false),
+    /** Overrides the generic contact heading/intro when the band carries page-specific copy. */
+    contactCtaHeading: z.string().default(''),
+    contactCtaText: z.string().default(''),
     seo: seoSchema,
   }),
 })

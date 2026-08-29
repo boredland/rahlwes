@@ -2,6 +2,7 @@
 import DefaultLayout from '@layouts/DefaultLayout.astro'
 import PageHeader from '@components/PageHeader.astro'
 import ContentImage from '@components/ContentImage.astro'
+import ContactCta from '@components/ContactCta.astro'
 import { htmlLang, localizePath, type Locale } from '@i18n/config'
 import { articleSchema, breadcrumbSchema } from '@i18n/schema'
 import { useTranslations } from '@i18n/ui'
@@ -22,6 +23,11 @@ const coverImage = 'coverImage' in entry.data ? entry.data.coverImage : null
 const coverAlt = 'coverAlt' in entry.data ? entry.data.coverAlt : ''
 const excerpt = 'excerpt' in entry.data ? entry.data.excerpt : 'intro' in entry.data ? entry.data.intro : ''
 const dateFormat = new Intl.DateTimeFormat(htmlLang[locale], { dateStyle: 'long' })
+
+// Opt-in per page; see the `contactCta` flag in the pages collection.
+const showContactCta = 'contactCta' in entry.data && entry.data.contactCta
+const ctaHeading = ('contactCtaHeading' in entry.data && entry.data.contactCtaHeading) || t('contact.title')
+const ctaText = ('contactCtaText' in entry.data && entry.data.contactCtaText) || t('contact.intro')
 
 // Standalone pages sit directly under the homepage; only journal and project
 // entries belong to a listing section.
@@ -79,6 +85,12 @@ const section =
         <Content />
       </div>
     </div>
+
+    {
+      showContactCta && (
+        <ContactCta locale={locale} heading={ctaHeading} text={ctaText} image="/uploads/museen-dialog.webp" imageAlt="" />
+      )
+    }
   </article>
 </DefaultLayout>
 

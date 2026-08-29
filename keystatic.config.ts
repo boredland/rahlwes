@@ -100,6 +100,11 @@ function pagesFor(locale: Locale) {
     schema: {
       title: fields.slug({ name: { label: 'Titel' } }),
       intro: fields.text({ label: 'Einleitung', multiline: true }),
+      contactCta: fields.checkbox({
+        label: 'Kontaktformular am Seitenende',
+        description: 'Zeigt unten den illustrierten Block „Let’s talk about history!“ mit Formular.',
+        defaultValue: false,
+      }),
       body,
       seo,
     },

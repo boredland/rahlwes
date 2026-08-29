@@ -1,0 +1,119 @@
+---
+import ContactForm from '@components/ContactForm.astro'
+import ContentImage from '@components/ContentImage.astro'
+import { Heading } from 'accessible-astro-components'
+import { type Locale } from '@i18n/config'
+
+/**
+ * The closing "Let's talk about history!" block from the Squarespace site: a
+ * full-bleed illustrated band with the contact form sitting on top of it, so a
+ * reader can write from the page that convinced them instead of navigating away.
+ *
+ * The colour comes from the artwork, not from a fill, which is why the image is a
+ * real `<img>` rather than a CSS background: it keeps the asset pipeline's WebP and
+ * responsive widths, and a decorative background would be invisible to the layout
+ * when the illustration fails to load.
+ */
+interface Props {
+  locale: Locale
+  heading: string
+  text?: string
+  /** Uploads-relative illustration; omit for a plain tinted band. */
+  image?: string
+  imageAlt?: string
+}
+
+const { locale, heading, text, image, imageAlt = '' } = Astro.props
+---
+
+<section class="contact-cta">
+  {
+    image && (
+      <div class="backdrop" aria-hidden="true">
+        <ContentImage
+          src={image}
+          alt={imageAlt}
+          widths={[768, 1280, 1920]}
+          sizes="100vw"
+          loading="lazy"
+        />
+      </div>
+    )
+  }
+
+  <div class="inner">
+    <Heading level="h2" size="h2" class="cta-heading">{heading}</Heading>
+    {text && <p class="cta-text">{text}</p>}
+    <ContactForm locale={locale} />
+  </div>
+</section>
+
+<style lang="scss">
+  .contact-cta {
+    position: relative;
+    // Full width of whatever contains it. The component is rendered outside the
+    // article's reading column (see ArticlePage.astro), so it does not need to break
+    // out of anything: a breakout would have to know how far off-centre its parent
+    // sits, which no CSS-only trick can do reliably.
+    inline-size: 100%;
+    margin-block-start: var(--space-2xl);
+    // The artwork carries a wide orange strip along its bottom edge. The form needs to
+    // clear it, so the bottom padding is a share of the band's own height rather than a
+    // fixed step: the strip scales with the image.
+    padding-block: var(--space-xl) clamp(5rem, 12vw, 11rem);
+    overflow: hidden;
+    background-color: var(--cta-tint, #c3d0ec);
+  }
+
+  .backdrop {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+  }
+
+  .backdrop :global(img) {
+    inline-size: 100%;
+    block-size: 100%;
+    object-fit: cover;
+    // The illustration is drawn on the same tint as the band, so the two meet without
+    // a seam when the image is wider or narrower than its artwork.
+    object-position: center;
+  }
+
+  .inner {
+    position: relative;
+    z-index: 1;
+    margin-inline: auto;
+    padding-inline: var(--grid-gutter);
+    inline-size: min(46rem, 100%);
+  }
+
+  .cta-heading,
+  .cta-text {
+    text-align: center;
+    text-wrap: balance;
+  }
+
+  .cta-text {
+    margin-block: var(--space-xs) var(--space-l);
+    margin-inline: auto;
+    max-inline-size: var(--font-measure);
+  }
+
+  // The form is left-aligned by default; centring it keeps it under the heading.
+  .inner :global(.contact-form) {
+    margin-inline: auto;
+  }
+
+  :global(.darkmode) .contact-cta {
+    // The artwork stays light, so the band keeps its own colour rather than following
+    // the page into dark mode and stranding the illustration on a dark strip.
+    color: var(--color-neutral-900);
+  }
+
+  :global(.darkmode) .contact-cta :global(label),
+  :global(.darkmode) .contact-cta :global(.cta-text),
+  :global(.darkmode) .contact-cta :global(.cta-heading) {
+    color: var(--color-neutral-900);
+  }
+</style>

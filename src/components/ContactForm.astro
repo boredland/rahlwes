@@ -65,9 +65,9 @@ const sitekey = import.meta.env.PUBLIC_TURNSTILE_SITEKEY ?? ''
 
 <script>
   document.addEventListener('astro:page-load', () => {
-    const form = document.querySelector<HTMLFormElement>('.contact-form')
-    if (!form) return
-
+    // A page may carry more than one form — the contact page and any section that
+    // embeds this component — so every instance is wired, not just the first.
+    for (const form of document.querySelectorAll<HTMLFormElement>('.contact-form')) {
     const status = form.querySelector<HTMLParagraphElement>('.form-status')!
     const button = form.querySelector<HTMLButtonElement>('button[type="submit"]')!
     const idle = button.textContent ?? ''
@@ -82,7 +82,7 @@ const sitekey = import.meta.env.PUBLIC_TURNSTILE_SITEKEY ?? ''
       status.textContent = ''
       status.classList.remove('is-error', 'is-success')
       button.disabled = true
-      button.textContent = button.dataset.sending ?? idle
+      button.textContent = form.dataset.sending ?? idle
 
       try {
         const response = await fetch('/api/kontakt', {
@@ -118,6 +118,7 @@ const sitekey = import.meta.env.PUBLIC_TURNSTILE_SITEKEY ?? ''
         button.textContent = idle
       }
     })
+    }
   })
 </script>
 
