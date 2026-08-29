@@ -51,14 +51,14 @@ const cases = [
   [
     'Call for Contributions',
     'Call for Contributions - Special Issue, Policy and Society',
-    'Announcement Subject Fields Political Science, Public Policy Call for contributions on governance.',
+    'Announcement Subject Fields: Political Science, Public Policy Call for contributions on governance.',
     true,
     false,
   ],
   [
     'German history workshop CFP',
     'Call For Papers: Nineteenth Southeast German Studies Workshop',
-    'Subject Fields Cultural History / Studies, German History / Studies, Modern European History / Studies',
+    'Subject Fields: Cultural History / Studies, German History / Studies, Modern European History / Studies',
     true,
     true,
   ],
@@ -151,14 +151,14 @@ const cases = [
   [
     'clinical education (H-Net taxonomy)',
     'Learning to Care Together: Teams, Patients and Clinical Education',
-    'Subject Fields Disability Studies, Health and Health Care, Psychology, Public Health, Social Work',
+    'Subject Fields: Disability Studies, Health and Health Care, Psychology, Public Health, Social Work',
     false,
     false,
   ],
   [
     'design pedagogy (H-Net taxonomy)',
     'DESIGN LEARNING AND COMMUNITIES',
-    'Subject Fields Architecture and Architectural History , Teaching and Learning , Urban Design and Planning',
+    'Subject Fields: Architecture and Architectural History , Teaching and Learning , Urban Design and Planning',
     false,
     false,
   ],

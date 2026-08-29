@@ -1,5 +1,16 @@
 [
   {
+    "id": "j1e7u0",
+    "title": "Ausschreibung Dr. Dormagen-Guffanti-Stipendium 2027",
+    "source": "stadt-koeln-foerderung",
+    "url": "https://www.stadt-koeln.de/leben-in-koeln/kultur/kulturfoerderung/ausschreibung-dr-dormagen-guffanti-stipendium-2027",
+    "date": "2026-08-29",
+    "deadline": "31.08.2026",
+    "remote": false,
+    "description": "Bewerben Sie sich bis zum 31. August 2026 Um eine Teilhabemöglichkeit von und/oder für Menschen mit Behinderung unter künstlerischen Aspekten zu schaffen, vergibt das Kuratorium der Stiftung jährlich aus den Erträgen der Stiftung das Dr. Dormagen-Guffanti-Stipendium an bildende Künstler*innen.",
+    "first_seen": "2026-08-29"
+  },
+  {
     "id": "1cmk76p",
     "title": "Heinrich-Böll-Preis für Literatur",
     "source": "stadt-koeln-foerderung",
@@ -11,6 +22,17 @@
     "first_seen": "2026-08-29"
   },
   {
+    "id": "ywsyyf",
+    "title": "Residenz-Stipendien für das \"Atelier Galata\" in Istanbul",
+    "source": "stadt-koeln-foerderung",
+    "url": "https://www.stadt-koeln.de/leben-in-koeln/kultur/kulturfoerderung/residenz-stipendien-fuer-das-atelier-galata-istanbul",
+    "date": "2026-08-29",
+    "deadline": "",
+    "remote": false,
+    "description": "© Viola Yeşiltaç Das \" Atelier Galata\" ist ein von der Kunststiftung NRW und uns gemeinsam getragenes Artist-in-Residence- Programm. Dabei leben und arbeiten die Künstler*innen und Autor*innen gemeinsam in einem Haus im Stadtteil Beyoğlu . Ein internationaler Austausch ist für uns als Kunst- und Kulturstadt von zentraler Bedeutung.",
+    "first_seen": "2026-08-29"
+  },
+  {
     "id": "163i4dy",
     "title": "Shared Civic Futures - German-Israeli Cooperation on Remembrance, Antisemitism and Democratic Resilience",
     "source": "evz",
@@ -18,7 +40,62 @@
     "date": "2026-08-29",
     "deadline": "30.09.2026",
     "remote": false,
-    "description": "Das Programm unterstützt deutsch-israelische Partnerschaften, die sich mit demokratischer Resilienz, Antisemitismus und der Polarisierung gesellschaftlicher Narrative auseinandersetzen. Anträge können nur von juristischen Personen, wie eingetragenen Vereinen, gestellt werden.",
+    "description": "Das Programm unterstützt deutsch-israelische Partnerschaften, die sich mit demokratischer Resilienz, Antisemitismus und der Polarisierung gesellschaftlicher Narrative auseinandersetzen. Anträge können ausschließlich von juristischen Personen, wie zum Beispiel eingetragenen Vereinen, gestellt werden, während Einzelpersonen ausgeschlossen sind.",
+    "first_seen": "2026-08-29"
+  },
+  {
+    "id": "17fs9oq",
+    "title": "Wiss. Mitarb. (w/m/d) \"Projekt Edition Wissenschaftliche Software (EWS)\" (RWTH Aachen)",
+    "source": "h-soz-kult",
+    "url": "https://www.hsozkult.de/job/id/job-164225",
+    "date": "2026-08-28",
+    "deadline": "15.10.2026",
+    "remote": false,
+    "description": "Aachen, 01.01.2027-31.12.2029, RWTH Aachen, Bewerbungsschluss: 15.10.2026 Wiss. Mitarb. (w/m/d) im Projekt Edition Wissenschaftliche Software (EWS)",
+    "first_seen": "2026-08-29"
+  },
+  {
+    "id": "17fs9nq",
+    "title": "1 Projektmitarb. (m/w/d) \"Erschließung\" (Staatsarchiv Nürnberg)",
+    "source": "h-soz-kult",
+    "url": "https://www.hsozkult.de/job/id/job-164210",
+    "date": "2026-08-28",
+    "deadline": "13.09.2026",
+    "remote": false,
+    "description": "Nürnberg, -30.06.2027, Staatsarchiv Nürnberg, Bewerbungsschluss: 13.09.2026 Projektmitarb. für die Erschließung (m/w/d)",
+    "first_seen": "2026-08-29"
+  },
+  {
+    "id": "17fs9n4",
+    "title": "Stud. Aushilfe (m/w/d) \"Bereich Kommunikation / Schwerpunkt Social Media\" (Stiftung Flucht, Vertreibung, Versöhnung, Berlin)",
+    "source": "h-soz-kult",
+    "url": "https://www.hsozkult.de/job/id/job-164209",
+    "date": "2026-08-28",
+    "deadline": "14.09.2026",
+    "remote": false,
+    "description": "Berlin, , Stiftung Deutsches Historisches Museum, Bewerbungsschluss: 14.09.2026 Stud. Aushilfe (m/w/d) im Bereich Kommunikation / Schwerpunkt Social Media",
+    "first_seen": "2026-08-29"
+  },
+  {
+    "id": "17fs90k",
+    "title": "2 Wiss. Mitarb. (m/w/d) (Stiftung Luthergedenkstätten in Sachsen-Anhalt, Lutherstadt Wittenberg)",
+    "source": "h-soz-kult",
+    "url": "https://www.hsozkult.de/job/id/job-164153",
+    "date": "2026-08-27",
+    "deadline": "21.09.2026",
+    "remote": false,
+    "description": "Lutherstadt Wittenberg, 01.11.2026-31.10.2028, Stiftung Luthergedenkstätten in Sachsen-Anhalt, Bewerbungsschluss: 21.09.2026 1 Wiss. Mitarb. (m/w/d) mit Schwerpunkt Forschung",
+    "first_seen": "2026-08-29"
+  },
+  {
+    "id": "17fs9mz",
+    "title": "2 Wiss. Mitarb. (w/m/d) an der Juniorprofessur \"Denkmal- und Bestandspflege\" (RWTH Aachen)",
+    "source": "h-soz-kult",
+    "url": "https://www.hsozkult.de/job/id/job-164204",
+    "date": "2026-08-27",
+    "deadline": "02.09.2026",
+    "remote": false,
+    "description": "Aachen, , RWTH Aachen, Bewerbungsschluss: 02.09.2026 Zwei Stellen als Wiss. Mitarb. (w/m/d) Juniorprofessur Denkmal- und Bestandspflege RWTH Aachen",
     "first_seen": "2026-08-29"
   },
   {
@@ -27,7 +104,7 @@
     "source": "remote-work",
     "url": "https://www.kulturmanagement.net/Stellenmarkt/Ensemblemanager-in-CONTINUUM,65789",
     "date": "2026-08-18",
-    "deadline": "15.09.2026",
+    "deadline": "",
     "remote": true,
     "description": "Region: Bundesweit Anstellungsart: Honorarbasis Karrierestufe: Fortgeschritten Bewerbungsende: 15.09.2026 https://www.kulturmanagement.net/Stellenmarkt/Ensemblemanager-in-CONTINUUM,65789",
     "first_seen": "2026-08-29"

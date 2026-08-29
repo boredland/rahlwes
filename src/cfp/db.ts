@@ -39,6 +39,7 @@ export type CfpSubscriber = {
  */
 export const cfpSourceName: Record<string, string> = {
   arthist: 'ArtHist.net',
+  'h-soz-kult': 'H-Soz-Kult (Stellen)',
   'h-net': 'H-Net Announcements',
   icom: 'ICOM Deutschland',
   'royal-historical-society': 'Royal Historical Society (London)',

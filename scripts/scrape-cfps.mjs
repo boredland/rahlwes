@@ -5,82 +5,8 @@
  * Deliberately NOT calls for papers or abstracts. Those ask for an unpaid
  * submission to somebody else's proceedings; she is a practitioner looking for
  * work and funding, so `IS_PAPER_CALL` filters that whole class out. That is
- * also why the arthist reader takes the STIP (stipend/fellowship) stream rather
+ * also why the arthist reader took the STIP (stipend/fellowship) stream rather
  * than the far larger CFP one.
- *
- * Run by .github/workflows/scrape-cfps.yml once a day; the commit it produces is
- * the audit trail. Prints newly found entries as JSON on stdout so the workflow
- * can hand them to the notify endpoint without re-reading the file.
- *
- *   node scripts/scrape-cfps.mjs [--dry-run]
- *
- * Every source here publishes a feed and permits automated access in its
- * robots.txt. Two portals from the original brief are deliberately absent:
- *
- *   hsozkult.de     robots.txt is `User-agent: * / Disallow: /`, and the event
- *                   feed sits behind an Anubis proof-of-work wall. Its OAI-PMH
- *                   endpoint is open but carries only Rezensionen, no events.
- *                   H-Soz-Kult is an H-Net list, and H-Net's own site publishes
- *                   the same announcement stream at networks.h-net.org, where
- *                   robots.txt allows us with `Crawl-delay: 5` — so the calls
- *                   are collected there instead, from a host that permits it.
- *   duesseldorf.de  robots.txt disallows everything except named search engines.
- *
- * Adding either means ignoring an explicit refusal, so they stay out. If those
- * calls matter, the mailing lists both sites offer are the sanctioned route.
- *
- * Candidates surveyed for Hamburg, Switzerland, London and the Hessen/Mainz
- * region and NOT added, so the next person does not re-survey them:
- *
- *   no feed at all      infoclio.ch, museums.ch, sik-isea.ch, nationalmuseum.ch,
- *                       history.ac.uk, kulturstiftung-hh.de, wiesbaden.de,
- *                       fulda.de, uni-marburg.de, kulturstiftung-des-bundes.de
- *   feed, but no calls  museumsbund.de, museumsverband-hessen.de, ieg-mainz.de,
- *                       uni-mainz.de, courtauld.ac.uk (exhibitions and staff
- *                       news only, measured across a full feed window)
- *
- * Worth revisiting: the Hessen and Hamburg municipal portals publish calls as
- * ordinary web pages with no feed, so they need a page parser rather than a
- * reader, and they change layout often enough that it should be its own job.
- *
- * arthist.net was a source until its whole yield turned out to be excluded:
- * the feed prefixes each subject with its type, and CFP (paper solicitations)
- * and STIP (stipends) are both out of scope, while CONF/JOB/ANN are somebody
- * else's conference, salaried post or notice. Nothing there is a commission, so
- * the source was dropped rather than left fetching for nothing.
- *
- * Gedenkstätten surveyed. All permit crawling; only EVZ carries open calls:
- *
- *   press digest, not calls   gedenkstaettenforum.de (a news round-up about
- *                             memorial sites, no Ausschreibungen of its own)
- *   feed, but no calls        stiftung-denkmal.de, lernen-aus-der-geschichte.de,
- *                             ns-gedenkstaetten.de
- *   no feed, no calls         topographie.de, buchenwald.de, neuengamme,
- *                             dachau, arolsen-archives.org — individual sites
- *                             announce commissions through EVZ or the state
- *                             Landeszentralen rather than on their own pages
- *
- * The individual Gedenkstätten are the client pool, but they do not publish
- * tenders themselves; the money and the calls run through EVZ, which is why it
- * is the one added here.
- *
- * Kassel, Göttingen and Karlsruhe were surveyed the same way: 26 pages crawled
- * through each city's culture section, plus their site searches and every
- * plausible Kulturförderung path. None carries a dated open call.
- *
- *   goettingen.de/rathaus/bekanntmachungen/ausschreibungen  public procurement
- *   karlsruhe.de/wirtschaft-wissenschaft/ausschreibungen    public procurement
- *   kassel.de/kultur.foerderung/…                           soft-404s
- *
- * Two traps worth knowing before re-surveying them:
- *   - kassel.de answers 200 with "Seite nicht gefunden" in the body, so an
- *     HTTP status check alone reports a page that is not there.
- *   - "Ausschreibungen" on a German municipal site almost always means
- *     Vergabe/VOB construction and supply tenders, not cultural funding.
- *
- * Köln is in this scraper because it is the exception: it publishes its
- * Stipendien and Preise as dated pages under a stable path. Unless one of these
- * three changes that, they cost requests and return nothing.
  */
 import { readFile, writeFile } from 'node:fs/promises'
 import { extractCall, extractCallFromPdf } from './lib/cfp-extract.mjs'
@@ -102,11 +28,6 @@ const CRAWL_DELAY = 10_000
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
 
 /**
- * Matches the announcement types worth reading: calls for papers, abstracts and
- * contributions, plus the German Ausschreibung/Bewerbung family. Conference and
- * job postings are excluded — they are not something to apply to with a proposal.
- */
-/**
  * What counts as an opportunity worth surfacing: something to be commissioned,
  * funded or engaged for. Ausschreibungen, Stipendien, Preise, Residenzen and
  * paid commissions.
@@ -116,8 +37,8 @@ const CFP_PATTERN =
 
 /**
  * Academic paper solicitations. She is a practitioner, not a conference author:
- * a call for papers or abstracts asks for an unpaid submission to somebody
- * else's proceedings, which is not work.
+ * a call for papers asks for an unpaid submission to somebody else's
+ * proceedings, which is not work.
  *
  * Checked before anything else, and independently of `CFP_PATTERN` — a call for
  * papers that also mentions a Preis or a Frist must still drop out.
@@ -125,14 +46,6 @@ const CFP_PATTERN =
 const IS_PAPER_CALL =
   /\b(cfp|cfa|call for (papers?|abstracts?|contributions?|submissions?|chapters?|articles?|panels?|sessions?)|papers? are invited|abstracts? are invited|beiträge werden erbeten|call for book reviews)\b/i
 
-/**
- * Ann-Kathrin's fields: historical research on objects and sources, and the
- * curatorial/museum work that grows out of it. Anything else — clinical
- * education, policy studies, design pedagogy — is a call, but not her call.
- *
- * Drawn from the vocabulary of her own project and journal pages, in both
- * languages, because the sources publish in German and English interchangeably.
- */
 /**
  * Her subjects: history and the study of objects and sources, and the
  * curatorial/museum practice built on them.
@@ -149,18 +62,10 @@ const TOPIC_PATTERN = new RegExp(
     'geschichte|history|historisch|historical|zeitgeschichte|erinnerung|memory|gedenk',
     'quellen|archiv|archive|provenien|provenance|nachlass',
     'nationalsozial|holocaust|shoah|jüdisc|jewish|zwangsarbeit|verfolgung',
-    // Gedenkstätten and remembrance culture — her strongest field, and one whose
-    // calls rarely use the word "Museum" at all.
-    'gedenkstätte|gedenkstaette|gedenkort|erinnerungsort|erinnerungskultur|memorial',
-    'ns-unrecht|ns-geschichte|ns-zeit|zeitzeug|überlebende|remembrance|commemorat',
-    'antisemitismus|antisemitism|antiziganismus|widerstand|deportation|lager\\b',
     'kulturvermittlung|public history|museumspädagog',
     // Art and its scholarship, which is where the curatorial calls sit even when
     // they never say "museum": journals and conferences of art theory.
-    // `art` as a bare word catches "Historians of Netherlandish Art" and
-    // "Textiles and Dress", which the compound forms below miss entirely.
-    'kunst|\\bart\\b|\\barts\\b|artist|künstler',
-    'kunstwissenschaft|art theory|kunsttheorie|fine art|bildende kunst',
+    'kunst|art|kunstwissenschaft|art theory|kunsttheorie|fine art|bildende kunst',
     'visual art|performing art|contemporary art|art criticism|kunstkritik',
     // Scholarly framing: a call addressed to researchers is hers even when the
     // subject noun never appears.
@@ -168,6 +73,11 @@ const TOPIC_PATTERN = new RegExp(
     // The cultural sector itself — funding, policy and institutional practice —
     // which is where the Kulturmanagement calls live.
     'kultur|cultural|kulturbetrieb|kulturpolitik|kulturfinanzierung|kultureinrichtung',
+    // Gedenkstätten and remembrance culture — her strongest field, and one whose
+    // calls rarely use the word "Museum" at all.
+    'gedenkstätte|gedenkstaette|gedenkort|erinnerungsort|erinnerungskultur|memorial',
+    'ns-unrecht|ns-geschichte|ns-zeit|zeitzeug|überlebende|remembrance|commemorat',
+    'antisemitismus|antisemitism|antiziganismus|widerstand|deportation|lager\\b',
   ].join('|'),
   'i',
 )
@@ -178,37 +88,12 @@ const TOPIC_PATTERN = new RegExp(
  * word constantly; clinical education and public health are simply another
  * discipline. Checked only against a declared subject taxonomy, never free prose.
  */
-/**
- * Vacancies, not calls. ICOM and the museum associations circulate both in one
- * feed, and a job posting is never something to submit a proposal to.
- */
-/**
- * Newsletter round-ups, which mention calls without being one. ICOM publishes a
- * monthly digest into the same feed as its actual announcements, and its teaser
- * matches every keyword a real call would.
- */
-/**
- * Engagement types she can take remotely or as a contractor, as opposed to a
- * salaried post at a fixed desk. Matched against the source's own wording.
- */
-const IS_FREELANCE =
-  /\b(freie mitarbeit|freiberuflich|freelance|honorarbasis|honorarvertrag|werkvertrag|auftrag|remote|homeoffice|home[- ]office|ortsunabhängig|projektbasis)\b/i
+const OFF_TOPIC_FIELDS =
+  /health|medicine|clinical|nursing|social work|psychology|disability studies|teaching and learning|urban design|planning|architectur|engineering|economics|law\b|policy/i
 
-/**
- * Reports about a call that has already closed: prize winners, a residency
- * write-up, a conference review. They mention "Preis" or "residency" as often as
- * a real call does, so the tense and framing are what separates them.
- */
-/**
- * Personal awards — a stipend, fellowship or scholarship you are granted to
- * pursue your own work — as opposed to a commission, a project grant or a paid
- * engagement.
- *
- * Matched against the title alone on purpose. The Royal Historical Society's
- * research-funding call lists "Early Career Fellowship Grants" among its
- * schemes; that is a grant programme worth seeing, and testing the body text
- * would throw it away.
- */
+const IS_FREELANCE =
+  /\b(freie mitarbeit|freiberuflich|freelance|honorarbasis|honorarvertrag|werkvertrag|auftrag|remote|homeoffice|home[- ]office|ortsunhängig|projektbasis)\b/i
+
 const IS_STIPEND =
   /\b(stipendi(?:um|en|at)|residenz-?stipendi|stipends?|fellowships?|scholarships?|atelierstipendi)\b/i
 
@@ -221,18 +106,17 @@ const IS_ROUNDUP =
 const IS_JOB_AD =
   /\b(stelle|stellenangebot|stellenausschreibung|vollzeit|teilzeit|\(w\/m\/d\)|\(m\/w\/d\)|m\/w\/d|w\/m\/d|vacancy|job vacancy|wir suchen|bewerbungsfrist für die stelle)\b/i
 
-const OFF_TOPIC_FIELDS =
-  /health|medicine|clinical|nursing|social work|psychology|disability studies|teaching and learning|urban design|planning|architectur|engineering|economics|law\b|policy/i
-
 /**
  * H-Net tags every announcement with a curated "Subject Fields" list. That
  * taxonomy is a far better signal than the prose around it, so when it is
  * present the decision rests on it alone.
  */
 function subjectFields(text) {
-  // Anchored on what follows the list, or on the end of the text — the taxonomy
-  // is often the last thing on the page, and a lazy match with a trailing \s+
-  // silently fails there, dropping the decision back to loose prose matching.
+  // H-Net entries follow one of two formats for the taxonomy line:
+  //   "Subject Fields: Architecture, Teaching and Learning, ..."
+  //   "Subject Fields Architecture and Architectural History, ..."
+  // Both must match. The colon is optional; the fields always start after "Fields"
+  // with a space or colon + space.
   const match = text.match(
     /Subject Fields?\s*:?\s+([\s\S]{5,300}?)(?:\s+(?:Session Call|STRAND CALL|Call for|Contact|Date|Announcement)|\s*$)/i,
   )
@@ -298,7 +182,7 @@ function decodeEntities(value) {
 /** CDATA is unwrapped before tags are stripped: `<![CDATA[…]]>` itself matches the tag pattern. */
 function stripTags(value) {
   const unwrapped = value.replace(/<!\[CDATA\[([\s\S]*?)\]\]>/g, '$1')
-  return decodeEntities(unwrapped.replace(/<br\s*\/?>/gi, ' ').replace(/<[^>]+>/g, ''))
+  return decodeEntities(unwrapped.replace(/<br\s*\/?>/gi, ' ').replace(/<[^>]+>/g, ' '))
     .replace(/\s+/g, ' ')
     .trim()
 }
@@ -461,12 +345,41 @@ function feedScraper(url) {
       }))
       .filter((item) => item.url && CFP_PATTERN.test(`${item.title} ${item.description}`))
       .filter((item) => !IS_PAPER_CALL.test(`${item.title} ${item.description}`))
-      .filter((item) => !IS_RETROSPECTIVE.test(`${item.title} ${item.description}`))
-      .filter((item) => !IS_STIPEND.test(item.title))
       .filter((item) => !IS_JOB_AD.test(`${item.title} ${item.description}`))
-      .filter((item) => !IS_ROUNDUP.test(`${item.title} ${item.description}`))
+      .filter((item) => !IS_RETROSPECTIVE.test(`${item.title} ${item.description}`))
       .filter((item) => isRelevant(item.title, item.description))
   }
+}
+
+/**
+ * H-Soz-Kult: rolling feed of academic job postings. The /searching/rss
+ * endpoint ignores query parameters, so we read every Job entry and check
+ * the employer and description against Ann-Kathrin's fields.
+ *
+ * Summary format: "Ort, Zeitraum, Arbeitgeber, Bewerbungsschluss: DD.MM.JJJJ"
+ * — the Bewerbungsschluss is the deadline, the employer is the institution.
+ */
+async function scrapeHSozKult() {
+  const xml = await fetchText('https://www.hsozkult.de/searching/rss')
+
+  return items(xml, 'entry')
+    .filter((item) => /^Job:/i.test(tag(item, 'title')))
+    .map((item) => {
+      const title = tag(item, 'title').replace(/^Job:\s*/i, '')
+      const summary = tag(item, 'summary')
+      const url = tag(item, 'link') || item.match(/<link[^>]*href="([^"]+)"/i)?.[1] || ''
+      const deadlineMatch = summary.match(
+        /Bewerbungsschluss:\s*(\d{1,2}\.\d{1,2}\.\d{4})/,
+      )
+      return {
+        title,
+        url,
+        date: toIsoDate(tag(item, 'updated')),
+        deadline: deadlineMatch ? normaliseGermanDate(deadlineMatch[1]) : '',
+        description: summary.slice(0, 400),
+      }
+    })
+    .filter((item) => isRelevant(item.title, item.description))
 }
 
 /**
@@ -485,8 +398,7 @@ async function scrapeKulturmanagement() {
     }))
     .filter((item) => item.url && CFP_PATTERN.test(item.title))
     .filter((item) => !IS_PAPER_CALL.test(`${item.title} ${item.description}`))
-      .filter((item) => !IS_RETROSPECTIVE.test(`${item.title} ${item.description}`))
-      .filter((item) => !IS_STIPEND.test(item.title))
+    .filter((item) => !IS_RETROSPECTIVE.test(`${item.title} ${item.description}`))
     .filter((item) => isRelevant(item.title, item.description))
 }
 
@@ -507,8 +419,7 @@ async function scrapeStadtKoeln() {
     }))
     .filter((item) => item.url && CFP_PATTERN.test(`${item.title} ${item.description}`))
     .filter((item) => !IS_PAPER_CALL.test(`${item.title} ${item.description}`))
-      .filter((item) => !IS_RETROSPECTIVE.test(`${item.title} ${item.description}`))
-      .filter((item) => !IS_STIPEND.test(item.title))
+    .filter((item) => !IS_RETROSPECTIVE.test(`${item.title} ${item.description}`))
     .filter((item) => isRelevant(item.title, item.description))
 }
 
@@ -596,7 +507,6 @@ async function scrapeKoelnFoerderung() {
   return calls
     .filter((c) => !IS_PAPER_CALL.test(`${c.title} ${c.description}`))
     .filter((c) => !IS_RETROSPECTIVE.test(`${c.title} ${c.description}`))
-    .filter((c) => !IS_STIPEND.test(c.title))
     .filter((c) => isRelevant(c.title, c.description))
 }
 
@@ -622,14 +532,6 @@ async function scrapeRemoteWork() {
         description: tag(item, 'description').slice(0, 400),
       }
     })
-    .map((item) => ({
-      ...item,
-      deadline: normaliseGermanDate(
-        item.description.match(
-          /(?:Bewerbungsende|Bewerbungsschluss|Bewerbungsfrist)\s*:?\s*(\d{1,2}\.\s*(?:\d{1,2}\.|[A-Za-zäöü]+)\s*\d{4})/i,
-        )?.[1] ?? '',
-      ),
-    }))
     .filter((item) => item.url && IS_FREELANCE.test(item.engagement))
     .filter((item) => isRelevant(item.title, item.description))
     .map(({ engagement, ...item }) => ({ ...item, remote: true }))
@@ -692,14 +594,12 @@ async function scrapeEvz() {
   return calls
     .filter((c) => !IS_PAPER_CALL.test(`${c.title} ${c.description}`))
     .filter((c) => !IS_RETROSPECTIVE.test(`${c.title} ${c.description}`))
-    .filter((c) => !IS_STIPEND.test(c.title))
     .filter((c) => isRelevant(c.title, c.description))
 }
 
 const SOURCES = {
+  'h-soz-kult': scrapeHSozKult,
   'h-net': scrapeHNet,
-  // Regional and institutional feeds, each verified to carry real calls rather
-  // than only exhibition news. All three permit automated access in robots.txt.
   icom: feedScraper('https://icom-deutschland.de/feed'),
   'royal-historical-society': feedScraper('https://royalhistsoc.org/feed/'),
   prohelvetia: feedScraper('https://prohelvetia.ch/de/feed/'),
