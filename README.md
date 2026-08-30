@@ -50,6 +50,7 @@ the same URLs work against `http://localhost:4321`.
 | Dispatch | [/admin/newsletter/](https://next.rahlwes.eu/admin/newsletter/) | Send a newsletter marked *Bereit zum Versand* |
 | Mail preview | [/admin/preview?locale=de&slug=…](https://next.rahlwes.eu/admin/preview?locale=de&slug=example) | Renders one newsletter body as bare HTML |
 | Ausschreibungen | [/admin/cfps/](https://next.rahlwes.eu/admin/cfps/) | Collected calls (Stipendien, Preise, Residenzen, Aufträge) + digest recipients |
+| Admin-Übersicht | [/admin/](https://next.rahlwes.eu/admin/) | Links to all admin interfaces |
 
 The endpoints behind those pages, for when something needs poking by hand:
 
