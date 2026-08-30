@@ -67,5 +67,12 @@
   // with a 522; a self binding dispatches the request internally instead.
   "services": [{ "binding": "SELF", "service": "rahlwes" }],
   "routes": [{ "pattern": "next.rahlwes.eu", "custom_domain": true }],
+  // A hard ceiling on CPU per invocation, well above what any route needs: the archive
+  // fan-out ranks ~180 records in about 1 ms and the newsletter consumer does almost
+  // nothing between awaits. It exists so a runaway loop or a pathological input fails
+  // that one request with Error 1102 instead of quietly billing CPU until someone
+  // notices — Workers bills CPU time, so an infinite loop is a bill, not just a hang.
+  "limits": { "cpu_ms": 5000 },
+
   "observability": { "enabled": true }
 }

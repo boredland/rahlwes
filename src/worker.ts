@@ -48,7 +48,7 @@ const PERMANENT_ERRORS: Record<string, true> = {
   E_HEADERS_TOO_MANY: true,
 }
 
-async function deliver(message: SendMessage, env: Env): Promise<void> {
+async function deliver(message: SendMessage, env: Env, cachedCampaign?: Campaign): Promise<void> {
   const db = env.NEWSLETTER_DB
 
   // Claim the row first. Queues redeliver on failure and may deliver twice on
@@ -62,7 +62,7 @@ async function deliver(message: SendMessage, env: Env): Promise<void> {
   if (!claim.meta.changes) return
 
   const [campaign, subscriber] = await Promise.all([
-    db.prepare('SELECT * FROM campaigns WHERE id = ?').bind(message.campaignId).first<Campaign>(),
+    cachedCampaign ?? db.prepare('SELECT * FROM campaigns WHERE id = ?').bind(message.campaignId).first<Campaign>(),
     db.prepare('SELECT * FROM subscribers WHERE id = ?').bind(message.subscriberId).first<Subscriber>(),
   ])
 
@@ -165,9 +165,23 @@ export default {
   },
 
   async queue(batch: MessageBatch<SendMessage>, env: Env): Promise<void> {
+    // A batch is one campaign's recipients, and the campaign row carries the whole
+    // rendered body. Reading it once per batch instead of once per subscriber saves
+    // (batch size - 1) reads of the largest row in the database on every batch.
+    const campaigns = new Map<number, Campaign | null>()
+
     for (const message of batch.messages) {
       try {
-        await deliver(message.body, env)
+        const id = message.body.campaignId
+        if (!campaigns.has(id)) {
+          campaigns.set(
+            id,
+            await env.NEWSLETTER_DB.prepare('SELECT * FROM campaigns WHERE id = ?').bind(id).first<Campaign>(),
+          )
+        }
+
+        // A missing campaign still goes through deliver(), which marks the send skipped.
+        await deliver(message.body, env, campaigns.get(id) ?? undefined)
         message.ack()
       } catch (error) {
         console.error('newsletter delivery failed, retrying', message.body, error)

@@ -61,24 +61,33 @@ export function scoreRecord(name: string[], keywords: string[], r: ArchiveRecord
   const places = normalize([r.birth?.place, r.death?.place].filter(Boolean).join(" "));
   const context = normalize([r.preview, r.reference, r.holdingInstitution].filter(Boolean).join(" "));
 
+  // Split each field once and reuse: fieldScore used to re-split per token, which for a
+  // multi-word query multiplied the work by the token count for no extra information.
+  const pnWords = words(personName);
+  const titleWords = words(title);
+  const placeWords = words(places);
+  const contextWords = words(context);
+
   let score = 0;
   if (name.length > 0) {
-    const pnWords = words(personName);
     if (isPhrase(name, pnWords)) score += PHRASE_IN_NAME;
     else if (allPresent(name, pnWords)) score += ALL_IN_NAME;
-    else score += tokenSum(name, personName);
+    else score += tokenSum(name, pnWords);
 
-    if (isPhrase(name, words(title))) score += PHRASE_IN_TITLE;
-    else score += 0.6 * tokenSum(name, title);
+    if (isPhrase(name, titleWords)) score += PHRASE_IN_TITLE;
+    else score += 0.6 * tokenSum(name, titleWords);
 
-    score += 0.3 * tokenSum(name, places);
+    score += 0.3 * tokenSum(name, placeWords);
     // The weakest tier: name words merely present in the free-text description. This is the
     // "found both words somewhere in the content" case we want ranked below real name hits.
-    score += 0.15 * tokenSum(name, context);
+    score += 0.15 * tokenSum(name, contextWords);
   }
 
-  const haystack = `${personName} ${title} ${places} ${context}`;
-  for (const kw of keywords) if (fieldScore(kw, haystack) > 0) score += KEYWORD_HIT;
+  if (keywords.length > 0) {
+    // Concatenating the words beats building and re-splitting a joined haystack string.
+    const haystack = pnWords.concat(titleWords, placeWords, contextWords);
+    for (const kw of keywords) if (fieldScore(kw, haystack) > 0) score += KEYWORD_HIT;
+  }
   return score;
 }
 
@@ -103,23 +112,26 @@ function allPresent(tokens: string[], fieldWords: string[]): boolean {
   return tokens.every((t) => present.has(t) || fieldWords.some((w) => w.startsWith(t)));
 }
 
-function tokenSum(tokens: string[], field: string): number {
+function tokenSum(tokens: string[], fieldWords: string[]): number {
   let sum = 0;
-  for (const t of tokens) sum += fieldScore(t, field);
+  for (const t of tokens) sum += fieldScore(t, fieldWords);
   return sum;
 }
 
-/** Best per-word match of `token` within a field. Tolerant of `?`-garbled words. */
-function fieldScore(token: string, field: string): number {
+/** Best per-word match of `token` within already-split field words. Tolerant of `?`-garbled words. */
+function fieldScore(token: string, fieldWords: string[]): number {
   let best = 0;
-  for (const word of field.split(/\s+/)) {
+  for (const word of fieldWords) {
     if (!word) continue;
-    if (word === token) best = Math.max(best, 100);
-    else if (word.startsWith(token)) best = Math.max(best, 60);
-    else if (word.includes(token)) best = Math.max(best, 40);
-    else {
-      const clean = word.replace(/\?/g, "");
-      if (clean.length >= 3 && token.includes(clean)) best = Math.max(best, 45);
+    if (word === token) return 100; // ceiling: no later word can beat an exact match
+    if (word.startsWith(token)) {
+      if (best < 60) best = 60;
+    } else if (word.includes(token)) {
+      if (best < 40) best = 40;
+    } else if (word.length >= 3 && token.includes(word)) {
+      // Arolsen returns "?EISS" for damaged scans; words() has already dropped the "?",
+      // so the surviving fragment is matched as a substring of the searched token.
+      if (best < 45) best = 45;
     }
   }
   return best;
