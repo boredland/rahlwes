@@ -280,7 +280,38 @@ for (const [url, want] of slugTypes) {
   console.log(`${got === want ? 'PASS' : 'FAIL'}  non-job=${got}/${want}  ${url.slice(-24)}`)
 }
 
-const total = cases.length + entryLevel.length + slugTypes.length
-const passed = total - failed - extraFailed
+// The deadline sits in a div roughly 1300-1450 characters after the title link. A
+// 1200-character window silently found none of them, so every H-Soz-Kult entry was stored
+// with an empty deadline and isExpired could never fire — expired calls stayed in the
+// digest indefinitely. Bounding the window by the next result is what makes it robust.
+const listingRow = [
+  '<a href="/searching/id/job-154150?recno=1">Werkverträge "Liste der jüdischen Einwohner"</a>',
+  '<div class="hfn-list-reviewed">Beschreibung</div>',
+  `<span>${'x'.repeat(1200)}</span>`,
+  '<div class="hfn-list-itemrel"> Koblenz &ndash; 23.11.2025, <span>Bewerbungsschluss: 23.04.2025</span> </div>',
+  '<a href="/searching/id/job-999999?recno=2">Nächster Eintrag</a>',
+  '<div class="hfn-list-itemrel"> <span>Bewerbungsschluss: 31.12.2099</span> </div>',
+].join('\n')
+
+const titleMatch = /<a href="\/searching\/id\/([^"]+)"[^>]*>\s*([\s\S]*?)\s*<\/a>/.exec(listingRow)
+const nextItem = listingRow.indexOf('/searching/id/', titleMatch.index + titleMatch[0].length)
+const window = listingRow.slice(titleMatch.index, nextItem === -1 ? titleMatch.index + 4000 : nextItem)
+const relText = (window.match(/<div class="hfn-list-itemrel">\s*([\s\S]*?)<\/div>/i) ?? ['', ''])[1].replace(/<[^>]+>/g, '')
+const deadlineFound = (relText.match(/Bewerbungsschluss\s*:?\s*(\d{1,2}\.\s*\d{1,2}\.\s*\d{4})/i) ?? [])[1] ?? null
+
+const deadlineChecks = [
+  ['deadline is found beyond a 1200-char offset', deadlineFound, '23.04.2025'],
+  ['window stops before the next result', /31\.12\.2099/.test(window), false],
+]
+
+let deadlineFailed = 0
+for (const [label, got, want] of deadlineChecks) {
+  const ok = got === want
+  if (!ok) deadlineFailed++
+  console.log(`${ok ? 'PASS' : 'FAIL'}  ${String(got).padEnd(12)} want ${String(want).padEnd(12)} ${label}`)
+}
+
+const total = cases.length + entryLevel.length + slugTypes.length + deadlineChecks.length
+const passed = total - failed - extraFailed - deadlineFailed
 console.log(`\n${passed}/${total} passed`)
-process.exit(failed + extraFailed ? 1 : 0)
+process.exit(failed + extraFailed + deadlineFailed ? 1 : 0)

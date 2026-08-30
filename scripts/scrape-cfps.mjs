@@ -444,7 +444,8 @@ async function scrapeHSozKultHtml() {
 
       const itemUrl = `https://www.hsozkult.de/job/id/${slug.split('?')[0]}`
 
-      const afterTitle = html.slice(m.index, m.index + 1200)
+      const nextItem = html.indexOf('/searching/id/', m.index + m[0].length)
+      const afterTitle = html.slice(m.index, nextItem === -1 ? m.index + 4000 : nextItem)
 
       // Description from hfn-list-reviewed div
       const descMatch = afterTitle.match(/<div class="hfn-list-reviewed">\s*([\s\S]*?)<\/div>/i)
@@ -828,6 +829,21 @@ async function enrichFromPdfs(calls) {
   return calls
 }
 
+/**
+ * Fill in a deadline from an H-Soz-Kult detail page.
+ *
+ * The search results carry the Bewerbungsschluss for most entries, but an entry that has
+ * dropped off every results page keeps whatever it was stored with — and before the
+ * extraction worked, that was nothing. The detail page always states it, so it is the
+ * authority when the listing cannot answer.
+ */
+async function fetchDeadlineFromDetail(url) {
+  const html = await fetchText(url)
+  const text = stripTags(html)
+  const match = text.match(/(?:Bewerbungsschluss|Bewerbungsfrist|Einsendeschluss)\s*:?\s*(\d{1,2}\.\s*(?:\d{1,2}\.|[A-Za-zäöü]+)\s*\d{4})/i)
+  return match ? normaliseGermanDate(match[1]) : ''
+}
+
 function isExpired(item) { if (!item.deadline) return false; const d = new Date(item.deadline.split(".").reverse().join("-")); const today = new Date(); return d.getTime() < today.getTime() }
 
 /**
@@ -854,6 +870,7 @@ function rejectReason(item) {
 const today = new Date().toISOString().slice(0, 10)
 const existing = JSON.parse(await readFile(OUT, 'utf8').catch(() => '[]'))
 const known = new Set(existing.map((cfp) => cfp.url))
+const storedByUrl = new Map(existing.map((cfp) => [cfp.url, cfp]))
 
 const found = []
 let failures = 0
@@ -866,7 +883,14 @@ for (const [source, scrape] of Object.entries(SOURCES)) {
     console.error(`  ${source}: ${results.length} matching`)
 
     for (const item of results) {
-      if (known.has(item.url)) continue
+      if (known.has(item.url)) {
+        const stored = storedByUrl.get(item.url)
+        if (stored && item.deadline && stored.deadline !== item.deadline) {
+          console.error(`    deadline: ${stored.deadline || '(none)'} -> ${item.deadline}  ${item.title.slice(0, 50)}`)
+          stored.deadline = item.deadline
+        }
+        continue
+      }
       known.add(item.url)
 
       const reason = rejectReason(item)
@@ -897,6 +921,23 @@ for (const [source, scrape] of Object.entries(SOURCES)) {
 if (failures === Object.keys(SOURCES).length) {
   console.error('every source failed; leaving the file untouched')
   process.exit(1)
+}
+
+// Entries that have scrolled off every results page never get refreshed above, so a
+// deadline missing since before the extraction worked would keep them alive forever.
+// Ask the detail page directly; one request per affected entry, once.
+for (const cfp of existing) {
+  if (cfp.deadline || !cfp.url.includes('hsozkult.de/job/id/')) continue
+  try {
+    await sleep(CRAWL_DELAY)
+    const deadline = await fetchDeadlineFromDetail(cfp.url)
+    if (deadline) {
+      console.error(`  detail deadline: ${deadline}  ${cfp.title.slice(0, 55)}`)
+      cfp.deadline = deadline
+    }
+  } catch (error) {
+    console.error(`  detail fetch failed for ${cfp.url}: ${error.message}`)
+  }
 }
 
 const kept = existing.filter((cfp) => {
