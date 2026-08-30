@@ -33,7 +33,7 @@ const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
  * paid commissions.
  */
 const CFP_PATTERN =
-  /\b(ausschreibung|ausgeschrieben|bewerbungsfrist|bewerbungsschluss|einsendeschluss|einreichfrist|wettbewerb|stipendi|fellowship|residen[zc]|residency|förderprogramm|förderung|preis\b|projektaufruf|interessenbekundung|call for (proposals|projects|participation|expressions?|tenders?)|open call|auftrag)\b/i
+  /\b(ausschreibung|ausgeschrieben|bewerbungsfrist|bewerbungsschluss|einsendeschluss|einreichfrist|wettbewerb|stipendi|fellowship|residen[zc]|residency|förderprogramm|förderung|preis\b|projektaufruf|interessenbekundung|call for (proposals|projects|participation|expressions?|tenders?)|open call|auftrag|werkvertrag|werkauftrag)\b/i
 
 /**
  * Academic paper solicitations. She is a practitioner, not a conference author:
@@ -102,6 +102,10 @@ const IS_RETROSPECTIVE =
 
 const IS_ROUNDUP =
   /\b(newsletter|round-?up|rückblick|monatsüberblick|im blick|überblick|in eigener sache)\b/i
+
+const IS_WISS_MITARB = /\b(wiss\.\s*mitarb|projektmitarb|wissenschaftliche\s+mitarbeit)\b/i
+
+const IS_PRIZE = /\b(prize|preis\b|award|auszeichnung)\b/i
 
 const IS_JOB_AD =
   /\b(stelle|stellenangebot|stellenausschreibung|vollzeit|teilzeit|\(w\/m\/d\)|\(m\/w\/d\)|m\/w\/d|w\/m\/d|vacancy|job vacancy|wir suchen|bewerbungsfrist für die stelle|praktik|praktikant|aushilfe|trainee)\b/i
@@ -346,6 +350,7 @@ function feedScraper(url) {
       .filter((item) => item.url && CFP_PATTERN.test(`${item.title} ${item.description}`))
       .filter((item) => !IS_PAPER_CALL.test(`${item.title} ${item.description}`))
       .filter((item) => !IS_JOB_AD.test(`${item.title} ${item.description}`))
+      .filter((item) => !IS_PRIZE.test(item.title))
       .filter((item) => !IS_RETROSPECTIVE.test(`${item.title} ${item.description}`))
       .filter((item) => isRelevant(item.title, item.description))
   }
@@ -380,6 +385,8 @@ async function scrapeHSozKult() {
       }
     })
     .filter((item) => !/praktik|aushilfe|trainee/i.test(item.title))
+    .filter((item) => !IS_PRIZE.test(item.title))
+    .filter((item) => !IS_WISS_MITARB.test(item.title))
     .filter((item) => isRelevant(item.title, item.description))
 }
 
@@ -508,6 +515,8 @@ async function scrapeKoelnFoerderung() {
   return calls
     .filter((c) => !IS_PAPER_CALL.test(`${c.title} ${c.description}`))
     .filter((c) => !IS_STIPEND.test(c.title))
+    .filter((c) => !IS_PRIZE.test(c.title))
+    .filter((c) => !IS_WISS_MITARB.test(c.title))
     .filter((c) => !IS_RETROSPECTIVE.test(`${c.title} ${c.description}`))
     .filter((c) => isRelevant(c.title, c.description))
 }

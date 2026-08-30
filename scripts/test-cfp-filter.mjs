@@ -27,11 +27,11 @@ const start = src.indexOf('/**\n * What counts as an opportunity')
 const end = src.indexOf('async function fetchText')
 const module = await import(
   `data:text/javascript,${encodeURIComponent(
-    `${src.slice(start, end)}\nexport { isRelevant, subjectFields, CFP_PATTERN, IS_PAPER_CALL, IS_RETROSPECTIVE, IS_STIPEND }`,
+    `${src.slice(start, end)}\nexport { isRelevant, subjectFields, CFP_PATTERN, IS_PAPER_CALL, IS_RETROSPECTIVE, IS_STIPEND, IS_PRIZE, IS_WISS_MITARB }`,
   )}`
 )
 
-/** [label, title, abstract, expectPaperCall, expectRelevant, expectRetrospective?, expectStipend?] */
+/** [label, title, abstract, expectPaperCall, expectRelevant, expectRetrospective?, expectStipend?, expectWissMitarb?, expectPrize?] */
 const cases = [
   // — Paper solicitations: excluded whatever their subject —
   [
@@ -137,6 +137,9 @@ const cases = [
     false,
     true,
     true,
+   false, // wantStipend
+    false, // wantWissMitarb
+    true,  // wantPrize
   ],
   [
     'residency write-up',
@@ -147,6 +150,53 @@ const cases = [
     true,
   ],
 
+  // — Price / Wiss. Mitarb. excluded —
+  [
+    "preis excluded",
+    "Ausschreibung: Gerhard und Birgit Gmoser-Preis für Gegenwartskunst",
+    "Der Preis wird an Künstler*innen vergeben.",
+    false, // wantPaper
+    true,  // wantRelevant
+    false, // wantOld
+    false, // wantStipend
+    false, // wantWissMitarb
+    true,  // wantPrize ← fixed
+  ],
+  [
+    "DigAMus award excluded",
+    "DigAMus Award 2026: Einreichungen bis zum 31. August 2026 möglich",
+    "Museen und Archive sind eingeladen, digitale Projekte einzureichen.",
+    false, // wantPaper
+    true,  // wantRelevant
+    false, // wantOld
+    false, // wantStipend
+    false, // wantWissMitarb
+    true,  // wantPrize ← fixed
+  ],
+  [
+    "Wiss. Mitarb. excluded",
+    "2 Wiss. Mitarb. (w/m/d) Stiftung Luthergedenkstätten",
+    "Die Stiftung Luthergedenkstätten sucht wissenschaftliche Mitarbeiter für die Forschung.",
+    false, // wantPaper
+    true,  // wantRelevant
+    false, // wantOld
+    false, // wantStipend
+    true,  // wantWissMitarb ← fixed
+    false, // wantPrize
+  ],
+  [
+    "Projektmitarb. excluded",
+    "1 Projektmitarb. (m/w/d) Staatsarchiv Nürnberg",
+    "Projektmitarbeiter für die Erschließung.",
+    false, // wantPaper
+    true,  // wantRelevant
+    false, // wantOld
+    false, // wantStipend
+    true,  // wantWissMitarb ← fixed
+    false, // wantPrize
+  ],
+
+  // — Off-topic, regardless of type —
   // — Off-topic, regardless of type —
   [
     'clinical education (H-Net taxonomy)',
@@ -165,29 +215,22 @@ const cases = [
 ]
 
 let failed = 0
-for (const [label, title, abstract, wantPaper, wantRelevant, wantOld = false, wantStipend = false] of cases) {
+for (const [label, title, abstract, wantPaper, wantRelevant, wantOld = false, wantStipend = false, wantWissMitarb = false, wantPrize = false] of cases) {
   const isPaper = module.IS_PAPER_CALL.test(`${title} ${abstract}`)
   const relevant = module.isRelevant(title, abstract)
   const old = module.IS_RETROSPECTIVE.test(`${title} ${abstract}`)
   // Title only: a funding call that lists a fellowship among its schemes stays.
   const stipend = module.IS_STIPEND.test(title)
-  const ok =
-    isPaper === wantPaper && relevant === wantRelevant && old === wantOld && stipend === wantStipend
+  const wissMitarb = module.IS_WISS_MITARB.test(title)
+  const prize = module.IS_PRIZE.test(title)
+  const ok = isPaper === wantPaper && relevant === wantRelevant && old === wantOld && stipend === wantStipend && wissMitarb === wantWissMitarb && prize === wantPrize
   if (!ok) failed++
 
-  const verdict = isPaper
-    ? 'EXCLUDED (paper call)'
-    : stipend
-      ? 'EXCLUDED (stipend)'
-      : old
-        ? 'EXCLUDED (already closed)'
-        : relevant
-          ? 'kept'
-          : 'EXCLUDED (off-topic)'
+  const verdict = isPaper ? 'EXCLUDED (paper)' : stipend ? 'EXCLUDED (stipend)' : prize ? 'EXCLUDED (prize)' : wissMitarb ? 'EXCLUDED (wiss. Mitarb.)' : old ? 'EXCLUDED (closed)' : relevant ? 'kept' : 'EXCLUDED (off-topic)'
   console.log(`${ok ? 'PASS' : 'FAIL'}  ${verdict.padEnd(26)} ${label}`)
   if (!ok) {
     console.log(
-      `        paper=${isPaper}/${wantPaper} relevant=${relevant}/${wantRelevant} closed=${old}/${wantOld} stipend=${stipend}/${wantStipend}`,
+      `        paper=${isPaper}/${wantPaper} relevant=${relevant}/${wantRelevant} closed=${old}/${wantOld} stipend=${stipend}/${wantStipend} prize=${prize}/${wantPrize} wiss=${wissMitarb}/${wantWissMitarb}`,
     )
   }
 }
