@@ -1,10 +1,9 @@
 ---
 import DefaultLayout from '@layouts/DefaultLayout.astro'
-import { useTranslations } from '@i18n/ui'
-import { currentLocale } from '@i18n/config'
 
-const locale = currentLocale(Astro.currentLocale)
-const t = useTranslations(locale)
+// Without this the middleware runs at build time, sees no cookie, and its login
+// redirect is baked into a static page that never reaches the guard again.
+export const prerender = false
 ---
 
 <DefaultLayout title="Admin" description="Administrationsbereich">
