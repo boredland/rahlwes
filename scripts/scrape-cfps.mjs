@@ -438,16 +438,24 @@ async function scrapeHSozKultHtml() {
 
       const itemUrl = `https://www.hsozkult.de/job/id/${slug.split('?')[0]}`
 
-      // Description follows after the item in a .hfn-list-reviewed div
-      const afterTitle = html.slice(m.index, m.index + 800)
+      const afterTitle = html.slice(m.index, m.index + 1200)
+
+      // Description from hfn-list-reviewed div
       const descMatch = afterTitle.match(/<div class="hfn-list-reviewed">\s*([\s\S]*?)<\/div>/i)
       const description = descMatch ? stripTags(descMatch[1]).slice(0, 400) : ''
+
+      // Deadline from hfn-list-itemrel div
+      const relMatch = afterTitle.match(/<div class="hfn-list-itemrel">\s*([\s\S]*?)<\/div>/i)
+      const relText = relMatch ? stripTags(relMatch[1]) : ''
+      const deadlineMatch = relText.match(/(?:Bewerbungsfrist|Bewerbungsschluss|Einsendeschluss|Frist)\s*:?\s*(\d{1,2}\.\s*(?:\d{1,2}\.|[A-Za-zäöü]+)\s*\d{4})/i)
+      const deadline = deadlineMatch ? normaliseGermanDate(deadlineMatch[1]) : ''
 
       results.push({
         title: title.replace(/\s*\(\d+\s*\)\s*$/, '').trim(),
         url: itemUrl,
         date: '',
         description,
+        deadline,
       })
     }
   }
