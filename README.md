@@ -50,6 +50,7 @@ the same URLs work against `http://localhost:4321`.
 | Dispatch | [/admin/newsletter/](https://next.rahlwes.eu/admin/newsletter/) | Send a newsletter marked *Bereit zum Versand* |
 | Mail preview | [/admin/preview?locale=de&slug=…](https://next.rahlwes.eu/admin/preview?locale=de&slug=example) | Renders one newsletter body as bare HTML |
 | Ausschreibungen | [/admin/cfps/](https://next.rahlwes.eu/admin/cfps/) | Collected calls (Stipendien, Preise, Residenzen, Aufträge) + digest recipients |
+| Archivsuche | [/admin/search/](https://next.rahlwes.eu/admin/search/) | Ankai's archive search, behind this site's login |
 | Admin-Übersicht | [/admin/](https://next.rahlwes.eu/admin/) | Links to all admin interfaces |
 
 The endpoints behind those pages, for when something needs poking by hand:
@@ -217,6 +218,29 @@ still works and only bounce detection is inactive.
 checking the Keystatic GitHub token for push access to the content repo — no
 second password. Anyone who can edit the site can send a newsletter. The URLs are
 listed under [Admin surfaces](#admin-surfaces).
+
+## Archive search
+
+`/admin/search/` is [Ankai](https://search.rahlwes.eu)'s search UI, ported into Astro so it
+sits behind the Keystatic guard rather than Ankai's shared password. For records about
+named victims of persecution that is the higher bar: push access to the content repo,
+revocable, instead of a password that gets pasted into chats.
+
+Ankai stays a separate Worker with its own repo, D1 and provider catalog. **Only the UI
+lives here** — adapters, the fan-out and the Zod schemas stay there, and
+`src/ankai/types.ts` mirrors just the response shape the island reads. The source toggles
+are fetched from `/v1/sources` at request time rather than hard-coded, so they cannot
+drift from what the server actually queries.
+
+Requests go through `/api/admin/ankai/*`, which attaches `ANKAI_PASSWORD` server-side.
+That proxy is not optional: Ankai sends no CORS headers and its `ankai_auth` cookie is
+scoped to its own host, so a browser on this origin can neither call it nor authenticate
+against it. The proxy allows exactly two read endpoints — `persons/search` and `sources`.
+`/admin/ingest/*` is deliberately not reachable, because it rewrites the D1 corpus.
+
+Set `ANKAI_PASSWORD` to Ankai's own `ACCESS_PASSWORD`; without it the page renders a
+configuration notice instead of a broken form. `ANKAI_ORIGIN` optionally points a dev
+build at a local Ankai.
 
 ## Analytics
 
