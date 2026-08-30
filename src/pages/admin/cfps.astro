@@ -217,6 +217,12 @@ const formatDate = (value: string) => {
     max-inline-size: 24rem;
   }
 
+  // The submit row needs its own spacing: these <p> elements are reset by the page, so
+  // without it the button renders flush against the field above.
+  .actions {
+    margin-block: var(--space-s) 0;
+  }
+
   button {
     border: 2px solid var(--color-accent-600);
     border-radius: var(--radius-s);

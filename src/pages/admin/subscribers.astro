@@ -247,6 +247,10 @@ const bounced = subscribers.filter((s) => s.bounced_at).length
     flex-direction: column;
     gap: var(--space-3xs);
     margin: 0;
+
+    + .field {
+      margin-block-start: var(--space-s);
+    }
   }
 
   label {
@@ -265,8 +269,10 @@ const bounced = subscribers.filter((s) => s.bounced_at).length
     font-size: var(--font-size-0);
   }
 
+  // Separates the submit row from the last field; these <p> elements are otherwise
+  // margin-free, which put the button flush against the input.
   .actions {
-    margin: 0;
+    margin-block: var(--space-s) 0;
   }
 
   button {
