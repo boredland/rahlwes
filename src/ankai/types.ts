@@ -1,23 +1,21 @@
 /**
- * The subset of Ankai's API contract this UI consumes.
+ * Ankai's domain types, ported from the standalone worker.
  *
- * Ankai (`search.rahlwes.eu`) stays the owner of the schema: these are hand-mirrored
- * from its `src/types.ts` rather than imported, because it is a separate HonoX worker
- * with its own build. Only the response shape is duplicated — adapters, the provider
- * catalog and the Zod schemas stay there.
- *
- * `/api/admin/ankai/sources` returns the live catalog, so the source toggles cannot
- * drift even though these types are a copy.
+ * The originals were Zod schemas from `@hono/zod-openapi`, which existed to generate the
+ * OpenAPI document for its Scalar docs page. Nothing here serves that document, and the
+ * only untrusted input is the query string — validated where it is parsed, in
+ * `src/pages/api/admin/ankai/search.ts` — so these are plain interfaces and the dependency
+ * is gone.
  */
 
-export interface ProviderInfo {
-  id: string
-  label: string
-  kind: 'records' | 'authority' | 'linkout'
-}
-
-/** Provenance hint from the holding collection, never a verdict about a person. */
+/** Provenance hint derived from the holding collection. Never a verdict about a person. */
 export type RoleHint = 'victim' | 'perpetrator' | 'unknown'
+
+export interface PersonEvent {
+  type: string
+  date?: string
+  place?: string
+}
 
 export interface ArchiveRecord {
   source: string
@@ -26,13 +24,65 @@ export interface ArchiveRecord {
   role?: RoleHint
   birth?: { date?: string; place?: string }
   death?: { date?: string; place?: string }
+  events?: PersonEvent[]
   documentType?: string
   holdingInstitution?: string
   reference?: string
   title?: string
   landingUrl: string
+  /** Short excerpt of the finding text (scope & content). */
   preview?: string
   accessNote?: string
+  raw?: unknown
+}
+
+/** Normalized query passed to every adapter. */
+export interface PersonQuery {
+  name?: string
+  keywords?: string
+  birthYear?: number
+  deathYear?: number
+  limit: number
+  cursor?: string
+  nameVariants?: string[]
+}
+
+export interface AdapterResult {
+  records: ArchiveRecord[]
+  total?: number
+  cursor?: string
+  degraded?: boolean
+}
+
+/**
+ * What an adapter is handed. `env` is the Worker environment: adapters reach for
+ * `CACHE`, `DB` and the upstream API keys through it.
+ */
+export interface Ctx {
+  env: AnkaiEnv
+  signal: AbortSignal
+}
+
+/**
+ * The bindings the archive code needs. A structural subset of the Worker `Env` rather
+ * than the whole thing, so an adapter cannot quietly reach for the newsletter database.
+ */
+export interface AnkaiEnv {
+  ANKAI_DB: D1Database
+  ANKAI_CACHE: KVNamespace
+  DDB_API_KEY?: string
+  EHRI_TOKEN?: string
+  GATEWAY_TIMEOUT_MS?: string
+  FETCH_PROXY_URL?: string
+  FETCH_PROXY_TOKEN?: string
+}
+
+export interface ArchiveAdapter {
+  id: string
+  label: string
+  role: 'records' | 'authority' | 'linkout'
+  search(q: PersonQuery, ctx: Ctx): Promise<AdapterResult>
+  getRecord?(id: string, ctx: Ctx): Promise<ArchiveRecord | null>
 }
 
 export interface LinkOut {
@@ -52,8 +102,15 @@ export interface PerSourceStatus {
 }
 
 export interface SearchResponse {
-  query: { name?: string; keywords?: string; cursor?: string }
+  query: PersonQuery
   results: ArchiveRecord[]
   linkouts: LinkOut[]
   perSource: Record<string, PerSourceStatus>
+}
+
+/** Serializable provider descriptor for the UI and the sources endpoint. */
+export interface ProviderInfo {
+  id: string
+  label: string
+  kind: 'records' | 'authority' | 'linkout'
 }

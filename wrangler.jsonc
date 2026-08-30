@@ -36,7 +36,10 @@
       "database_name": "rahlwes-newsletter",
       "database_id": "d4f27b52-5ca4-4417-9f6f-50448e5091dd",
       "migrations_dir": "migrations"
-    }
+    },
+    // The archive corpus ankai ingests the Gedenkbuch CSV into. Same database id, so no
+    // migration is needed and either worker can ingest during the changeover.
+    { "binding": "ANKAI_DB", "database_name": "ankai", "database_id": "c59d1fcf-0fa4-47e6-bab6-c07076bed722" }
   ],
   // One message per subscriber. `max_concurrency` bounds how many sends run at once so
   // a large dispatch cannot outrun the Email Sending rate limit.
@@ -44,6 +47,13 @@
     "producers": [{ "queue": "send-newsletter-queue", "binding": "NEWSLETTER_QUEUE" }],
     "consumers": [{ "queue": "send-newsletter-queue", "max_batch_size": 10, "max_concurrency": 2, "max_retries": 3 }]
   },
+  // Ankai's upstream response cache. Same namespace the standalone ankai worker uses, so
+  // both serve identical data while it is being retired.
+  //
+  // Prefixed because a bare `CACHE` would read as this site's own; nothing else here
+  // uses KV.
+  "kv_namespaces": [{ "binding": "ANKAI_CACHE", "id": "80b6423e83024989a5c29dcb832fd7fa" }],
+
   // Hard bounces appear on the account suppression list hours after a send, with no
   // webhook to subscribe to, so they are polled once a day.
   "triggers": { "crons": ["17 4 * * *"] },

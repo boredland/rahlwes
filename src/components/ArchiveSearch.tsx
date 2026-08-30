@@ -2,12 +2,11 @@ import { useState } from 'react'
 import type { ArchiveRecord, LinkOut, ProviderInfo, SearchResponse } from '@ankai/types'
 
 /**
- * Ankai's archive search, ported from its HonoX island to a React one.
+ * Archive search across the sources registered in `src/ankai/providers.ts`.
  *
- * Every request goes to `/api/admin/ankai/*`, the same-origin proxy: Ankai serves no
- * CORS headers, and its password stays server-side. A 401 here means the Keystatic
- * session expired, not that an Ankai login is missing, so it reloads rather than
- * redirecting to Ankai's own login page.
+ * Ported from Ankai's HonoX island. The fan-out now runs in this worker, so requests go
+ * to `/api/admin/ankai/search` and the Keystatic guard is the only gate. A 401 means
+ * that session expired, so it reloads rather than sending the reader anywhere else.
  */
 
 /** Wrap occurrences of a query token in a highlight — token-based, so "rene weiß" marks both. */
@@ -60,7 +59,7 @@ export default function ArchiveSearch({ sources: catalog }: { sources: ProviderI
     if (cursor) params.set('cursor', cursor)
 
     try {
-      const response = await fetch(`/api/admin/ankai/persons/search?${params}`, {
+      const response = await fetch(`/api/admin/ankai/search?${params}`, {
         headers: { accept: 'application/json' },
       })
       if (response.status === 401) {

@@ -1,47 +1,18 @@
 ---
 import DefaultLayout from '@layouts/DefaultLayout.astro'
 import ArchiveSearch from '@components/ArchiveSearch.tsx'
-import type { ProviderInfo } from '@ankai/types'
-import { env } from 'cloudflare:workers'
+import { selectableSources } from '@ankai/providers'
 
 // Same reason as every other admin page: prerendering would bake the middleware's
 // login redirect into a static file that never reaches the guard again.
 export const prerender = false
 
 /**
- * Ankai's search UI, served from this site instead of search.rahlwes.eu so it sits
- * behind the Keystatic guard rather than Ankai's shared password.
- *
- * The catalog is fetched here rather than hard-coded: Ankai's provider list is
- * deliberately single-source, and duplicating it would let the toggles drift from
- * what the server actually queries.
+ * The archive search UI. The fan-out itself lives in `src/ankai/` and runs in this
+ * worker, so the catalog is read straight from the provider list rather than fetched:
+ * one source of truth, and the toggles cannot drift from what the server queries.
  */
-const { ANKAI_PASSWORD: password, ANKAI_ORIGIN: origin } = env as Env & {
-  ANKAI_PASSWORD?: string
-  ANKAI_ORIGIN?: string
-}
-
-let sources: ProviderInfo[] = []
-let catalogError: string | null = null
-
-if (!password) {
-  catalogError = 'ANKAI_PASSWORD ist nicht gesetzt.'
-} else {
-  try {
-    const response = await fetch(new URL('/v1/sources', origin ?? 'https://search.rahlwes.eu'), {
-      headers: { authorization: `Bearer ${password}`, accept: 'application/json' },
-      signal: AbortSignal.timeout(10_000),
-    })
-    if (!response.ok) throw new Error(`HTTP ${response.status}`)
-    const catalog = (await response.json()) as ProviderInfo[] | { sources?: ProviderInfo[] }
-    // Tolerate both a bare array and a wrapped object: /v1/sources is Ankai's to change.
-    const list = Array.isArray(catalog) ? catalog : (catalog.sources ?? [])
-    sources = list.filter((p) => p.kind !== 'linkout')
-  } catch (error) {
-    console.error('ankai catalog fetch failed', error)
-    catalogError = 'Die Quellenliste konnte nicht geladen werden.'
-  }
-}
+const sources = selectableSources
 ---
 
 <DefaultLayout title="Archivsuche" description="Recherche in Archivbeständen">
@@ -53,13 +24,7 @@ if (!password) {
         direkt zur haltenden Institution verlinkt.
       </p>
 
-      {
-        catalogError ? (
-          <p class="archive-error">{catalogError}</p>
-        ) : (
-          <ArchiveSearch sources={sources} client:load />
-        )
-      }
+      <ArchiveSearch sources={sources} client:load />
     </div>
   </section>
 </DefaultLayout>
