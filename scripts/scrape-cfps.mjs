@@ -109,6 +109,8 @@ const IS_PRIZE = /\b(prize|preis\b|award|auszeichnung)\b/i
 
 const IS_ENTGELTGRUPPE = /\bentgeltgruppe\b/i
 
+const IS_ENTRY_LEVEL = /(tourguide|besucherführer|besucherbegleitung|fuehrungen|fuehrung|führer|kartenverkauf|einlasskasse|werkstudent|hilfskraft|hilfsarbeiter|aushilfe)/i
+
 const IS_JOB_AD =
   /\b(stelle|stellenangebot|stellenausschreibung|vollzeit|teilzeit|\(w\/m\/d\)|\(m\/w\/d\)|m\/w\/d|w\/m\/d|vacancy|job vacancy|wir suchen|bewerbungsfrist für die stelle|praktik|praktikant|aushilfe|trainee)\b/i
 
@@ -352,6 +354,7 @@ function feedScraper(url) {
       .filter((item) => item.url && CFP_PATTERN.test(`${item.title} ${item.description}`))
       .filter((item) => !IS_PAPER_CALL.test(`${item.title} ${item.description}`))
       .filter((item) => !IS_JOB_AD.test(`${item.title} ${item.description}`))
+      .filter((item) => !IS_ENTRY_LEVEL.test(`${item.title} ${item.description}`))
       .filter((item) => !IS_ENTGELTGRUPPE.test(`${item.title} ${item.description}`))
       .filter((item) => !IS_PRIZE.test(item.title))
       .filter((item) => !IS_RETROSPECTIVE.test(`${item.title} ${item.description}`))
@@ -390,6 +393,7 @@ async function scrapeHSozKult() {
     .filter((item) => !/praktik|aushilfe|trainee/i.test(item.title))
     .filter((item) => !IS_PRIZE.test(item.title))
     .filter((item) => !IS_WISS_MITARB.test(item.title))
+    .filter((item) => !IS_ENTRY_LEVEL.test(item.title))
     .filter((item) => !IS_ENTGELTGRUPPE.test(`${item.title} ${item.description}`))
     .filter((item) => isRelevant(item.title, item.description))
 }
