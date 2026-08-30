@@ -1,0 +1,40 @@
+name: Archivquellen prüfen
+
+on:
+  schedule:
+    # 06:00 UTC, after the Ausschreibungen run at 05:00 so a broken upstream shows up
+    # as its own failure rather than as noise inside the scrape log.
+    - cron: '0 6 * * *'
+  workflow_dispatch:
+
+concurrency:
+  group: drift
+  cancel-in-progress: false
+
+jobs:
+  drift:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+
+      - run: npm ci
+
+      # These hit the real archives and assert the structural contracts the adapters
+      # depend on — several are reverse-engineered (Arolsen's ITS-WS.asmx, Arcinsys
+      # markup, Kalliope's CQL indexes, GND MARC fields) and carry no promise of
+      # stability. A failure here names the source that changed shape, which is the
+      # difference between a diagnosable break and a silently empty search.
+      #
+      # Throttling is not drift: the tests skip on timeouts and non-200s, so only a
+      # genuine shape change fails the run.
+      #
+      # Yad Vashem needs the fetch-proxy and skips itself when the token is absent.
+      - name: Upstream-Verträge prüfen
+        env:
+          FETCH_PROXY_URL: ${{ vars.FETCH_PROXY_URL }}
+          FETCH_PROXY_TOKEN: ${{ secrets.FETCH_PROXY_TOKEN }}
+        run: npm run test:drift

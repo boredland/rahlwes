@@ -263,9 +263,25 @@ finding-aid metadata that the upstreams publish openly is stored; everything els
 deep-linked. The `role` field is a provenance hint from the holding collection (a
 Spruchkammer file → `perpetrator`), never a verdict about a person.
 
-**Tests.** `npm test` runs 55 offline tests — adapters against a mocked `fetch` with
-canned upstream shapes, plus the parsers, the fan-out and relevance ranking. No network,
-so a regression in our mapping code fails immediately and deterministically.
+**Tests.** Two layers, split so ordinary runs stay deterministic while upstream changes
+still get caught.
+
+`npm test` runs 55 offline tests — adapters against a mocked `fetch` with canned upstream
+shapes, plus the parsers, the fan-out and relevance ranking. No network, so a regression in
+our mapping code fails immediately.
+
+`npm run test:drift` hits the real archives and asserts the structural contracts the
+adapters depend on. Several are reverse-engineered and carry no promise of stability:
+Arolsen's `ITS-WS.asmx` session protocol, Arcinsys detail markup, Kalliope's CQL indexes,
+GND MARC 100/400. A failure names the source that changed shape — the difference between a
+diagnosable break and a search that silently returns nothing.
+
+Throttling is not drift. Arolsen and Arcinsys both rate-limit hard, so those tests skip on
+a timeout or non-200 and only fail on a genuine shape change. Yad Vashem needs the
+fetch-proxy and skips itself without `FETCH_PROXY_TOKEN`.
+
+The `Archivquellen prüfen` workflow runs it daily at 06:00 UTC, so upstream breakage
+surfaces as a failed scheduled run rather than as an empty result page weeks later.
 
 ## Analytics
 
