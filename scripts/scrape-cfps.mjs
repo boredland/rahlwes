@@ -412,7 +412,7 @@ async function scrapeHSozKult() {
  * anchor tag containing the slug and title.
  */
 async function scrapeHSozKultHtml() {
-  const queries = ['Werkvertrag', 'Auftrag Honorar', 'freiberuflich Museum']
+  const queries = ['Werkvertrag', 'Honorarvertrag', 'Honorar freiberuflich', 'Auftrag Honorar', 'freiberuflich Museum']
   const seen = new Set()
   const results = []
 
