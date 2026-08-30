@@ -472,7 +472,7 @@ async function scrapeHSozKultHtml() {
   // signal the search page carries: "job-" is a commission, while "event-",
   // "fdkn-", "z6ann-" and "fdl-" are conference announcements, journal issues and
   // forum threads that read like calls but cannot be worked.
-  return results
+  const candidates = results
     .filter((item) => item.slug.startsWith('job-'))
     .filter((item) => !IS_PAPER_CALL.test(`${item.title} ${item.description}`))
     .filter((item) => !IS_STIPEND.test(item.title))
@@ -481,6 +481,16 @@ async function scrapeHSozKultHtml() {
     .filter((item) => !IS_ENTGELTGRUPPE.test(`${item.title} ${item.description}`))
     .filter((item) => !IS_JOB_AD.test(`${item.title} ${item.description}`))
     .filter((item) => !IS_ENTRY_LEVEL.test(item.title))
+
+  // The teaser only exists on the detail page, and isRelevant needs it: with an empty
+  // description every entry is judged on its title alone.
+  const enriched = await enrichFromDetail(candidates)
+
+  return enriched
+    .filter((item) => !IS_PAPER_CALL.test(`${item.title} ${item.description}`))
+    .filter((item) => !IS_RETROSPECTIVE.test(`${item.title} ${item.description}`))
+    .filter((item) => !IS_ENTGELTGRUPPE.test(`${item.title} ${item.description}`))
+    .filter((item) => !IS_JOB_AD.test(`${item.title} ${item.description}`))
     .filter((item) => isRelevant(item.title, item.description))
 }
 
@@ -830,18 +840,34 @@ async function enrichFromPdfs(calls) {
 }
 
 /**
- * Fill in a deadline from an H-Soz-Kult detail page.
+ * Read the deadline and the teaser from an H-Soz-Kult detail page.
  *
- * The search results carry the Bewerbungsschluss for most entries, but an entry that has
- * dropped off every results page keeps whatever it was stored with — and before the
- * extraction worked, that was nothing. The detail page always states it, so it is the
- * authority when the listing cannot answer.
+ * Both in one request: the listing carries neither reliably. Its Bewerbungsschluss is
+ * absent once an entry drops off every results page, and its `hfn-list-reviewed` div is
+ * a subtitle that merely restates the title, which is why descriptions were empty.
  */
-async function fetchDeadlineFromDetail(url) {
+async function fetchDetail(url) {
   const html = await fetchText(url)
-  const text = stripTags(html)
-  const match = text.match(/(?:Bewerbungsschluss|Bewerbungsfrist|Einsendeschluss)\s*:?\s*(\d{1,2}\.\s*(?:\d{1,2}\.|[A-Za-zäöü]+)\s*\d{4})/i)
-  return match ? normaliseGermanDate(match[1]) : ''
+
+  const deadlineMatch = stripTags(html).match(
+    /(?:Bewerbungsschluss|Bewerbungsfrist|Einsendeschluss)\s*:?\s*(\d{1,2}\.\s*(?:\d{1,2}\.|[A-Za-zäöü]+)\s*\d{4})/i,
+  )
+
+  // The fulltext container is followed by a donation modal in the same parent, so the
+  // slice ends there — otherwise every teaser trails into "Wissen ist das einzige Gut …".
+  const bodyMatch = html.match(/<div class="hfn-item-fulltext">([\s\S]*?)<div id="donateModal"/)
+  const teaser = bodyMatch ? excerpt(stripTags(bodyMatch[1])) : ''
+
+  return { deadline: deadlineMatch ? normaliseGermanDate(deadlineMatch[1]) : '', teaser }
+}
+
+/** Trim to a readable teaser: whole sentences where possible, hard cap otherwise. */
+function excerpt(text, max = 300) {
+  const clean = text.trim()
+  if (clean.length <= max) return clean
+  const cut = clean.slice(0, max)
+  const lastStop = cut.lastIndexOf('. ')
+  return lastStop > max / 2 ? cut.slice(0, lastStop + 1) : `${cut.trimEnd()}…`
 }
 
 function isExpired(item) { if (!item.deadline) return false; const d = new Date(item.deadline.split(".").reverse().join("-")); const today = new Date(); return d.getTime() < today.getTime() }
@@ -867,10 +893,36 @@ function rejectReason(item) {
   return null
 }
 
+/**
+ * Give H-Soz-Kult results the teaser and deadline only their detail pages carry.
+ *
+ * Runs before the filters, because `isRelevant` reads the description: judging an entry
+ * on its title alone is what an empty description forces.
+ */
+async function enrichFromDetail(items) {
+  for (const item of items) {
+    if (!item.url.includes('hsozkult.de/job/id/')) continue
+    if (item.description && item.deadline) continue
+
+    try {
+      await sleep(CRAWL_DELAY)
+      const detail = await fetchDetail(item.url)
+      if (detail.teaser && !item.description) item.description = detail.teaser
+      if (detail.deadline && !item.deadline) item.deadline = detail.deadline
+    } catch (error) {
+      console.error(`    detail failed for ${item.url}: ${error.message}`)
+    }
+  }
+  return items
+}
+
 const today = new Date().toISOString().slice(0, 10)
 const existing = JSON.parse(await readFile(OUT, 'utf8').catch(() => '[]'))
 const known = new Set(existing.map((cfp) => cfp.url))
 const storedByUrl = new Map(existing.map((cfp) => [cfp.url, cfp]))
+// The backfill below mutates these objects in place, so remember their prior state:
+// a run that only fills in a missing teaser or deadline changes no counts at all.
+const before = JSON.stringify(existing)
 
 const found = []
 let failures = 0
@@ -927,13 +979,18 @@ if (failures === Object.keys(SOURCES).length) {
 // deadline missing since before the extraction worked would keep them alive forever.
 // Ask the detail page directly; one request per affected entry, once.
 for (const cfp of existing) {
-  if (cfp.deadline || !cfp.url.includes('hsozkult.de/job/id/')) continue
+  if (!cfp.url.includes('hsozkult.de/job/id/')) continue
+  if (cfp.deadline && cfp.description) continue
   try {
     await sleep(CRAWL_DELAY)
-    const deadline = await fetchDeadlineFromDetail(cfp.url)
-    if (deadline) {
-      console.error(`  detail deadline: ${deadline}  ${cfp.title.slice(0, 55)}`)
-      cfp.deadline = deadline
+    const detail = await fetchDetail(cfp.url)
+    if (detail.deadline && !cfp.deadline) {
+      console.error(`  detail deadline: ${detail.deadline}  ${cfp.title.slice(0, 55)}`)
+      cfp.deadline = detail.deadline
+    }
+    if (detail.teaser && !cfp.description) {
+      console.error(`  detail teaser:   ${detail.teaser.slice(0, 60)}…`)
+      cfp.description = detail.teaser
     }
   } catch (error) {
     console.error(`  detail fetch failed for ${cfp.url}: ${error.message}`)
@@ -947,10 +1004,12 @@ const kept = existing.filter((cfp) => {
 })
 const dropped = existing.length - kept.length
 
-if (!process.argv.includes('--dry-run') && (found.length || dropped)) {
+const updated = JSON.stringify(existing) !== before
+
+if (!process.argv.includes('--dry-run') && (found.length || dropped || updated)) {
   const merged = [...found, ...kept].sort((a, b) => b.date.localeCompare(a.date))
   await writeFile(OUT, `${JSON.stringify(merged, null, 2)}\n`)
 }
 
-console.error(`${found.length} new, ${dropped} dropped, ${kept.length} kept`)
+console.error(`${found.length} new, ${dropped} dropped, ${kept.length} kept${updated ? ', entries updated' : ''}`)
 process.stdout.write(JSON.stringify(found))
