@@ -56,6 +56,20 @@ const jsonLd = {
 
 const imagePath = image ? (typeof image === 'string' ? image : image.src) : '/social-preview-image.png'
 const imageUrl = new URL(imagePath, Astro.site).href
+
+/**
+ * Cloudflare Web Analytics. Read as a build-time variable so a fork or a local
+ * build stays unmeasured: without the token nothing is rendered.
+ *
+ * The beacon is written out here rather than left to the zone's automatic
+ * injection, which rewrites buffered HTML and is unreliable for the streamed
+ * SSR responses this site sends.
+ *
+ * It sets no cookie, uses no localStorage and does not fingerprint, so it needs
+ * no consent banner under TDDDG § 25. That is why it was chosen over a
+ * self-hosted tracker recognising returning visitors through the browser cache.
+ */
+const analyticsToken = import.meta.env.PUBLIC_CF_BEACON_TOKEN
 ---
 
 <html lang={htmlLang[locale]} dir="ltr">
@@ -116,6 +130,16 @@ const imageUrl = new URL(imagePath, Astro.site).href
       <slot />
     </main>
     <Footer />
+    {
+      analyticsToken && (
+        <script
+          is:inline
+          defer
+          src="https://static.cloudflareinsights.com/beacon.min.js"
+          data-cf-beacon={JSON.stringify({ token: analyticsToken })}
+        />
+      )
+    }
     <style lang="scss" is:global>
       @use 'scss/base/mixins' as *;
 
