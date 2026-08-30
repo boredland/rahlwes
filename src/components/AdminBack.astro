@@ -1,0 +1,33 @@
+---
+import { Icon } from 'astro-icon/components'
+
+/**
+ * Back link to the admin overview.
+ *
+ * A link rather than `history.back()`: these pages are reached from the overview but
+ * also from a bookmark or a redirect after login, and going back in history would then
+ * land somewhere unrelated — or, straight after the Keystatic login, on the login page.
+ */
+---
+
+<a href="/admin/" class="admin-back">
+  <Icon aria-hidden="true" name="lucide:arrow-left" size="1rem" />
+  Übersicht
+</a>
+
+<style lang="scss">
+  .admin-back {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-3xs);
+    margin-block-end: var(--space-s);
+    color: var(--color-neutral-700);
+    font-size: var(--font-size--1);
+    text-decoration: none;
+
+    &:hover {
+      color: var(--color-primary-500);
+      text-decoration: underline;
+    }
+  }
+</style>

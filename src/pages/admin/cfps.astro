@@ -1,5 +1,6 @@
 ---
 import DefaultLayout from '@layouts/DefaultLayout.astro'
+import AdminBack from '@components/AdminBack.astro'
 import { env } from 'cloudflare:workers'
 import { cfpSourceName, listCfpSubscribers, type Cfp } from '@cfp/db'
 import collected from '../../data/cfps.json'
@@ -20,6 +21,7 @@ const formatDate = (value: string) => {
 <DefaultLayout title="Ausschreibungen" description="Gesammelte Calls for Proposals">
   <section class="my-16">
     <div class="container admin space-content">
+      <AdminBack />
       <h1>Ausschreibungen</h1>
       <p class="summary">
         {cfps.length} gesammelte Ausschreibungen, {subscribers.length} Empfänger für den täglichen Überblick.

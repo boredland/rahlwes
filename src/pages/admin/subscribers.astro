@@ -1,5 +1,6 @@
 ---
 import DefaultLayout from '@layouts/DefaultLayout.astro'
+import AdminBack from '@components/AdminBack.astro'
 import { env } from 'cloudflare:workers'
 import { locales, localeName } from '@i18n/config'
 import { listAll } from '@newsletter/db'
@@ -14,6 +15,7 @@ const bounced = subscribers.filter((s) => s.bounced_at).length
 <DefaultLayout title="Abonnenten" description="Newsletter-Abonnenten verwalten">
   <section class="my-16">
     <div class="container admin space-content">
+      <AdminBack />
       <h1>Abonnenten</h1>
       <p class="summary">
         {subscribers.length} Einträge, davon {verified} empfangsbereit{bounced > 0 && `, ${bounced} unzustellbar`}.

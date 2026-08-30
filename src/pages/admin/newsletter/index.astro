@@ -1,5 +1,6 @@
 ---
 import DefaultLayout from '@layouts/DefaultLayout.astro'
+import AdminBack from '@components/AdminBack.astro'
 import { env } from 'cloudflare:workers'
 import { getCollection } from 'astro:content'
 import { currentLocale, localeName } from '@i18n/config'
@@ -30,6 +31,7 @@ const statusLabel: Record<string, string> = {
 <DefaultLayout title="Newsletter versenden" description="Newsletter an bestätigte Abonnenten senden">
   <section class="my-16">
     <div class="container admin space-content">
+      <AdminBack />
       <h1>Newsletter versenden</h1>
       <p class="summary">
         {recipients.length} bestätigte Empfänger.
