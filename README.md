@@ -218,6 +218,28 @@ checking the Keystatic GitHub token for push access to the content repo — no
 second password. Anyone who can edit the site can send a newsletter. The URLs are
 listed under [Admin surfaces](#admin-surfaces).
 
+## Analytics
+
+Cloudflare Web Analytics, enabled for `next.rahlwes.eu`. The beacon is rendered by
+`DefaultLayout.astro` from `PUBLIC_CF_BEACON_TOKEN`; without that variable nothing is
+emitted, so local builds and forks stay unmeasured.
+
+It is written out explicitly rather than left to the zone's automatic injection, which
+rewrites buffered HTML and is unreliable for the streamed SSR responses this site sends.
+
+**Why not a self-hosted tracker.** Counterscale and similar tools count *unique* visitors
+by writing a `Last-Modified` value into the browser cache and reading it back through
+`If-Modified-Since`. EDPB Guidelines 2/2023 name caching mechanisms in paragraph 42 as
+access to terminal equipment, so that needs opt-in consent under § 25 TDDDG — a banner,
+on every page. Cloudflare's beacon sets no cookie, writes no `localStorage` and does not
+fingerprint (verified in a browser: zero cookies, empty storage), so it needs no banner.
+The trade is real: no unique-visitor counts. On a portfolio a banner would suppress more
+signal than the extra metric returns.
+
+`datenschutz.mdx` describes exactly this and nothing else. It previously declared Google
+Analytics with cookies, user profiles and stored IPs, inherited from the Squarespace
+import and untrue since the migration.
+
 ## Design tokens
 
 Brand colours are carried over from the previous Squarespace theme and live in
