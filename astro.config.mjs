@@ -34,6 +34,7 @@ const viteConfig = {
       '@i18n': fileURLToPath(new URL('./src/i18n', import.meta.url)),
       '@newsletter': fileURLToPath(new URL('./src/newsletter', import.meta.url)),
       '@cfp': fileURLToPath(new URL('./src/cfp', import.meta.url)),
+      '@ankai': fileURLToPath(new URL('./src/ankai', import.meta.url)),
       '@theme-config': fileURLToPath(new URL('./theme.config.ts', import.meta.url)),
     },
   },

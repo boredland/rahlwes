@@ -11,6 +11,7 @@
       "@i18n/*": ["./src/i18n/*"],
       "@newsletter/*": ["./src/newsletter/*"],
       "@cfp/*": ["./src/cfp/*"],
+      "@ankai/*": ["./src/ankai/*"],
       "@theme-config": ["./theme.config.ts"]
     }
   }

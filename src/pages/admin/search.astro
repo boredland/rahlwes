@@ -1,0 +1,308 @@
+---
+import DefaultLayout from '@layouts/DefaultLayout.astro'
+import ArchiveSearch from '@components/ArchiveSearch.tsx'
+import type { ProviderInfo } from '@ankai/types'
+import { env } from 'cloudflare:workers'
+
+// Same reason as every other admin page: prerendering would bake the middleware's
+// login redirect into a static file that never reaches the guard again.
+export const prerender = false
+
+/**
+ * Ankai's search UI, served from this site instead of search.rahlwes.eu so it sits
+ * behind the Keystatic guard rather than Ankai's shared password.
+ *
+ * The catalog is fetched here rather than hard-coded: Ankai's provider list is
+ * deliberately single-source, and duplicating it would let the toggles drift from
+ * what the server actually queries.
+ */
+const { ANKAI_PASSWORD: password, ANKAI_ORIGIN: origin } = env as Env & {
+  ANKAI_PASSWORD?: string
+  ANKAI_ORIGIN?: string
+}
+
+let sources: ProviderInfo[] = []
+let catalogError: string | null = null
+
+if (!password) {
+  catalogError = 'ANKAI_PASSWORD ist nicht gesetzt.'
+} else {
+  try {
+    const response = await fetch(new URL('/v1/sources', origin ?? 'https://search.rahlwes.eu'), {
+      headers: { authorization: `Bearer ${password}`, accept: 'application/json' },
+      signal: AbortSignal.timeout(10_000),
+    })
+    if (!response.ok) throw new Error(`HTTP ${response.status}`)
+    const catalog = (await response.json()) as ProviderInfo[] | { sources?: ProviderInfo[] }
+    // Tolerate both a bare array and a wrapped object: /v1/sources is Ankai's to change.
+    const list = Array.isArray(catalog) ? catalog : (catalog.sources ?? [])
+    sources = list.filter((p) => p.kind !== 'linkout')
+  } catch (error) {
+    console.error('ankai catalog fetch failed', error)
+    catalogError = 'Die Quellenliste konnte nicht geladen werden.'
+  }
+}
+---
+
+<DefaultLayout title="Archivsuche" description="Recherche in Archivbeständen">
+  <section class="my-16">
+    <div class="container">
+      <h1>Archivsuche</h1>
+      <p class="subtitle">
+        Eine Abfrage über die angebundenen Archivsysteme. Die Ergebnisse sind Findmittel-Metadaten; alles Weitere wird
+        direkt zur haltenden Institution verlinkt.
+      </p>
+
+      {
+        catalogError ? (
+          <p class="archive-error">{catalogError}</p>
+        ) : (
+          <ArchiveSearch sources={sources} client:load />
+        )
+      }
+    </div>
+  </section>
+</DefaultLayout>
+
+<style lang="scss" is:global>
+  .subtitle {
+    color: var(--color-neutral-700);
+    font-size: var(--font-size--1);
+    margin-block-end: var(--space-l);
+    max-inline-size: var(--font-measure);
+  }
+
+  .archive {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-l);
+  }
+
+  .archive-form {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-m);
+    padding: var(--space-l);
+    border: 1px solid var(--border-color-subtle);
+    border-radius: var(--radius-m);
+  }
+
+  .archive-fields {
+    display: grid;
+    gap: var(--space-m);
+
+    @media (min-width: 40rem) {
+      grid-template-columns: 1fr 1fr;
+    }
+
+    label {
+      display: block;
+    }
+
+    span {
+      display: block;
+      margin-block-end: var(--space-3xs);
+      font-size: var(--font-size--1);
+      font-weight: 600;
+    }
+
+    input {
+      inline-size: 100%;
+      padding: var(--space-2xs) var(--space-xs);
+      border: 1px solid var(--border-color-subtle);
+      border-radius: var(--radius-s);
+      background: var(--color-neutral-100);
+      color: inherit;
+      font: inherit;
+      font-size: var(--font-size--1);
+    }
+  }
+
+  .archive-sources {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2xs);
+  }
+
+  .archive-chip {
+    padding: var(--space-3xs) var(--space-xs);
+    border: 1px solid var(--border-color-subtle);
+    border-radius: 999px;
+    background: transparent;
+    color: var(--color-neutral-700);
+    font-size: var(--font-size--2);
+    cursor: pointer;
+
+    &.is-on {
+      border-color: var(--color-primary-500);
+      background: var(--color-primary-500);
+      color: var(--color-neutral-100);
+    }
+  }
+
+  .archive-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-xs);
+    padding-block-start: var(--space-s);
+    border-block-start: 1px solid var(--border-color-subtle);
+  }
+
+  .archive-check {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3xs);
+    font-size: var(--font-size--1);
+    color: var(--color-neutral-700);
+  }
+
+  .archive-submit {
+    padding: var(--space-2xs) var(--space-m);
+    border: 0;
+    border-radius: var(--radius-s);
+    background: var(--color-primary-500);
+    color: var(--color-neutral-100);
+    font: inherit;
+    font-size: var(--font-size--1);
+    cursor: pointer;
+
+    &:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+  }
+
+  .archive-results {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-m);
+  }
+
+  .archive-status {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-3xs);
+  }
+
+  .archive-pill {
+    padding: var(--space-3xs) var(--space-2xs);
+    border: 1px solid var(--border-color-subtle);
+    border-radius: var(--radius-s);
+    font-size: var(--font-size--2);
+    color: var(--color-neutral-700);
+
+    &.is-error {
+      border-color: #c2554044;
+      color: #a33f2c;
+    }
+
+    &.is-stale {
+      border-color: #b6864f44;
+    }
+  }
+
+  .archive-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-xs);
+    padding: 0;
+    margin: 0;
+    list-style: none;
+  }
+
+  .archive-card {
+    padding: var(--space-m);
+    border: 1px solid var(--border-color-subtle);
+    border-radius: var(--radius-m);
+
+    > a {
+      font-weight: 700;
+      text-decoration: none;
+
+      &:hover {
+        text-decoration: underline;
+      }
+    }
+  }
+
+  .archive-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-3xs) var(--space-xs);
+    margin-block-start: var(--space-3xs);
+    font-size: var(--font-size--2);
+    color: var(--color-neutral-600);
+  }
+
+  .archive-source {
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    font-weight: 600;
+  }
+
+  .archive-preview {
+    margin-block-start: var(--space-2xs);
+    font-size: var(--font-size--1);
+    color: var(--color-neutral-700);
+  }
+
+  .archive-mark {
+    padding-inline: 0.15em;
+    border-radius: var(--radius-s);
+    background: #f3e6c8;
+    color: inherit;
+  }
+
+  .archive-more {
+    align-self: flex-start;
+    padding: var(--space-2xs) var(--space-m);
+    border: 1px solid var(--border-color-subtle);
+    border-radius: var(--radius-s);
+    background: transparent;
+    color: inherit;
+    font: inherit;
+    font-size: var(--font-size--1);
+    cursor: pointer;
+  }
+
+  .archive-linkouts {
+    padding: var(--space-m);
+    border: 1px solid var(--border-color-subtle);
+    border-radius: var(--radius-m);
+
+    h2 {
+      margin-block-end: var(--space-2xs);
+      font-size: var(--font-size-0);
+    }
+
+    ul {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-3xs);
+      padding: 0;
+      margin: 0;
+      list-style: none;
+    }
+  }
+
+  .archive-note {
+    margin-inline-start: var(--space-2xs);
+    font-size: var(--font-size--2);
+    color: var(--color-neutral-600);
+  }
+
+  .archive-empty,
+  .archive-error {
+    font-size: var(--font-size--1);
+    color: var(--color-neutral-700);
+  }
+
+  .archive-error {
+    padding: var(--space-2xs) var(--space-xs);
+    border: 1px solid #c2554044;
+    border-radius: var(--radius-s);
+    color: #a33f2c;
+  }
+</style>
