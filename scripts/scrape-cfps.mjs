@@ -801,6 +801,8 @@ async function enrichFromPdfs(calls) {
   return calls
 }
 
+function isExpired(item) { if (!item.deadline) return false; const d = new Date(item.deadline.split(".").reverse().join("-")); const today = new Date(); return d.getTime() < today.getTime() }
+
 const today = new Date().toISOString().slice(0, 10)
 const existing = JSON.parse(await readFile(OUT, 'utf8').catch(() => '[]'))
 const known = new Set(existing.map((cfp) => cfp.url))
@@ -818,6 +820,8 @@ for (const [source, scrape] of Object.entries(SOURCES)) {
     for (const item of results) {
       if (known.has(item.url)) continue
       known.add(item.url)
+      if (isExpired(item)) { console.error(`    expired: ${item.title.slice(0, 50)} (deadline: ${item.deadline})`); continue }
+
       found.push({
         id: idFor(item.url),
         title: item.title,
