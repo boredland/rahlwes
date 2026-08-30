@@ -39,6 +39,7 @@ export type CfpSubscriber = {
  */
 export const cfpSourceName: Record<string, string> = {
   arthist: 'ArtHist.net',
+  secession: 'Secession Wien (Preis)',
   'h-soz-kult': 'H-Soz-Kult (Stellen)',
   'h-net': 'H-Net Announcements',
   icom: 'ICOM Deutschland',

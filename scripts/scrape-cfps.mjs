@@ -637,9 +637,49 @@ async function scrapeKulturstiftungBund() {
   }
   return calls.filter((c) => isRelevant(c.title, c.description))
 }
+
+/**
+ * Secession Wien — the Austrian art society. Publishes the Gmoser-Preis
+ * für Gegenwartskunst as a dated call on a fixed URL pattern:
+ *   secession.at/ausschreibung_gmoser-preis_<year>
+ *
+ * The page body contains "bis DD. Monat YYYY" as the deadline. No feed,
+ * no API — just the annual page.
+ */
+async function scrapeSecession() {
+  const year = new Date().getFullYear()
+  const url = `https://secession.at/ausschreibung_gmoser-preis_${year}`
+  const text = stripTags(
+    (await fetchText(url))
+      .replace(/<script[\s\S]*?<\/script>/gi, '')
+      .replace(/<style[\s\S]*?<\/style>/gi, ''),
+  )
+
+  const dl = text.match(/bis\s+(\d{1,2})\.\s*([A-Za-zäöü]+)\s*(\d{4})/)
+  if (!dl) return []
+
+  const months = ['Januar','Februar','März','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember']
+  const monthNum = months.indexOf(dl[2]) + 1
+  if (!monthNum) return []
+
+  const deadline = `${dl[1].padStart(2,'0')}.${String(monthNum).padStart(2,'0')}.${dl[3]}`
+
+  // Extract the title — it's the first heading or the first sentence.
+  const titleMatch = text.match(/(?:Ausschreibung|Preis)[^.]{0,80}/i)
+  const title = titleMatch ? titleMatch[0].slice(0, 100) : 'Gmoser-Preis für Gegenwartskunst'
+
+  return [{
+    title,
+    url,
+    date: '',
+    description: text.slice(0, 400),
+    deadline,
+  }]
+}
 const SOURCES = {
   museumsbund: scrapeMuseumsbund,
   'kulturstiftung-bund': scrapeKulturstiftungBund,
+  secession: scrapeSecession,
   'h-soz-kult': scrapeHSozKult,
   'h-net': scrapeHNet,
   icom: feedScraper('https://icom-deutschland.de/feed'),
