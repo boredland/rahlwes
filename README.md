@@ -221,26 +221,51 @@ listed under [Admin surfaces](#admin-surfaces).
 
 ## Archive search
 
-`/admin/search/` is [Ankai](https://search.rahlwes.eu)'s search UI, ported into Astro so it
-sits behind the Keystatic guard rather than Ankai's shared password. For records about
-named victims of persecution that is the higher bar: push access to the content repo,
-revocable, instead of a password that gets pasted into chats.
+`/admin/search/` searches the German and European archive systems that matter for
+research in the name of victims of National Socialism: one query fans out across EHRI,
+Arolsen, Kalliope, the Shoah-Memorial Frankfurt, the Jüdisches Museum collection,
+Arcinsys, the DDB and an ingested copy of the Bundesarchiv Gedenkbuch, with deep links to
+Yad Vashem, Matricula and NARA.
 
-Ankai stays a separate Worker with its own repo, D1 and provider catalog. **Only the UI
-lives here** — adapters, the fan-out and the Zod schemas stay there, and
-`src/ankai/types.ts` mirrors just the response shape the island reads. The source toggles
-are fetched from `/v1/sources` at request time rather than hard-coded, so they cannot
-drift from what the server actually queries.
+This was [Ankai](https://github.com/boredland/ankai), a standalone HonoX worker on
+`search.rahlwes.eu`, and now lives here so it can be retired. It ported cleanly because
+no adapter depended on Hono — only its auth middleware, its OpenAPI document and the Zod
+schemas backing that document did, and none of those survived the move.
 
-Requests go through `/api/admin/ankai/*`, which attaches `ANKAI_PASSWORD` server-side.
-That proxy is not optional: Ankai sends no CORS headers and its `ankai_auth` cookie is
-scoped to its own host, so a browser on this origin can neither call it nor authenticate
-against it. The proxy allows exactly two read endpoints — `persons/search` and `sources`.
-`/admin/ingest/*` is deliberately not reachable, because it rewrites the D1 corpus.
+| Piece | Where |
+| --- | --- |
+| Adapters, one per source | `src/ankai/adapters/` |
+| Fan-out, relevance ranking, parsers | `src/ankai/lib/` |
+| Provider catalog — the one place a source is registered | `src/ankai/providers.ts` |
+| Endpoints | `src/pages/api/admin/ankai/` |
+| UI | `src/pages/admin/search.astro` + `src/components/ArchiveSearch.tsx` |
 
-Set `ANKAI_PASSWORD` to Ankai's own `ACCESS_PASSWORD`; without it the page renders a
-configuration notice instead of a broken form. `ANKAI_ORIGIN` optionally points a dev
-build at a local Ankai.
+Adding a source is still a one-file change: implement an `ArchiveAdapter` and list it in
+`providers.ts`. The fan-out, the sources endpoint and the search UI all read from that
+catalog, so the toggles cannot drift from what the server queries.
+
+**Access.** Everything sits under `/admin`, so the Keystatic guard is the only gate —
+push access to the content repo rather than the shared password Ankai used. That includes
+`POST /api/admin/ankai/ingest/gedenkbuch`, which rewrites the corpus from a CSV export.
+
+**Bindings.** `ANKAI_DB` and `ANKAI_CACHE` deliberately point at the same D1 database and
+KV namespace the standalone worker used, so nothing had to be migrated and both serve
+identical data until it is switched off. They are prefixed because a bare `DB` or `CACHE`
+would read as this site's own.
+
+**Optional upstream secrets.** `DDB_API_KEY` enables the DDB adapter; `FETCH_PROXY_TOKEN`
+(with `FETCH_PROXY_URL`) enables Arcinsys and Yad Vashem. Without them those sources
+report `stale` and every other source still answers — a missing key degrades one adapter,
+never the request.
+
+**Sensitive data.** These records concern persecuted and named individuals. Only
+finding-aid metadata that the upstreams publish openly is stored; everything else is
+deep-linked. The `role` field is a provenance hint from the holding collection (a
+Spruchkammer file → `perpetrator`), never a verdict about a person.
+
+**Tests.** `npm test` runs 55 offline tests — adapters against a mocked `fetch` with
+canned upstream shapes, plus the parsers, the fan-out and relevance ranking. No network,
+so a regression in our mapping code fails immediately and deterministically.
 
 ## Analytics
 

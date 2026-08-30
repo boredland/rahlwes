@@ -52,6 +52,11 @@
   //
   // Prefixed because a bare `CACHE` would read as this site's own; nothing else here
   // uses KV.
+  // Arcinsys and Yad Vashem only answer a real browser session, so those two adapters
+  // render their JS search through this proxy. Non-secret; the paired FETCH_PROXY_TOKEN
+  // is a Worker secret. Without the token both sources report stale and the rest answer.
+  "vars": { "FETCH_PROXY_URL": "https://fetch-proxy.jonas-strassel.de/", "GATEWAY_TIMEOUT_MS": "15000" },
+
   "kv_namespaces": [{ "binding": "ANKAI_CACHE", "id": "80b6423e83024989a5c29dcb832fd7fa" }],
 
   // Hard bounces appear on the account suppression list hours after a send, with no
