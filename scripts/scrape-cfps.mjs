@@ -33,7 +33,7 @@ const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
  * paid commissions.
  */
 const CFP_PATTERN =
-  /\b(ausschreibung|ausgeschrieben|bewerbungsfrist|bewerbungsschluss|einsendeschluss|einreichfrist|wettbewerb|stipendi|fellowship|residen[zc]|residency|förderprogramm|förderung|preis\b|projektaufruf|interessenbekundung|call for (proposals|projects|participation|expressions?|tenders?)|open call|auftrag|werkvertrag|werkauftrag)\b/i
+  /\b(ausschreibung|ausgeschrieben|bewerbungsfrist|bewerbungsschluss|einsendeschluss|einreichfrist|wettbewerb|stipendi|fellowship|residen[zc]|residency|förderprogramm|förderung|preis\b|projektaufruf|interessenbekundung|call for (proposals|projects|participation|expressions?|tenders?)|open call|auftrag|werkvertrag|werkauftrag|honorarvertrag|honorarverträge|honorar)\b/i
 
 /**
  * Academic paper solicitations. She is a practitioner, not a conference author:
@@ -92,7 +92,7 @@ const OFF_TOPIC_FIELDS =
   /health|medicine|clinical|nursing|social work|psychology|disability studies|teaching and learning|urban design|planning|architectur|engineering|economics|law\b|policy/i
 
 const IS_FREELANCE =
-  /\b(freie mitarbeit|freiberuflich|freelance|honorarbasis|honorarvertrag|werkvertrag|auftrag|remote|homeoffice|home[- ]office|ortsunhängig|projektbasis)\b/i
+  /\b(freie mitarbeit|freiberuflich|freelance|honorarbasis|honorarvertrag|honorarverträge|honorar|werkvertrag|auftrag|remote|homeoffice|home[- ]office|ortsunhängig|projektbasis)\b/i
 
 const IS_STIPEND =
   /\b(stipendi(?:um|en|at)|residenz-?stipendi|stipends?|fellowships?|scholarships?|atelierstipendi)\b/i
