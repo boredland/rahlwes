@@ -1,0 +1,72 @@
+---
+import DefaultLayout from '@layouts/DefaultLayout.astro'
+import { useTranslations } from '@i18n/ui'
+import { currentLocale } from '@i18n/config'
+
+const locale = currentLocale(Astro.currentLocale)
+const t = useTranslations(locale)
+---
+
+<DefaultLayout title="Admin" description="Administrationsbereich">
+  <section class="my-16">
+    <div class="container">
+      <h1>Admin</h1>
+
+      <div class="admin-grid">
+        <a href="/admin/cfps/" class="admin-card">
+          <h2>Ausschreibungen</h2>
+          <p>Gesammelte Stellen, Aufträge und Förderaufrufe einsehen und verwalten.</p>
+        </a>
+
+        <a href="/admin/newsletter/" class="admin-card">
+          <h2>Newsletter versenden</h2>
+          <p>Newsletter an bestätigte Abonnenten senden.</p>
+        </a>
+
+        <a href="/admin/subscribers/" class="admin-card">
+          <h2>Abonnenten</h2>
+          <p>Newsletter-Abonnenten verwalten, importieren und bounce-bereinigen.</p>
+        </a>
+
+        <a href="/keystatic" class="admin-card">
+          <h2>Redaktionsbereich</h2>
+          <p>Seiten, Projekte, Journal und Newsletter im CMS bearbeiten.</p>
+        </a>
+      </div>
+    </div>
+  </section>
+</DefaultLayout>
+
+<style lang="scss">
+  .admin-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: var(--space-m);
+    margin-block-start: var(--space-l);
+  }
+
+  .admin-card {
+    display: block;
+    padding: var(--space-l);
+    border: 1px solid var(--border-color-subtle);
+    border-radius: var(--radius-m);
+    text-decoration: none;
+    color: inherit;
+    transition: border-color 0.2s;
+
+    &:hover {
+      border-color: var(--color-accent-600);
+    }
+
+    h2 {
+      margin-block-end: var(--space-2xs);
+      font-size: var(--font-size-1);
+    }
+
+    p {
+      font-size: var(--font-size--1);
+      color: var(--color-neutral-700);
+      margin: 0;
+    }
+  }
+</style>
