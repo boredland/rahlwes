@@ -1,9 +1,10 @@
 ---
 import DefaultLayout from '@layouts/DefaultLayout.astro'
 import ContactCta from '@components/ContactCta.astro'
-import PageHeader from '@components/PageHeader.astro'
 import ContentImage from '@components/ContentImage.astro'
 import { Heading, Link } from 'accessible-astro-components'
+import { Image } from 'astro:assets'
+import journalHero from '@assets/uploads/journal-hero.webp'
 import { htmlLang, localizePath, type Locale } from '@i18n/config'
 import { useTranslations } from '@i18n/ui'
 import { getJournal } from '@i18n/content'
@@ -29,7 +30,33 @@ const dateFormat = new Intl.DateTimeFormat(htmlLang[locale], { dateStyle: 'long'
     ]),
   ]}
 >
-  <PageHeader title={t('journal.title')} subtitle={t('journal.intro')} showBreadcrumbs={false} />
+  <section class="journal-hero">
+    <Image
+      src={journalHero}
+      alt=""
+      width={2500}
+      height={1100}
+      class="hero-bg"
+      loading="eager"
+    />
+    <div class="hero-overlay">
+      <h1>{t('journal.heroTitle') || 'Let\u2019s talk about history!'}</h1>
+      <p class="hero-subtitle">{t('journal.title')}</p>
+      {locale !== 'de' && (
+        <a href={localizePath('/journal', 'de')} class="lang-btn">Deutsch</a>
+      )}
+      {locale === 'de' && (
+        <a href={localizePath('/journal', 'en')} class="lang-btn">English</a>
+      )}
+    </div>
+  </section>
+
+  <section class="journal-intro">
+    <div class="container">
+      <p class="intro-text">{t('journal.intro')}</p>
+    </div>
+  </section>
+
   <section class="my-16">
     <div class="container">
       {posts.length === 0 && <p>{t('journal.empty')}</p>}
@@ -70,6 +97,72 @@ const dateFormat = new Intl.DateTimeFormat(htmlLang[locale], { dateStyle: 'long'
 </DefaultLayout>
 
 <style lang="scss">
+  .journal-hero {
+    position: relative;
+    overflow: hidden;
+    margin-block: -1rem;
+  }
+
+  .hero-bg {
+    display: block;
+    inline-size: 100%;
+    block-size: auto;
+    object-fit: cover;
+    aspect-ratio: 2500 / 1100;
+    object-position: 65% 40%;
+  }
+
+  .hero-overlay {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: var(--space-l);
+    color: #fff;
+    text-align: center;
+
+    h1 {
+      font-size: clamp(2rem, 5vw, 4rem);
+      font-weight: 700;
+      margin-block-end: var(--space-xs);
+    }
+  }
+
+  .hero-subtitle {
+    font-size: clamp(1rem, 2.5vw, 1.5rem);
+    opacity: 0.9;
+    margin-block-end: var(--space-s);
+  }
+
+  .lang-btn {
+    display: inline-block;
+    padding: var(--space-2xs) var(--space-m);
+    background: #fff;
+    color: var(--color-neutral-800);
+    font-weight: 600;
+    text-decoration: none;
+    border-radius: var(--radius-s);
+
+    &:hover {
+      background: var(--color-neutral-100);
+    }
+  }
+
+  .journal-intro {
+    padding-block: var(--space-2xl);
+  }
+
+  .intro-text {
+    max-inline-size: 42ch;
+    margin-inline: auto;
+    text-align: center;
+    font-size: var(--font-size-1);
+    color: var(--color-neutral-600);
+    line-height: 1.7;
+  }
+
   .teaser :global(.teaser-image) {
     border-radius: var(--radius-m);
     inline-size: 100%;
