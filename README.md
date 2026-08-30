@@ -246,6 +246,32 @@ Adding a source is still a one-file change: implement an `ArchiveAdapter` and li
 `providers.ts`. The fan-out, the sources endpoint and the search UI all read from that
 catalog, so the toggles cannot drift from what the server queries.
 
+**Loading the Gedenkbuch.** The Bundesarchiv Gedenkbuch is the one source held locally
+rather than queried live: it is a stateful JSF app with no machine-readable URL, and its
+only supported export is the CSV of a result set.
+
+1. Search at [apps.bundesarchiv.de/gedenkbuch](https://apps.bundesarchiv.de/gedenkbuch/) —
+   a broad surname works, the result list is what gets exported.
+2. Click **„Als CSV exportieren"** / *export as csv*.
+3. `POST` the file:
+
+   ```sh
+   curl -X POST https://next.rahlwes.eu/api/admin/ankai/ingest/gedenkbuch \
+     -H "cookie: keystatic-gh-access-token=$(gh auth token)" \
+     -H 'origin: https://next.rahlwes.eu' \
+     -H 'content-type: text/csv' \
+     --data-binary @Gedenkbuch_Ergebnisliste_*.csv
+   ```
+
+Re-ingesting is safe: rows upsert on `(source, source_id)`, so the same export twice
+updates rather than duplicates.
+
+The export is semicolon-separated and latin1-encoded, which the loader handles — it sniffs
+the delimiter from the header and falls back to windows-1252 when the bytes do not decode
+as UTF-8. Both matter: parsed as comma-separated the file yields one cell per row and
+ingest silently stores nothing, and read as UTF-8 every umlaut in a victim's name or
+birthplace turns into a replacement character.
+
 **Access.** Everything sits under `/admin`, so the Keystatic guard is the only gate —
 push access to the content repo rather than the shared password Ankai used. That includes
 `POST /api/admin/ankai/ingest/gedenkbuch`, which rewrites the corpus from a CSV export.

@@ -74,6 +74,22 @@ describe("csv parser", () => {
     expect(rows[1]).toEqual(["Levi", "Max", "Frankfurt, Main"]);
     expect(rows[2]).toEqual(['O"Neil', "Anna", "Berlin"]);
   });
+
+  it("reads the semicolon-separated Bundesarchiv export", () => {
+    // The real Gedenkbuch export is semicolon-separated with a leading link column. Parsed
+    // as comma-separated it yields one cell per row, every column lookup misses, and the
+    // ingest silently stores nothing — so the delimiter is detected from the header.
+    const header =
+      "Gedenkbucheintrag (Link);Nachname;Künstlername/Pseudonym;Vorname;Geburtsname;Geburtsdatum;Geburtsort";
+    const row = "https://www.bundesarchiv.de/gedenkbuch/en866687;Fleisch;;Sally;;08.10.1878;Frankfurt a. Main";
+    const rows = parseCsv(`${header}\n${row}\n`);
+
+    expect(rows[0]).toHaveLength(7);
+    expect(rows[0]![1]).toBe("Nachname");
+    expect(rows[1]![1]).toBe("Fleisch");
+    expect(rows[1]![3]).toBe("Sally");
+    expect(rows[1]![0]).toContain("/gedenkbuch/en866687");
+  });
 });
 
 // Network-touching; opt-in via LIVE=1 so CI stays deterministic and offline.

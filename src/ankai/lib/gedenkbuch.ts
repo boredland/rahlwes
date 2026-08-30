@@ -25,7 +25,11 @@ export async function ingestGedenkbuchCsv(env: AnkaiEnv, csv: string): Promise<n
   const iBirth = col("geburtsdatum", "date of birth", "geboren");
   const iBirthPlace = col("geburtsort", "place of birth");
   const iDeath = col("todesdatum", "sterbedatum", "date of death");
-  const iFate = col("schicksal", "fate", "todesort", "deportation");
+  const iDeathPlace = col("todesort", "place of death");
+  const iFate = col("schicksal", "fate", "deportation nach", "deportation");
+  // The export leads with a link column; it is the only stable per-person identifier the
+  // Gedenkbuch exposes, so entries deep-link to their own page rather than the search.
+  const iLink = col("gedenkbucheintrag (link)", "gedenkbucheintrag", "link", "url");
 
   let count = 0;
   for (let r = 1; r < rows.length; r++) {
@@ -49,12 +53,12 @@ export async function ingestGedenkbuchCsv(env: AnkaiEnv, csv: string): Promise<n
         at(cells, iBirth) || null,
         at(cells, iBirthPlace) || null,
         at(cells, iDeath) || null,
-        at(cells, iFate) || null,
+        at(cells, iDeathPlace) || at(cells, iFate) || null,
         "Gedenkbuch-Eintrag",
         "Bundesarchiv",
         null,
         name,
-        "https://www.bundesarchiv.de/gedenkbuch/",
+        at(cells, iLink) || "https://www.bundesarchiv.de/gedenkbuch/",
         at(cells, iFate) || null,
         new Date().toISOString(),
       )
@@ -66,8 +70,20 @@ export async function ingestGedenkbuchCsv(env: AnkaiEnv, csv: string): Promise<n
 
 const at = (cells: string[], i: number) => (i >= 0 ? (cells[i]?.trim() ?? "") : "");
 
+/**
+ * Pick the delimiter from the header line. The Bundesarchiv export is semicolon-separated
+ * (a German Excel convention) while the parser's RFC-4180 default is a comma; guessing
+ * wrong yields one cell per row and every column lookup silently misses.
+ */
+function detectDelimiter(text: string): string {
+  const header = text.slice(0, text.search(/\r?\n/) + 1 || undefined)
+  const semicolons = (header.match(/;/g) ?? []).length
+  const commas = (header.match(/,/g) ?? []).length
+  return semicolons > commas ? ';' : ','
+}
+
 /** Small RFC-4180-ish CSV parser: handles quoted fields, embedded commas/quotes/newlines. */
-export function parseCsv(text: string): string[][] {
+export function parseCsv(text: string, delimiter = detectDelimiter(text)): string[][] {
   const rows: string[][] = [];
   let row: string[] = [];
   let field = "";
@@ -83,7 +99,7 @@ export function parseCsv(text: string): string[][] {
         } else quoted = false;
       } else field += ch;
     } else if (ch === '"') quoted = true;
-    else if (ch === ",") {
+    else if (ch === delimiter) {
       row.push(field);
       field = "";
     } else if (ch === "\n") {

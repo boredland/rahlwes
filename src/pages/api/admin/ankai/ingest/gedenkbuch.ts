@@ -13,7 +13,15 @@ export const prerender = false
  */
 export const POST: APIRoute = async ({ request }) => {
   try {
-    const csv = await request.text()
+    const bytes = await request.arrayBuffer()
+    if (bytes.byteLength === 0) return Response.json({ ok: false, message: 'Leerer Upload.' }, { status: 400 })
+
+    // The Bundesarchiv exports latin1. Decoding it as UTF-8 corrupts every umlaut and ß,
+    // and these are victims' names and birthplaces — so sniff rather than assume: a file
+    // that decodes cleanly as UTF-8 is treated as UTF-8, anything else as latin1.
+    const utf8 = new TextDecoder('utf-8', { fatal: false }).decode(bytes)
+    const csv = utf8.includes('\uFFFD') ? new TextDecoder('windows-1252').decode(bytes) : utf8
+
     if (!csv.trim()) return Response.json({ ok: false, message: 'Leerer Upload.' }, { status: 400 })
 
     const ingested = await ingestGedenkbuchCsv(env as unknown as AnkaiEnv, csv)
