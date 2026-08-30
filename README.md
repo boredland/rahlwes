@@ -227,10 +227,12 @@ Arolsen, Kalliope, the Shoah-Memorial Frankfurt, the Jüdisches Museum collectio
 Arcinsys, the DDB and an ingested copy of the Bundesarchiv Gedenkbuch, with deep links to
 Yad Vashem, Matricula and NARA.
 
-This was [Ankai](https://github.com/boredland/ankai), a standalone HonoX worker on
-`search.rahlwes.eu`, and now lives here so it can be retired. It ported cleanly because
-no adapter depended on Hono — only its auth middleware, its OpenAPI document and the Zod
-schemas backing that document did, and none of those survived the move.
+This was Ankai, a standalone HonoX worker on `search.rahlwes.eu`. It moved here in full
+and that worker and its repository were deleted on 2026-08-30; this is now the only copy.
+It ported cleanly because no adapter depended on Hono — only its auth middleware, its
+OpenAPI document and the Zod schemas backing that document did, and none of those survived
+the move. Dropped with it: the Scalar `/docs` page and its own `/login`, which the
+Keystatic guard replaces.
 
 | Piece | Where |
 | --- | --- |
