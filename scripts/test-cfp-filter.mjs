@@ -27,7 +27,7 @@ const start = src.indexOf('/**\n * What counts as an opportunity')
 const end = src.indexOf('async function fetchText')
 const module = await import(
   `data:text/javascript,${encodeURIComponent(
-    `${src.slice(start, end)}\nexport { isRelevant, subjectFields, CFP_PATTERN, IS_PAPER_CALL, IS_RETROSPECTIVE, IS_STIPEND, IS_PRIZE, IS_WISS_MITARB }`,
+    `${src.slice(start, end)}\nexport { isRelevant, subjectFields, CFP_PATTERN, IS_PAPER_CALL, IS_RETROSPECTIVE, IS_STIPEND, IS_PRIZE, IS_WISS_MITARB, IS_ENTGELTGRUPPE }`,
   )}`
 )
 
@@ -175,7 +175,7 @@ const cases = [
   ],
   [
     "Wiss. Mitarb. excluded",
-    "2 Wiss. Mitarb. (w/m/d) Stiftung Luthergedenkstätten",
+    "2 Wiss. Mitarb. (w/m/d) Gesellschaft für xx",
     "Die Stiftung Luthergedenkstätten sucht wissenschaftliche Mitarbeiter für die Forschung.",
     false, // wantPaper
     true,  // wantRelevant
@@ -193,6 +193,18 @@ const cases = [
     false, // wantOld
     false, // wantStipend
     true,  // wantWissMitarb ← fixed
+    false, // wantPrize
+  ],
+
+  [
+    "Entgeltgruppe excluded",
+    "Wiss. Mitarb. (w/m/d) Gesellschaft für Somefield",
+    "Entgeltgruppe TVöD E 13. Vergütung nach dem Tarifvertrag.",
+    false, // wantPaper
+    false, // wantRelevant
+    false, // wantOld
+    false, // wantStipend
+    true,  // wantWissMitarb
     false, // wantPrize
   ],
 
