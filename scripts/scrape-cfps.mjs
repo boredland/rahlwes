@@ -398,6 +398,64 @@ async function scrapeHSozKult() {
  * Kultur Management Network publishes calls for its magazine in the same feed as
  * its articles, so the title has to carry the filter.
  */
+
+/**
+ * H-Soz-Kult HTML search — the RSS feed is a rolling window that misses older
+ * Werkverträge. This parser reads the search results page directly, which
+ * exposes the full archive with titles, institutions, and descriptions.
+ *
+ * Searches for Auftrag, Werkvertrag, freiberuflich, Honorar — the terms that
+ * indicate she could actually take the commission.
+ *
+ * The results page is accessible to our scraper UA (Anubis allows it), unlike
+ * the detail pages. Each result is in an .hfn-list-itemtitle div with an
+ * anchor tag containing the slug and title.
+ */
+async function scrapeHSozKultHtml() {
+  const queries = ['Werkvertrag', 'Auftrag Honorar', 'freiberuflich Museum']
+  const seen = new Set()
+  const results = []
+
+  for (const q of queries) {
+    await sleep(CRAWL_DELAY)
+
+    const url = `https://www.hsozkult.de/searching/page?q=${encodeURIComponent(q)}&sort=newestPublished`
+    const html = await fetchText(url)
+
+    // Each result is wrapped in an <a> tag inside .hfn-list-itemtitle
+    const re = /<a href="\/searching\/id\/([^"]+)"[^>]*>\s*([\s\S]*?)\s*<\/a>/g
+    let m
+    while ((m = re.exec(html)) !== null) {
+      const slug = m[1]
+      const title = stripTags(m[2])
+      if (!title || title.length < 8 || seen.has(slug)) continue
+      seen.add(slug)
+
+      const itemUrl = `https://www.hsozkult.de/job/id/${slug.split('?')[0]}`
+
+      // Description follows after the item in a .hfn-list-reviewed div
+      const afterTitle = html.slice(m.index, m.index + 800)
+      const descMatch = afterTitle.match(/<div class="hfn-list-reviewed">\s*([\s\S]*?)<\/div>/i)
+      const description = descMatch ? stripTags(descMatch[1]).slice(0, 400) : ''
+
+      results.push({
+        title: title.replace(/\s*\(\d+\s*\)\s*$/, '').trim(),
+        url: itemUrl,
+        date: '',
+        description,
+      })
+    }
+  }
+
+  // Filter for entries in her fields
+  return results
+    .filter((item) => !IS_PAPER_CALL.test(`${item.title} ${item.description}`))
+    .filter((item) => !IS_STIPEND.test(item.title))
+    .filter((item) => !IS_RETROSPECTIVE.test(`${item.title} ${item.description}`))
+    .filter((item) => !IS_WISS_MITARB.test(item.title))
+    .filter((item) => isRelevant(item.title, item.description))
+}
+
 async function scrapeKulturmanagement() {
   const xml = await fetchText('https://www.kulturmanagement.net/Themen/rss')
 
@@ -698,6 +756,7 @@ const SOURCES = {
   'kulturstiftung-bund': scrapeKulturstiftungBund,
   secession: scrapeSecession,
   'h-soz-kult': scrapeHSozKult,
+  'h-soz-kult-html': scrapeHSozKultHtml,
   'h-net': scrapeHNet,
   icom: feedScraper('https://icom-deutschland.de/feed'),
   'royal-historical-society': feedScraper('https://royalhistsoc.org/feed/'),
