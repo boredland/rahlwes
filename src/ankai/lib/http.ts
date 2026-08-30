@@ -1,6 +1,6 @@
 /** Identify ourselves politely to every upstream. */
 export const USER_AGENT =
-  "ankai/0.1 (internal NS-victim research gateway; +https://search.rahlwes.eu)";
+  "ankai/0.1 (internal NS-victim research gateway; +https://next.rahlwes.eu)";
 
 /**
  * Default edge-cache lifetime (seconds) for idempotent upstream GETs. Archive metadata
