@@ -27,7 +27,7 @@ const start = src.indexOf('/**\n * What counts as an opportunity')
 const end = src.indexOf('async function fetchText')
 const module = await import(
   `data:text/javascript,${encodeURIComponent(
-    `${src.slice(start, end)}\nexport { isRelevant, subjectFields, CFP_PATTERN, IS_PAPER_CALL, IS_RETROSPECTIVE, IS_STIPEND, IS_PRIZE, IS_WISS_MITARB, IS_ENTGELTGRUPPE }`,
+    `${src.slice(start, end)}\nexport { isRelevant, subjectFields, CFP_PATTERN, IS_PAPER_CALL, IS_RETROSPECTIVE, IS_STIPEND, IS_PRIZE, IS_WISS_MITARB, IS_ENTGELTGRUPPE, IS_ENTRY_LEVEL, IS_JOB_AD, HSOZKULT_NON_JOB }`,
   )}`
 )
 
@@ -247,5 +247,40 @@ for (const [label, title, abstract, wantPaper, wantRelevant, wantOld = false, wa
   }
 }
 
-console.log(`\n${cases.length - failed}/${cases.length} passed`)
-process.exit(failed ? 1 : 0)
+// Umlauts are not word characters in JavaScript, so a \b next to one never
+// matches: "Museumsführer:innen" slipped past an IS_ENTRY_LEVEL that was anchored
+// that way, and reached the digest as an entry-level guiding post.
+const entryLevel = [
+  ['Museumsführer:innen (Militärhistorisches Museum der Bundeswehr)', true],
+  ['1 Tourguide "Wissenschaftshistorische Stadtführungen" (MPG, Berlin)', true],
+  ['Bildungsreferent:innen "Gruppenführungen" (Stiftung Denkmal)', true],
+  ['Werkvertrag "Recherche zum Thema Zwangsarbeit" (Topographie des Terrors)', false],
+  ['Honorarvertrag "Co-Kuration für die Dauerausstellung" (Bezirksmuseum)', false],
+]
+
+// Only "job-" records are commissions; the other H-Soz-Kult record types read
+// like calls but cannot be worked.
+const slugTypes = [
+  ['https://www.hsozkult.de/job/id/event-158171', true],
+  ['https://www.hsozkult.de/job/id/fdkn-159804', true],
+  ['https://www.hsozkult.de/job/id/z6ann-139008', true],
+  ['https://www.hsozkult.de/job/id/fdl-136871', true],
+  ['https://www.hsozkult.de/job/id/job-163863', false],
+]
+
+let extraFailed = 0
+for (const [title, want] of entryLevel) {
+  const got = module.IS_ENTRY_LEVEL.test(title)
+  if (got !== want) extraFailed++
+  console.log(`${got === want ? 'PASS' : 'FAIL'}  entry-level=${got}/${want}  ${title.slice(0, 62)}`)
+}
+for (const [url, want] of slugTypes) {
+  const got = module.HSOZKULT_NON_JOB.test(url)
+  if (got !== want) extraFailed++
+  console.log(`${got === want ? 'PASS' : 'FAIL'}  non-job=${got}/${want}  ${url.slice(-24)}`)
+}
+
+const total = cases.length + entryLevel.length + slugTypes.length
+const passed = total - failed - extraFailed
+console.log(`\n${passed}/${total} passed`)
+process.exit(failed + extraFailed ? 1 : 0)

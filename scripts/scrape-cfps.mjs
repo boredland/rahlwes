@@ -109,7 +109,13 @@ const IS_PRIZE = /\b(prize|preis\b|award|auszeichnung)\b/i
 
 const IS_ENTGELTGRUPPE = /\bentgeltgruppe\b/i
 
-const IS_ENTRY_LEVEL = /(tourguide|besucherführer|besucherbegleitung|fuehrungen|fuehrung|führer|kartenverkauf|einlasskasse|werkstudent|hilfskraft|hilfsarbeiter|aushilfe)/i
+// H-Soz-Kult encodes the record type in the slug: only "job-" is a commission.
+// "event-" and "fdkn-" are conference announcements, "z6ann-" journal issues and
+// "fdl-" forum threads — all of which read like calls but cannot be worked.
+const HSOZKULT_NON_JOB = /hsozkult\.de\/job\/id\/(?!job-)/i
+
+const IS_ENTRY_LEVEL =
+  /(tourguide|besucherführer|museumsführer|besucherbegleitung|führungen|fuehrungen|gruppenführung|stadtführung|kartenverkauf|einlasskasse|werkstudent|hilfskraft|hilfsarbeiter|aushilfe)/i
 
 const IS_JOB_AD =
   /\b(stelle|stellenangebot|stellenausschreibung|vollzeit|teilzeit|\(w\/m\/d\)|\(m\/w\/d\)|m\/w\/d|w\/m\/d|vacancy|job vacancy|wir suchen|bewerbungsfrist für die stelle|praktik|praktikant|aushilfe|trainee)\b/i
@@ -456,16 +462,24 @@ async function scrapeHSozKultHtml() {
         date: '',
         description,
         deadline,
+        slug: slug.split('?')[0],
       })
     }
   }
 
-  // Filter for entries in her fields
+  // Filter for entries in her fields. The slug prefix is the only reliable type
+  // signal the search page carries: "job-" is a commission, while "event-",
+  // "fdkn-", "z6ann-" and "fdl-" are conference announcements, journal issues and
+  // forum threads that read like calls but cannot be worked.
   return results
+    .filter((item) => item.slug.startsWith('job-'))
     .filter((item) => !IS_PAPER_CALL.test(`${item.title} ${item.description}`))
     .filter((item) => !IS_STIPEND.test(item.title))
     .filter((item) => !IS_RETROSPECTIVE.test(`${item.title} ${item.description}`))
     .filter((item) => !IS_WISS_MITARB.test(item.title))
+    .filter((item) => !IS_ENTGELTGRUPPE.test(`${item.title} ${item.description}`))
+    .filter((item) => !IS_JOB_AD.test(`${item.title} ${item.description}`))
+    .filter((item) => !IS_ENTRY_LEVEL.test(item.title))
     .filter((item) => isRelevant(item.title, item.description))
 }
 
@@ -816,6 +830,27 @@ async function enrichFromPdfs(calls) {
 
 function isExpired(item) { if (!item.deadline) return false; const d = new Date(item.deadline.split(".").reverse().join("-")); const today = new Date(); return d.getTime() < today.getTime() }
 
+/**
+ * Why an entry does not belong in the digest, or null if it does.
+ *
+ * Applied to stored entries as well as fresh ones: matching on URL alone would
+ * freeze every entry a filter accepted before that filter existed, so a rule
+ * added today would never reach the backlog it was written for.
+ */
+function rejectReason(item) {
+  const blob = `${item.title} ${item.description ?? ''}`
+  if (isExpired(item)) return `expired ${item.deadline}`
+  if (HSOZKULT_NON_JOB.test(item.url)) return 'not a commission'
+  if (IS_PAPER_CALL.test(blob)) return 'call for papers'
+  if (IS_STIPEND.test(item.title)) return 'stipend'
+  if (IS_RETROSPECTIVE.test(blob)) return 'retrospective'
+  if (IS_WISS_MITARB.test(item.title)) return 'wiss. Mitarb.'
+  if (IS_ENTGELTGRUPPE.test(blob)) return 'Entgeltgruppe'
+  if (IS_JOB_AD.test(blob)) return 'salaried post'
+  if (IS_ENTRY_LEVEL.test(item.title)) return 'entry level'
+  return null
+}
+
 const today = new Date().toISOString().slice(0, 10)
 const existing = JSON.parse(await readFile(OUT, 'utf8').catch(() => '[]'))
 const known = new Set(existing.map((cfp) => cfp.url))
@@ -833,7 +868,12 @@ for (const [source, scrape] of Object.entries(SOURCES)) {
     for (const item of results) {
       if (known.has(item.url)) continue
       known.add(item.url)
-      if (isExpired(item)) { console.error(`    expired: ${item.title.slice(0, 50)} (deadline: ${item.deadline})`); continue }
+
+      const reason = rejectReason(item)
+      if (reason) {
+        console.error(`    skipped (${reason}): ${item.title.slice(0, 60)}`)
+        continue
+      }
 
       found.push({
         id: idFor(item.url),
@@ -859,10 +899,17 @@ if (failures === Object.keys(SOURCES).length) {
   process.exit(1)
 }
 
-if (!process.argv.includes('--dry-run') && found.length) {
-  const merged = [...found, ...existing].sort((a, b) => b.date.localeCompare(a.date))
+const kept = existing.filter((cfp) => {
+  const reason = rejectReason(cfp)
+  if (reason) console.error(`  dropped (${reason}): ${cfp.title.slice(0, 60)}`)
+  return !reason
+})
+const dropped = existing.length - kept.length
+
+if (!process.argv.includes('--dry-run') && (found.length || dropped)) {
+  const merged = [...found, ...kept].sort((a, b) => b.date.localeCompare(a.date))
   await writeFile(OUT, `${JSON.stringify(merged, null, 2)}\n`)
 }
 
-console.error(`${found.length} new, ${existing.length} known`)
+console.error(`${found.length} new, ${dropped} dropped, ${kept.length} kept`)
 process.stdout.write(JSON.stringify(found))
