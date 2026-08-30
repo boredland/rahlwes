@@ -59,7 +59,7 @@ const TOPIC_PATTERN = new RegExp(
     'sammlung|collection|objekt|object|artefakt|artifact|exponat|schausammlung',
     'galerie|gallery|denkmal|heritage|kulturerbe|kulturgut|monument',
     'kunstgeschichte|art history|kunsthistor|visual culture|bildwissenschaft|material culture',
-    'geschichte|history|historisch|historical|zeitgeschichte|erinnerung|memory|gedenk',
+    'geschichte|history|historisch|historical|zeitgeschichte|erinnerungsort|erinnerungskultur|gedenkstaette|gedenkort|gedenkstätte',
     'quellen|archiv|archive|provenien|provenance|nachlass',
     'nationalsozial|holocaust|shoah|jüdisc|jewish|zwangsarbeit|verfolgung',
     'kulturvermittlung|public history|museumspädagog',
@@ -104,7 +104,7 @@ const IS_ROUNDUP =
   /\b(newsletter|round-?up|rückblick|monatsüberblick|im blick|überblick|in eigener sache)\b/i
 
 const IS_JOB_AD =
-  /\b(stelle|stellenangebot|stellenausschreibung|vollzeit|teilzeit|\(w\/m\/d\)|\(m\/w\/d\)|m\/w\/d|w\/m\/d|vacancy|job vacancy|wir suchen|bewerbungsfrist für die stelle)\b/i
+  /\b(stelle|stellenangebot|stellenausschreibung|vollzeit|teilzeit|\(w\/m\/d\)|\(m\/w\/d\)|m\/w\/d|w\/m\/d|vacancy|job vacancy|wir suchen|bewerbungsfrist für die stelle|praktik|praktikant|aushilfe|trainee)\b/i
 
 /**
  * H-Net tags every announcement with a curated "Subject Fields" list. That
@@ -379,6 +379,7 @@ async function scrapeHSozKult() {
         description: summary.slice(0, 400),
       }
     })
+    .filter((item) => !/praktik|aushilfe|trainee/i.test(item.title))
     .filter((item) => isRelevant(item.title, item.description))
 }
 
@@ -506,6 +507,7 @@ async function scrapeKoelnFoerderung() {
 
   return calls
     .filter((c) => !IS_PAPER_CALL.test(`${c.title} ${c.description}`))
+    .filter((c) => !IS_STIPEND.test(c.title))
     .filter((c) => !IS_RETROSPECTIVE.test(`${c.title} ${c.description}`))
     .filter((c) => isRelevant(c.title, c.description))
 }
@@ -533,6 +535,7 @@ async function scrapeRemoteWork() {
       }
     })
     .filter((item) => item.url && IS_FREELANCE.test(item.engagement))
+    .filter((item) => !/ensemble|orchester|chor|musik|ballett|tanz|concert|opern/i.test(item.title))
     .filter((item) => isRelevant(item.title, item.description))
     .map(({ engagement, ...item }) => ({ ...item, remote: true }))
 }
