@@ -11,6 +11,7 @@ const t = useTranslations(locale)
   <section class="my-16">
     <div class="container">
       <h1>Admin</h1>
+      <p class="subtitle">Hinter diesem Bereich liegt der Keystatic-Login.</p>
 
       <div class="admin-grid">
         <a href="/admin/cfps/" class="admin-card">
@@ -38,11 +39,16 @@ const t = useTranslations(locale)
 </DefaultLayout>
 
 <style lang="scss">
+  .subtitle {
+    color: var(--color-neutral-700);
+    font-size: var(--font-size--1);
+    margin-block-end: var(--space-l);
+  }
+
   .admin-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
     gap: var(--space-m);
-    margin-block-start: var(--space-l);
   }
 
   .admin-card {
