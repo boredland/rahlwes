@@ -393,6 +393,7 @@ async function scrapeHSozKult() {
     .filter((item) => !/praktik|aushilfe|trainee/i.test(item.title))
     .filter((item) => !IS_PRIZE.test(item.title))
     .filter((item) => !IS_WISS_MITARB.test(item.title))
+    .filter((item) => !IS_JOB_AD.test(`${item.title} ${item.description}`))
     .filter((item) => !IS_ENTRY_LEVEL.test(item.title))
     .filter((item) => !IS_ENTGELTGRUPPE.test(`${item.title} ${item.description}`))
     .filter((item) => isRelevant(item.title, item.description))
