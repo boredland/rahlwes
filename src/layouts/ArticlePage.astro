@@ -25,13 +25,12 @@ const coverAlt = 'coverAlt' in entry.data ? entry.data.coverAlt : ''
 const excerpt = 'excerpt' in entry.data ? entry.data.excerpt : 'intro' in entry.data ? entry.data.intro : ''
 const dateFormat = new Intl.DateTimeFormat(htmlLang[locale], { dateStyle: 'long' })
 
-// On by default for pages, projects and journal entries; legal pages opt out.
 const showContactCta = 'contactCta' in entry.data && entry.data.contactCta
 const ctaHeading = ('contactCtaHeading' in entry.data && entry.data.contactCtaHeading) || t('contact.title')
 const ctaText = ('contactCtaText' in entry.data && entry.data.contactCtaText) || t('contact.intro')
 
-// Standalone pages sit directly under the homepage; only journal and project
-// entries belong to a listing section.
+const isProject = entry.collection === 'projects'
+
 const section =
   entry.collection === 'journal'
     ? { name: t('journal.title'), path: '/journal' }
@@ -62,8 +61,13 @@ const section =
     ]),
   ]}
 >
-  <PageHeader title={entry.data.title} subtitle={excerpt} showBreadcrumbs={false} />
-  <article class="my-12">
+  <PageHeader
+    title={entry.data.title}
+    subtitle={isProject ? undefined : excerpt}
+    showBreadcrumbs={false}
+  />
+
+  <article class:list={['my-12', { 'project-layout': isProject }]}>
     <div class="container">
       {
         publishedAt && (
@@ -82,8 +86,7 @@ const section =
         aspect="12 / 7"
         loading="eager"
       />
-      <div class="prose space-content">
-        {/* Markdown images resolve through the asset pipeline; see ProseImage. */}
+      <div class:list={['space-content', { prose: !isProject, 'prose-wide': isProject }]}>
         <Content components={{ img: ProseImage }} />
       </div>
     </div>
@@ -113,5 +116,14 @@ const section =
 
   .prose {
     max-inline-size: var(--font-measure);
+  }
+
+  .prose-wide {
+    max-inline-size: 52ch;
+  }
+
+  .project-layout :global(.cover) {
+    border-radius: 0;
+    margin-block-end: var(--space-2xl);
   }
 </style>

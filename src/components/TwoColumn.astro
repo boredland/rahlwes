@@ -1,0 +1,70 @@
+---
+import ContentImage from '@components/ContentImage.astro'
+
+interface Props {
+  heading?: string
+  src?: string
+  alt?: string
+  imageSide?: 'left' | 'right'
+}
+
+const { heading, src, alt = '', imageSide = 'left' } = Astro.props
+---
+
+<div class:list={['two-column', `image-${imageSide}`]}>
+  <div class="text-side">
+    {heading && <h2>{heading}</h2>}
+    <slot />
+  </div>
+  <div class="image-side">
+    {src && (
+      <ContentImage
+        class="two-column-image"
+        src={src}
+        alt={alt}
+        widths={[400, 700, 1000]}
+        sizes="(min-width: 768px) 45vw, 90vw"
+        loading="lazy"
+      />
+    )}
+    <slot name="image" />
+  </div>
+</div>
+
+<style lang="scss">
+  .two-column {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--space-l);
+    align-items: center;
+    margin-block-end: var(--space-2xl);
+
+    @media (min-width: 768px) {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+
+  .image-right {
+    direction: rtl;
+    .text-side,
+    .image-side {
+      direction: ltr;
+    }
+  }
+
+  .text-side {
+    h2 {
+      margin-block-end: var(--space-s);
+      font-size: clamp(1.5rem, 3vw, 2.2rem);
+    }
+  }
+
+  .image-side {
+    :global(.two-column-image) {
+      border-radius: var(--radius-m);
+      inline-size: 100%;
+      block-size: auto;
+      object-fit: cover;
+    }
+  }
+</style>
