@@ -276,6 +276,11 @@ emitted, so local builds and forks stay unmeasured.
 It is written out explicitly rather than left to the zone's automatic injection, which
 rewrites buffered HTML and is unreliable for the streamed SSR responses this site sends.
 
+**Deploy with `npm run deploy`, not a bare `wrangler deploy`.** The token is inlined at
+build time, so deploying without rebuilding ships whatever `dist/` happens to hold — which
+is how the beacon silently vanished from production once already. `npm run deploy` builds
+first, and the build reads `.env`.
+
 **Why not a self-hosted tracker.** Counterscale and similar tools count *unique* visitors
 by writing a `Last-Modified` value into the browser cache and reading it back through
 `If-Modified-Since`. EDPB Guidelines 2/2023 name caching mechanisms in paragraph 42 as
