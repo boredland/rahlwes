@@ -39,20 +39,39 @@ const { heading, src, alt = '', imageSide = 'left' } = Astro.props
     align-items: center;
     margin-block-end: var(--space-2xl);
 
+    // Text beside an image needs the page width, not the prose column's reading
+    // measure: squeezed into half of 52ch each column is a dozen words wide. Breaks
+    // out rightward exactly like CardGrid, so the left edge stays on the headings.
     @media (min-width: 768px) {
       grid-template-columns: 1fr 1fr;
+      gap: var(--space-xl);
+      inline-size: min(68rem, 100vw - 2 * var(--grid-gutter));
+      max-inline-size: none;
+      margin-inline-end: calc(100% - min(68rem, 100vw - 2 * var(--grid-gutter)));
     }
   }
 
-  .image-right {
-    direction: rtl;
-    .text-side,
-    .image-side {
-      direction: ltr;
+  // Text comes first in the markup so a screen reader reaches the heading before the
+  // picture; the grid places the image on the requested side. `direction: rtl` was
+  // used here before and flipped the sides, putting every image opposite its prop.
+  @media (min-width: 768px) {
+    .image-left .image-side {
+      grid-column: 1;
+      grid-row: 1;
+    }
+
+    .image-left .text-side {
+      grid-column: 2;
     }
   }
 
   .text-side {
+    // Slotted MDX paragraphs are not direct children of the page's space-content,
+    // so they would otherwise run together without a gap.
+    > :global(* + *) {
+      margin-block-start: var(--space-s);
+    }
+
     h2 {
       margin-block-end: var(--space-s);
       font-size: clamp(1.5rem, 3vw, 2.2rem);

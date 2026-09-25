@@ -41,6 +41,8 @@ const TRANSLATABLE_KEYS = new Set([
   'coverAlt',
   'description',
   'text',
+  'contactCtaHeading',
+  'contactCtaText',
   'heroHeading',
   'heroText',
   'heroCta',
