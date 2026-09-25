@@ -41,10 +41,9 @@ const t = useTranslations(locale)
 </form>
 
 <script>
-  document.addEventListener('astro:page-load', () => {
-    const form = document.querySelector<HTMLFormElement>('.newsletter-form')
-    if (!form) return
+  const form = document.querySelector<HTMLFormElement>('.newsletter-form')
 
+  if (form) {
     const status = form.querySelector<HTMLParagraphElement>('.form-status')!
     const button = form.querySelector<HTMLButtonElement>('button[type="submit"]')!
     const idle = button.textContent ?? ''
@@ -85,7 +84,7 @@ const t = useTranslations(locale)
         button.textContent = idle
       }
     })
-  })
+  }
 </script>
 
 <style lang="scss">

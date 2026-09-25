@@ -29,7 +29,6 @@ const viteConfig = {
       '@assets': fileURLToPath(new URL('./src/assets', import.meta.url)),
       '@content': fileURLToPath(new URL('./src/content', import.meta.url)),
       '@pages': fileURLToPath(new URL('./src/pages', import.meta.url)),
-      '@public': fileURLToPath(new URL('./public', import.meta.url)),
       '@utils': fileURLToPath(new URL('./src/utils', import.meta.url)),
       '@i18n': fileURLToPath(new URL('./src/i18n', import.meta.url)),
       '@newsletter': fileURLToPath(new URL('./src/newsletter', import.meta.url)),

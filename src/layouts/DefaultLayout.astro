@@ -3,11 +3,10 @@ import '../styles/tailwind.css'
 import '../assets/scss/index.scss'
 import themeConfig from '@theme-config'
 import { SEO } from 'astro-seo'
-import { Font } from 'astro:assets'
+import { Font, getImage } from 'astro:assets'
 import Header from '@components/Header.astro'
 import Footer from '@components/Footer.astro'
-import { ClientRouter } from 'astro:transitions'
-import { currentLocale, htmlLang, locales, localizePath, stripLocale } from '@i18n/config'
+import { currentLocale, htmlLang, locales, localizePath, stripLocale, type Locale } from '@i18n/config'
 import { useTranslations } from '@i18n/ui'
 import { personSchema, websiteSchema } from '@i18n/schema'
 import type { ImageMetadata } from 'astro'
@@ -16,12 +15,19 @@ interface Props {
   title?: string
   description?: string
   url?: string
-  image?: ImageMetadata | string | null
+  image?: ImageMetadata | null
+  /** Describes `image` for readers who cannot see the preview card. */
+  imageAlt?: string
   author?: string
   type?: 'website' | 'article'
   useTitleTemplate?: boolean
   /** Page-level JSON-LD, merged into the site-wide graph. */
   schema?: Record<string, unknown>[]
+  /**
+   * The locales this page exists in. Defaults to all three; pages that are not
+   * translated (the legal texts, the 404) pass fewer so no alternate points at a 404.
+   */
+  alternates?: readonly Locale[]
 }
 
 const locale = currentLocale(Astro.currentLocale)
@@ -31,11 +37,13 @@ const {
   title = t('site.title'),
   description = t('site.description'),
   url = Astro.url.href,
-  image = themeConfig.seo.image ?? null,
-  author = themeConfig.seo.author ?? '',
+  image,
+  imageAlt,
+  author = themeConfig.seo.author,
   type = 'website',
   useTitleTemplate = true,
   schema,
+  alternates = locales,
 } = Astro.props
 
 const basePath = stripLocale(Astro.url.pathname)
@@ -54,8 +62,20 @@ const jsonLd = {
   '@graph': [personSchema(locale, Astro.site), websiteSchema(locale, Astro.site), ...(schema ?? [])],
 }
 
-const imagePath = image ? (typeof image === 'string' ? image : image.src) : '/social-preview-image.png'
-const imageUrl = new URL(imagePath, Astro.site).href
+// A page-supplied image (an article's cover) is re-encoded to JPEG no wider than the
+// card: social crawlers are not guaranteed to read WebP, and a source upload can be
+// several megabytes. Sharp never upscales, so a smaller cover keeps its own size.
+// Everything else shares the site-wide card.
+const cardWidth = image ? Math.min(image.width, 1200) : 0
+const ogImage = image
+  ? {
+      url: new URL((await getImage({ src: image, width: cardWidth, format: 'jpeg', background: '#fff' })).src, Astro.site)
+        .href,
+      width: cardWidth,
+      height: Math.round((cardWidth * image.height) / image.width),
+      alt: imageAlt || undefined,
+    }
+  : { url: new URL('/og-image.jpg', Astro.site).href, width: 1200, height: 630, alt: t('site.imageAlt') }
 
 /**
  * Cloudflare Web Analytics. Read as a build-time variable so a fork or a local
@@ -78,15 +98,21 @@ const analyticsToken = import.meta.env.PUBLIC_CF_BEACON_TOKEN
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    {/* No preload: it would fetch all eight variants (76 kB) including italics, which no page needs for first paint. */}
-    <Font cssVariable="--font-pt-sans" />
+    {/* Only the latin 400/700 cuts are preloaded: they set the first screen's text and
+        logo. latin-ext loads on demand through unicode-range when a page needs it. */}
+    <Font cssVariable="--font-pt-sans" preload={[{ subset: 'latin' }]} />
 
     {
-      locales.map((code) => (
-        <link rel="alternate" hreflang={htmlLang[code]} href={new URL(localizePath(basePath, code), Astro.site).href} />
-      ))
+      alternates.length > 1 &&
+        alternates.map((code) => (
+          <link rel="alternate" hreflang={htmlLang[code]} href={new URL(localizePath(basePath, code), Astro.site).href} />
+        ))
     }
-    <link rel="alternate" hreflang="x-default" href={new URL(localizePath(basePath, 'de'), Astro.site).href} />
+    {
+      alternates.length > 1 && (
+        <link rel="alternate" hreflang="x-default" href={new URL(localizePath(basePath, 'de'), Astro.site).href} />
+      )
+    }
 
     <style
       define:vars={{
@@ -111,22 +137,23 @@ const analyticsToken = import.meta.env.PUBLIC_CF_BEACON_TOKEN
       description={description}
       canonical={url}
       openGraph={{
-        basic: { title, type, image: imageUrl, url },
+        basic: { title, type, image: ogImage.url, url },
         optional: { description, locale: htmlLang[locale] },
+        image: ogImage,
       }}
-      twitter={{ card: 'summary_large_image', title, description, image: imageUrl }}
+      twitter={{ card: 'summary_large_image', title, description, image: ogImage.url, imageAlt: ogImage.alt }}
       noindex={!isProduction}
       nofollow={!isProduction}
       extend={{ meta: [{ name: 'author', content: author }] }}
     />
 
     <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} is:inline />
-
-    <ClientRouter />
   </head>
   <body>
     <Header />
-    <main id="main-content" transition:animate="fade">
+    {/* Page changes cross-fade through the browser's own view transition, declared in
+        _general.scss; no client router, so every page script runs on plain load. */}
+    <main id="main-content">
       <slot />
     </main>
     <Footer />

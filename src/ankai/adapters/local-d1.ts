@@ -35,23 +35,21 @@ export function createD1Adapter(source: string, label: string): ArchiveAdapter {
       const offset = q.cursor ? Number(q.cursor) : 0;
       const match = toFtsQuery(terms);
 
-      const countRow = await ctx.env.ANKAI_DB.prepare(
-        "SELECT COUNT(*) AS n FROM records_fts JOIN records ON records.rowid = records_fts.rowid " +
-          "WHERE records.source = ? AND records_fts MATCH ?",
-      )
-        .bind(source, match)
-        .first<{ n: number }>();
+      // Batched so the total and the page cost one D1 round trip, not two in sequence.
+      const [countRow, rs] = await ctx.env.ANKAI_DB.batch([
+        ctx.env.ANKAI_DB.prepare(
+          "SELECT COUNT(*) AS n FROM records_fts JOIN records ON records.rowid = records_fts.rowid " +
+            "WHERE records.source = ? AND records_fts MATCH ?",
+        ).bind(source, match),
+        ctx.env.ANKAI_DB.prepare(
+          "SELECT records.* FROM records_fts JOIN records ON records.rowid = records_fts.rowid " +
+            "WHERE records.source = ? AND records_fts MATCH ? " +
+            "ORDER BY rank LIMIT ? OFFSET ?",
+        ).bind(source, match, q.limit, offset),
+      ]);
 
-      const rs = await ctx.env.ANKAI_DB.prepare(
-        "SELECT records.* FROM records_fts JOIN records ON records.rowid = records_fts.rowid " +
-          "WHERE records.source = ? AND records_fts MATCH ? " +
-          "ORDER BY rank LIMIT ? OFFSET ?",
-      )
-        .bind(source, match, q.limit, offset)
-        .all<RecordRow>();
-
-      const records = rs.results.map((row) => toRecord(row));
-      const total = countRow?.n ?? records.length;
+      const records = (rs!.results as RecordRow[]).map((row) => toRecord(row));
+      const total = (countRow!.results[0] as { n: number } | undefined)?.n ?? records.length;
       const next = offset + records.length;
       return { records, total, cursor: next < total ? String(next) : undefined };
     },

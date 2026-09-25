@@ -34,13 +34,14 @@ const dateFormat = new Intl.DateTimeFormat(htmlLang[locale], { dateStyle: 'long'
     <Image
       src={journalHero}
       alt=""
-      width={2500}
-      height={1100}
+      widths={[800, 1400, 2000, 2500]}
+      sizes="100vw"
       class="hero-bg"
       loading="eager"
+      fetchpriority="high"
     />
     <div class="hero-overlay">
-      <h1>{t('journal.heroTitle') || 'Let\u2019s talk about history!'}</h1>
+      <h1>{t('journal.heroTitle')}</h1>
       <p class="hero-subtitle">{t('journal.title')}</p>
       {locale !== 'de' && (
         <a href={localizePath('/journal', 'de')} class="lang-btn">Deutsch</a>

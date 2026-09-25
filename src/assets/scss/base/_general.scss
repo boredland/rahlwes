@@ -4,6 +4,51 @@
   navigation: auto;
 }
 
+// The page cross-fade on the smooth-out curve (transitions-polish: page slide, 250ms)
+// instead of the browser's default `ease`. No blur: this is a plain fade.
+::view-transition-group(root),
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: 250ms;
+  animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+// Replaces the component toggle that used to set this through a class and a script:
+// the system setting is the only switch readers had, so CSS alone honours it.
+@media (prefers-reduced-motion: reduce) {
+  @view-transition {
+    navigation: none;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+// Button hover lift, overriding the library's `transition: all 0.2s`. The rest state
+// carries the return — slower and springy (--ease-bounce-strong) so the button settles
+// rather than drops — while the hover state carries the quick lift. Colours keep a plain
+// ease: the spring would overshoot them past their target.
+a.button {
+  transition:
+    translate 350ms cubic-bezier(0.34, 3.85, 0.64, 1),
+    color 200ms ease-out,
+    background-color 200ms ease-out,
+    border-color 200ms ease-out,
+    text-decoration-color 200ms ease-out,
+    text-underline-offset 200ms ease-out;
+
+  &:where(:hover, :focus-visible) {
+    transition-duration: 200ms;
+    transition-timing-function: cubic-bezier(0.22, 1, 0.36, 1), ease-out, ease-out, ease-out, ease-out, ease-out;
+  }
+}
+
 body {
   font-weight: 400;
   font-size: 1.15rem;

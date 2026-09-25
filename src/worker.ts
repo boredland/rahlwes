@@ -17,11 +17,6 @@ export type SendMessage = {
 }
 
 /**
- * Validation failures never succeed on a retry, so a redelivery only burns quota
- * and delays the rest of the batch. Transient codes are the ones worth retrying.
- * See the Email Sending error table.
- */
-/**
  * The address itself is the problem, so the subscriber is marked bounced and never
  * mailed again. Cloudflare suppresses hard-bounced addresses account-wide and
  * rejects further sends to them with E_RECIPIENT_SUPPRESSED.
@@ -31,6 +26,11 @@ const BOUNCE_ERRORS: Record<string, true> = {
   E_RECIPIENT_NOT_ALLOWED: true,
 }
 
+/**
+ * Validation failures never succeed on a retry, so a redelivery only burns quota
+ * and delays the rest of the batch. Transient codes are the ones worth retrying.
+ * See the Email Sending error table.
+ */
 const PERMANENT_ERRORS: Record<string, true> = {
   E_VALIDATION_ERROR: true,
   E_FIELD_MISSING: true,
@@ -128,19 +128,26 @@ async function deliver(message: SendMessage, env: Env, cachedCampaign?: Campaign
  * clients send it cross-origin with no Origin the framework will accept. Astro's CSRF
  * check rejects exactly that shape, so the one-click case is served here, ahead of it.
  *
- * Only a valid token does anything, and the token is unguessable, so there is nothing
- * for a forged request to accomplish beyond what its holder could already do.
+ * Only a valid token in the query string does anything, and the token is unguessable,
+ * so a forged request can do no more than its holder could. Browser forms carry the
+ * token in the body instead and go through Astro like any other form post.
  */
+const ONE_CLICK_UNSUBSCRIBE: Record<string, string> = {
+  '/api/newsletter/unsubscribe': 'DELETE FROM subscribers WHERE unsubscribe_token = ?',
+  '/api/cfps/unsubscribe': 'DELETE FROM cfp_subscribers WHERE unsubscribe_token = ?',
+}
+
 async function handleOneClickUnsubscribe(request: Request, env: Env): Promise<Response | null> {
   if (request.method !== 'POST') return null
 
   const url = new URL(request.url)
-  if (url.pathname !== '/api/newsletter/unsubscribe') return null
+  const statement = ONE_CLICK_UNSUBSCRIBE[url.pathname]
+  if (!statement) return null
 
   const token = url.searchParams.get('token')
   if (!isToken(token)) return null
 
-  await env.NEWSLETTER_DB.prepare('DELETE FROM subscribers WHERE unsubscribe_token = ?').bind(token).run()
+  await env.NEWSLETTER_DB.prepare(statement).bind(token).run()
   return new Response('Unsubscribed', { status: 200 })
 }
 

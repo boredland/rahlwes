@@ -1,13 +1,8 @@
 ---
 import { Image } from 'astro:assets'
+import { resolveUpload } from '@utils/uploads'
 
-/**
- * Renders a Keystatic image reference through Astro's asset pipeline.
- *
- * Keystatic stores a public-style path (`/uploads/foo.jpg`), but Astro can only
- * optimise files it can import. The images therefore live in `src/assets/uploads`
- * and are resolved here at build time, which yields WebP plus responsive widths.
- */
+/** Renders a Keystatic image reference through Astro's asset pipeline as WebP plus responsive widths. */
 interface Props {
   src?: string | null
   alt: string
@@ -20,17 +15,7 @@ interface Props {
 }
 
 const { src, alt, widths, sizes, aspect, loading = 'lazy', class: className } = Astro.props
-
-const uploads = import.meta.glob<{ default: ImageMetadata }>('/src/assets/uploads/*.{jpg,jpeg,png,webp,avif}', {
-  eager: true,
-})
-
-const key = src ? `/src/assets/uploads/${src.replace(/^\/uploads\//, '')}` : null
-const asset = key ? uploads[key]?.default : undefined
-
-if (src && !asset) {
-  throw new Error(`Image "${src}" is missing from src/assets/uploads — upload it through Keystatic.`)
-}
+const asset = src ? resolveUpload(src) : undefined
 ---
 
 {

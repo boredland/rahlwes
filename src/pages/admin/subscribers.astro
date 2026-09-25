@@ -113,111 +113,109 @@ const bounced = subscribers.filter((s) => s.bounced_at).length
 </DefaultLayout>
 
 <script>
-  document.addEventListener('astro:page-load', () => {
-    const form = document.querySelector<HTMLFormElement>('.import-form')
+  const form = document.querySelector<HTMLFormElement>('.import-form')
 
-    form?.addEventListener('submit', async (event) => {
-      event.preventDefault()
-      if (!form.reportValidity()) return
+  form?.addEventListener('submit', async (event) => {
+    event.preventDefault()
+    if (!form.reportValidity()) return
 
-      const status = form.querySelector<HTMLParagraphElement>('.form-status')!
-      const button = form.querySelector<HTMLButtonElement>('button[type="submit"]')!
-      const data = new FormData(form)
+    const status = form.querySelector<HTMLParagraphElement>('.form-status')!
+    const button = form.querySelector<HTMLButtonElement>('button[type="submit"]')!
+    const data = new FormData(form)
 
-      button.disabled = true
-      status.textContent = 'Import läuft…'
+    button.disabled = true
+    status.textContent = 'Import läuft…'
 
-      try {
-        const response = await fetch('/api/admin/subscribers', {
-          method: 'POST',
-          headers: { 'content-type': 'application/json' },
-          body: JSON.stringify({ emails: data.get('emails'), locale: data.get('locale') }),
-        })
-        const result = (await response.json()) as {
-          ok: boolean
-          imported?: number
-          skipped?: number
-          rejected?: number
-          message?: string
-        }
-
-        if (result.ok) {
-          status.textContent = `${result.imported} importiert, ${result.skipped} bereits vorhanden, ${result.rejected} ungültig.`
-          location.reload()
-        } else {
-          status.textContent = result.message ?? 'Import fehlgeschlagen.'
-        }
-      } catch {
-        status.textContent = 'Verbindung fehlgeschlagen.'
-      } finally {
-        button.disabled = false
-      }
-    })
-
-    const reconcile = document.querySelector<HTMLButtonElement>('button.reconcile')
-    const bounceStatus = document.querySelector<HTMLSpanElement>('.bounce-status')
-
-    reconcile?.addEventListener('click', async () => {
-      reconcile.disabled = true
-      if (bounceStatus) bounceStatus.textContent = 'Abgleich läuft…'
-
-      try {
-        const response = await fetch('/api/admin/bounces', { method: 'POST' })
-        const result = (await response.json()) as {
-          ok: boolean
-          checked?: number
-          flagged?: number
-          message?: string
-        }
-
-        if (result.ok) {
-          if (bounceStatus) {
-            bounceStatus.textContent = `${result.checked} geprüft, ${result.flagged} neu markiert.`
-          }
-          if (result.flagged) location.reload()
-        } else if (bounceStatus) {
-          bounceStatus.textContent = result.message ?? 'Abgleich fehlgeschlagen.'
-        }
-      } catch {
-        if (bounceStatus) bounceStatus.textContent = 'Verbindung fehlgeschlagen.'
-      } finally {
-        reconcile.disabled = false
-      }
-    })
-
-    for (const button of document.querySelectorAll<HTMLButtonElement>('button.restore')) {
-      button.addEventListener('click', async () => {
-        const row = button.closest<HTMLTableRowElement>('tr')!
-        button.disabled = true
-
-        const response = await fetch('/api/admin/subscribers', {
-          method: 'PATCH',
-          headers: { 'content-type': 'application/json' },
-          body: JSON.stringify({ id: Number(row.dataset.id) }),
-        })
-
-        if (response.ok) location.reload()
-        else button.disabled = false
+    try {
+      const response = await fetch('/api/admin/subscribers', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ emails: data.get('emails'), locale: data.get('locale') }),
       })
-    }
+      const result = (await response.json()) as {
+        ok: boolean
+        imported?: number
+        skipped?: number
+        rejected?: number
+        message?: string
+      }
 
-    for (const button of document.querySelectorAll<HTMLButtonElement>('button.delete')) {
-      button.addEventListener('click', async () => {
-        const row = button.closest<HTMLTableRowElement>('tr')!
-        if (!confirm(`${button.dataset.email} wirklich löschen?`)) return
-
-        button.disabled = true
-        const response = await fetch('/api/admin/subscribers', {
-          method: 'DELETE',
-          headers: { 'content-type': 'application/json' },
-          body: JSON.stringify({ id: Number(row.dataset.id) }),
-        })
-
-        if (response.ok) row.remove()
-        else button.disabled = false
-      })
+      if (result.ok) {
+        status.textContent = `${result.imported} importiert, ${result.skipped} bereits vorhanden, ${result.rejected} ungültig.`
+        location.reload()
+      } else {
+        status.textContent = result.message ?? 'Import fehlgeschlagen.'
+      }
+    } catch {
+      status.textContent = 'Verbindung fehlgeschlagen.'
+    } finally {
+      button.disabled = false
     }
   })
+
+  const reconcile = document.querySelector<HTMLButtonElement>('button.reconcile')
+  const bounceStatus = document.querySelector<HTMLSpanElement>('.bounce-status')
+
+  reconcile?.addEventListener('click', async () => {
+    reconcile.disabled = true
+    if (bounceStatus) bounceStatus.textContent = 'Abgleich läuft…'
+
+    try {
+      const response = await fetch('/api/admin/bounces', { method: 'POST' })
+      const result = (await response.json()) as {
+        ok: boolean
+        checked?: number
+        flagged?: number
+        message?: string
+      }
+
+      if (result.ok) {
+        if (bounceStatus) {
+          bounceStatus.textContent = `${result.checked} geprüft, ${result.flagged} neu markiert.`
+        }
+        if (result.flagged) location.reload()
+      } else if (bounceStatus) {
+        bounceStatus.textContent = result.message ?? 'Abgleich fehlgeschlagen.'
+      }
+    } catch {
+      if (bounceStatus) bounceStatus.textContent = 'Verbindung fehlgeschlagen.'
+    } finally {
+      reconcile.disabled = false
+    }
+  })
+
+  for (const button of document.querySelectorAll<HTMLButtonElement>('button.restore')) {
+    button.addEventListener('click', async () => {
+      const row = button.closest<HTMLTableRowElement>('tr')!
+      button.disabled = true
+
+      const response = await fetch('/api/admin/subscribers', {
+        method: 'PATCH',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ id: Number(row.dataset.id) }),
+      })
+
+      if (response.ok) location.reload()
+      else button.disabled = false
+    })
+  }
+
+  for (const button of document.querySelectorAll<HTMLButtonElement>('button.delete')) {
+    button.addEventListener('click', async () => {
+      const row = button.closest<HTMLTableRowElement>('tr')!
+      if (!confirm(`${button.dataset.email} wirklich löschen?`)) return
+
+      button.disabled = true
+      const response = await fetch('/api/admin/subscribers', {
+        method: 'DELETE',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ id: Number(row.dataset.id) }),
+      })
+
+      if (response.ok) row.remove()
+      else button.disabled = false
+    })
+  }
 </script>
 
 <style lang="scss">

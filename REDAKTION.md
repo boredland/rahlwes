@@ -82,13 +82,17 @@ läuft über Cloudflare Email Sending.
 ### Anmeldung und Abmeldung
 
 Leserinnen und Leser melden sich unter `/newsletter/` an (je Sprache eine Seite).
-Sie bekommen zuerst eine Bestätigungsmail und stehen erst nach dem Klick auf den
-Link auf der Liste – das ist gesetzlich vorgeschrieben (Double Opt-in).
-**Unbestätigte Adressen bekommen nie eine E-Mail.**
+Sie bekommen zuerst eine Bestätigungsmail und stehen erst auf der Liste, wenn sie
+auf der verlinkten Seite **Abo bestätigen** klicken – das ist gesetzlich vorgeschrieben
+(Double Opt-in). **Unbestätigte Adressen bekommen nie eine E-Mail.**
+
+Wer sich innerhalb einer Stunde mehrfach mit derselben Adresse anmeldet, bekommt nur
+eine Bestätigungsmail; der Link darin bleibt gültig.
 
 Jede versendete Mail enthält unten einen Abmeldelink, zusätzlich den technischen
-Abmelde-Header, den Gmail und Outlook als eigenen „Abbestellen“-Knopf anzeigen.
-Abmelden löscht die Adresse sofort.
+Abmelde-Header, den Gmail und Outlook als eigenen „Abbestellen“-Knopf anzeigen. Der
+Link führt auf eine Seite mit einem **Abmelden**-Knopf; ein Klick darauf löscht die
+Adresse sofort.
 
 ### Anmeldung über das Kontaktformular
 

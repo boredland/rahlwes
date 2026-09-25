@@ -881,6 +881,9 @@ function isExpired(item) { if (!item.deadline) return false; const d = new Date(
  */
 function rejectReason(item) {
   const blob = `${item.title} ${item.description ?? ''}`
+  // The URL lands in an href on the admin page, where a javascript: link from a
+  // hostile feed would run with the editor's GitHub token in reach.
+  if (!/^https?:\/\//i.test(item.url)) return 'not an http(s) link'
   if (isExpired(item)) return `expired ${item.deadline}`
   if (HSOZKULT_NON_JOB.test(item.url)) return 'not a commission'
   if (IS_PAPER_CALL.test(blob)) return 'call for papers'

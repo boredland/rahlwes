@@ -50,10 +50,8 @@ Known outstanding, measured against the live Squarespace originals:
 | `/projekte/digitales-storytelling/` | 2 |
 | `/projekte/nachgefragt/` | 1 |
 
-Separately, 101 `images.squarespace-cdn.com` hotlinks remain across 12 files
-(`digitale-spiele`, `orteerforschen`, `gab-es-zwangsarbeit`, `familienerforschen` in
-all three locales). Those pages look fine today and will break when the Squarespace
-subscription lapses. `/fuer-museen/` has been restored and is the worked example.
+The Squarespace CDN hotlinks are gone: every journal image is now hosted in
+`src/assets/uploads/`. `/fuer-museen/` is the worked example of a fully restored page.
 
 When restoring a page, fetch the original from `https://rahlwes.eu/<old-path>` (see
 `src/redirects.ts` for the mapping), download the images into `src/assets/uploads/`,

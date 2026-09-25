@@ -7,7 +7,10 @@ import collected from '../../data/cfps.json'
 
 export const prerender = false
 
-const cfps = collected as Cfp[]
+// Scraped from third-party feeds: anything but an http(s) link would be a script in an
+// href on a page where the editor's GitHub token is readable. The scraper filters these
+// too; this keeps a hand-edited or older cfps.json from bypassing it.
+const cfps = (collected as Cfp[]).filter((cfp) => /^https?:\/\//i.test(cfp.url))
 const subscribers = await listCfpSubscribers(env.NEWSLETTER_DB)
 
 const formatDate = (value: string) => {
@@ -90,58 +93,56 @@ const formatDate = (value: string) => {
 </DefaultLayout>
 
 <script>
-  document.addEventListener('astro:page-load', () => {
-    const form = document.querySelector<HTMLFormElement>('.subscribe-form')
+  const form = document.querySelector<HTMLFormElement>('.subscribe-form')
 
-    form?.addEventListener('submit', async (event) => {
-      event.preventDefault()
-      if (!form.reportValidity()) return
+  form?.addEventListener('submit', async (event) => {
+    event.preventDefault()
+    if (!form.reportValidity()) return
 
-      const status = form.querySelector<HTMLParagraphElement>('.form-status')!
-      const button = form.querySelector<HTMLButtonElement>('button[type="submit"]')!
-      const data = new FormData(form)
+    const status = form.querySelector<HTMLParagraphElement>('.form-status')!
+    const button = form.querySelector<HTMLButtonElement>('button[type="submit"]')!
+    const data = new FormData(form)
 
-      button.disabled = true
-      status.textContent = 'Wird eingetragen…'
+    button.disabled = true
+    status.textContent = 'Wird eingetragen…'
 
-      try {
-        const response = await fetch('/api/admin/cfps/subscribe', {
-          method: 'POST',
-          headers: { 'content-type': 'application/json' },
-          body: JSON.stringify({ email: data.get('email') }),
-        })
-        const result = (await response.json()) as { ok: boolean; added?: number; message?: string }
-
-        if (result.ok) {
-          status.textContent = result.added
-            ? 'Adresse eingetragen.'
-            : 'Diese Adresse ist bereits eingetragen.'
-          if (result.added) location.reload()
-        } else {
-          status.textContent = result.message ?? 'Eintragen fehlgeschlagen.'
-        }
-      } catch {
-        status.textContent = 'Verbindung fehlgeschlagen.'
-      } finally {
-        button.disabled = false
-      }
-    })
-
-    for (const button of document.querySelectorAll<HTMLButtonElement>('button.remove')) {
-      button.addEventListener('click', async () => {
-        button.disabled = true
-
-        const response = await fetch('/api/admin/cfps/subscribe', {
-          method: 'DELETE',
-          headers: { 'content-type': 'application/json' },
-          body: JSON.stringify({ email: button.dataset.email }),
-        })
-
-        if (response.ok) location.reload()
-        else button.disabled = false
+    try {
+      const response = await fetch('/api/admin/cfps/subscribe', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ email: data.get('email') }),
       })
+      const result = (await response.json()) as { ok: boolean; added?: number; message?: string }
+
+      if (result.ok) {
+        status.textContent = result.added
+          ? 'Adresse eingetragen.'
+          : 'Diese Adresse ist bereits eingetragen.'
+        if (result.added) location.reload()
+      } else {
+        status.textContent = result.message ?? 'Eintragen fehlgeschlagen.'
+      }
+    } catch {
+      status.textContent = 'Verbindung fehlgeschlagen.'
+    } finally {
+      button.disabled = false
     }
   })
+
+  for (const button of document.querySelectorAll<HTMLButtonElement>('button.remove')) {
+    button.addEventListener('click', async () => {
+      button.disabled = true
+
+      const response = await fetch('/api/admin/cfps/subscribe', {
+        method: 'DELETE',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ email: button.dataset.email }),
+      })
+
+      if (response.ok) location.reload()
+      else button.disabled = false
+    })
+  }
 </script>
 
 <style lang="scss">

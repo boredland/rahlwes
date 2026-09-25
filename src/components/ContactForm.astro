@@ -80,10 +80,9 @@ const sitekey = import.meta.env.PUBLIC_TURNSTILE_SITEKEY ?? ''
 {sitekey && <script is:inline async defer src="https://challenges.cloudflare.com/turnstile/v0/api.js"></script>}
 
 <script>
-  document.addEventListener('astro:page-load', () => {
-    // A page may carry more than one form — the contact page and any section that
-    // embeds this component — so every instance is wired, not just the first.
-    for (const form of document.querySelectorAll<HTMLFormElement>('.contact-form')) {
+  // A page may carry more than one form — the contact page and any section that
+  // embeds this component — so every instance is wired, not just the first.
+  for (const form of document.querySelectorAll<HTMLFormElement>('.contact-form')) {
     const status = form.querySelector<HTMLParagraphElement>('.form-status')!
     const button = form.querySelector<HTMLButtonElement>('button[type="submit"]')!
     const idle = button.textContent ?? ''
@@ -135,8 +134,7 @@ const sitekey = import.meta.env.PUBLIC_TURNSTILE_SITEKEY ?? ''
         button.textContent = idle
       }
     })
-    }
-  })
+  }
 </script>
 
 <style lang="scss">

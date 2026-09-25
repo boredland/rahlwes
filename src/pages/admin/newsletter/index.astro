@@ -89,39 +89,36 @@ const statusLabel: Record<string, string> = {
 </DefaultLayout>
 
 <script>
-  document.addEventListener('astro:page-load', () => {
-    const status = document.querySelector<HTMLParagraphElement>('.form-status')
-    if (!status) return
+  const status = document.querySelector<HTMLParagraphElement>('.form-status')!
 
-    for (const button of document.querySelectorAll<HTMLButtonElement>('button.dispatch')) {
-      button.addEventListener('click', async () => {
-        const { slug, locale, subject } = button.dataset
-        if (!confirm(`„${subject}“ jetzt an alle bestätigten Abonnenten senden?`)) return
+  for (const button of document.querySelectorAll<HTMLButtonElement>('button.dispatch')) {
+    button.addEventListener('click', async () => {
+      const { slug, locale, subject } = button.dataset
+      if (!confirm(`„${subject}“ jetzt an alle bestätigten Abonnenten senden?`)) return
 
-        button.disabled = true
-        status.textContent = 'Versand wird gestartet…'
+      button.disabled = true
+      status.textContent = 'Versand wird gestartet…'
 
-        try {
-          const response = await fetch('/api/admin/newsletter/dispatch', {
-            method: 'POST',
-            headers: { 'content-type': 'application/json' },
-            body: JSON.stringify({ slug, locale }),
-          })
-          const result = (await response.json()) as { ok: boolean; queued?: number; message?: string }
+      try {
+        const response = await fetch('/api/admin/newsletter/dispatch', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ slug, locale }),
+        })
+        const result = (await response.json()) as { ok: boolean; queued?: number; message?: string }
 
-          if (result.ok) {
-            status.textContent = `${result.queued} E-Mails wurden in die Warteschlange gestellt.`
-          } else {
-            status.textContent = result.message ?? 'Versand fehlgeschlagen.'
-            button.disabled = false
-          }
-        } catch {
-          status.textContent = 'Verbindung fehlgeschlagen.'
+        if (result.ok) {
+          status.textContent = `${result.queued} E-Mails wurden in die Warteschlange gestellt.`
+        } else {
+          status.textContent = result.message ?? 'Versand fehlgeschlagen.'
           button.disabled = false
         }
-      })
-    }
-  })
+      } catch {
+        status.textContent = 'Verbindung fehlgeschlagen.'
+        button.disabled = false
+      }
+    })
+  }
 </script>
 
 <style lang="scss">

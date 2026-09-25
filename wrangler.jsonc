@@ -37,8 +37,8 @@
       "database_id": "d4f27b52-5ca4-4417-9f6f-50448e5091dd",
       "migrations_dir": "migrations"
     },
-    // The archive corpus ankai ingests the Gedenkbuch CSV into. Same database id, so no
-    // migration is needed and either worker can ingest during the changeover.
+    // The archive corpus the Gedenkbuch CSV is ingested into. It kept the id of the
+    // retired standalone ankai worker's database, so nothing had to be migrated.
     { "binding": "ANKAI_DB", "database_name": "ankai", "database_id": "c59d1fcf-0fa4-47e6-bab6-c07076bed722" }
   ],
   // One message per subscriber. `max_concurrency` bounds how many sends run at once so
@@ -47,16 +47,13 @@
     "producers": [{ "queue": "send-newsletter-queue", "binding": "NEWSLETTER_QUEUE" }],
     "consumers": [{ "queue": "send-newsletter-queue", "max_batch_size": 10, "max_concurrency": 2, "max_retries": 3 }]
   },
-  // Ankai's upstream response cache. Same namespace the standalone ankai worker uses, so
-  // both serve identical data while it is being retired.
-  //
-  // Prefixed because a bare `CACHE` would read as this site's own; nothing else here
-  // uses KV.
   // Arcinsys and Yad Vashem only answer a real browser session, so those two adapters
   // render their JS search through this proxy. Non-secret; the paired FETCH_PROXY_TOKEN
   // is a Worker secret. Without the token both sources report stale and the rest answer.
   "vars": { "FETCH_PROXY_URL": "https://fetch-proxy.jonas-strassel.de/", "GATEWAY_TIMEOUT_MS": "15000" },
 
+  // Ankai's upstream response cache, kept from the retired standalone worker. Prefixed
+  // because a bare `CACHE` would read as this site's own; nothing else here uses KV.
   "kv_namespaces": [{ "binding": "ANKAI_CACHE", "id": "80b6423e83024989a5c29dcb832fd7fa" }],
 
   // Hard bounces appear on the account suppression list hours after a send, with no

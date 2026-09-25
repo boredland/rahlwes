@@ -8,7 +8,8 @@ const locale = currentLocale(Astro.currentLocale)
 const t = useTranslations(locale)
 ---
 
-<DefaultLayout title={t('error.title')}>
+{/* Served at every unknown URL, so there is no page for an alternate to name. */}
+<DefaultLayout title={t('error.title')} alternates={[]}>
   <section class="my-24">
     <div class="container space-content">
       <h1>{t('error.title')}</h1>

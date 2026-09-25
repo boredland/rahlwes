@@ -37,7 +37,8 @@ export const POST: APIRoute = async ({ request }) => {
   let cfps: Cfp[]
   try {
     const body = (await request.json()) as { cfps?: Cfp[] }
-    cfps = Array.isArray(body.cfps) ? body.cfps : []
+    // Mailed as clickable links, so anything but http(s) is dropped, as on the admin page.
+    cfps = Array.isArray(body.cfps) ? body.cfps.filter((cfp) => /^https?:\/\//i.test(cfp.url)) : []
   } catch {
     return Response.json({ ok: false, message: 'Ungültige Anfrage.' }, { status: 400 })
   }

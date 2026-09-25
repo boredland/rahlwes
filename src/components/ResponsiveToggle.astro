@@ -36,26 +36,22 @@ const labels = {
 </button>
 
 <script>
-  document.addEventListener('astro:page-load', () => {
-    const responsiveToggle = document.querySelector('.responsive-toggle') as HTMLButtonElement | null
-    if (!responsiveToggle) return
+  const responsiveToggle = document.querySelector<HTMLButtonElement>('.responsive-toggle')
+  const mobileNavigation = document.querySelector('.mobile-menu')
+  const icon = responsiveToggle?.querySelector('svg')
+  const openPath = `<path d="M2 1.667h24m-24 8h24m-24 8h24" stroke="var(--foreground-color)" stroke-width="2.667" stroke-linecap="round" stroke-linejoin="round"/>`
+  const closePath = `<path d="M10 10 2 2m8 8 8 8m-8-8 8-8m-8 8-8 8" stroke="var(--foreground-color)" stroke-width="2.667" stroke-linecap="round" stroke-linejoin="round"/>`
 
-    const icon = responsiveToggle.querySelector('svg')
-    const openPath = `<path d="M2 1.667h24m-24 8h24m-24 8h24" stroke="var(--foreground-color)" stroke-width="2.667" stroke-linecap="round" stroke-linejoin="round"/>`
-    const closePath = `<path d="M10 10 2 2m8 8 8 8m-8-8 8-8m-8 8-8 8" stroke="var(--foreground-color)" stroke-width="2.667" stroke-linecap="round" stroke-linejoin="round"/>`
+  responsiveToggle?.addEventListener('click', () => {
+    if (!mobileNavigation || !icon) return
 
-    responsiveToggle.addEventListener('click', () => {
-      const mobileNavigation = document.querySelector('.mobile-menu')
-      if (!mobileNavigation || !icon) return
-
-      const isOpen = mobileNavigation.classList.toggle('show')
-      responsiveToggle.setAttribute('aria-expanded', String(isOpen))
-      responsiveToggle.setAttribute(
-        'aria-label',
-        (isOpen ? responsiveToggle.dataset.labelClose : responsiveToggle.dataset.labelOpen) ?? '',
-      )
-      icon.innerHTML = isOpen ? closePath : openPath
-    })
+    const isOpen = mobileNavigation.classList.toggle('show')
+    responsiveToggle.setAttribute('aria-expanded', String(isOpen))
+    responsiveToggle.setAttribute(
+      'aria-label',
+      (isOpen ? responsiveToggle.dataset.labelClose : responsiveToggle.dataset.labelOpen) ?? '',
+    )
+    icon.innerHTML = isOpen ? closePath : openPath
   })
 </script>
 

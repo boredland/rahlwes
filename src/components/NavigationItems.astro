@@ -1,11 +1,15 @@
 ---
-import themeConfig from '@theme-config'
-import { Link, DarkMode } from 'accessible-astro-components'
-import { Icon } from 'astro-icon/components'
+import { Link } from 'accessible-astro-components'
 import { getNavItems } from '@i18n/nav'
 import { currentLocale } from '@i18n/config'
 import LanguagePicker from '@components/LanguagePicker.astro'
 
+interface Props {
+  /** The list renders twice (desktop and mobile menu), so ids inside it need a prefix. */
+  idPrefix: string
+}
+
+const { idPrefix } = Astro.props
 const locale = currentLocale(Astro.currentLocale)
 const items = getNavItems(locale)
 const pathname = Astro.url.pathname
@@ -25,16 +29,6 @@ const pathname = Astro.url.pathname
     })
   }
   <li class="menu-item">
-    <LanguagePicker />
+    <LanguagePicker id={`${idPrefix}-language-picker-label`} />
   </li>
-  {
-    themeConfig.navigation.darkmode && (
-      <li class="menu-item type-icon animate-rotate">
-        <DarkMode>
-          <Icon aria-hidden="true" name="lucide:moon" slot="light" />
-          <Icon aria-hidden="true" name="lucide:sun" slot="dark" />
-        </DarkMode>
-      </li>
-    )
-  }
 </ul>

@@ -13,7 +13,7 @@ this codebase has already sprung.
 
 | Concern | Choice |
 | --- | --- |
-| Framework | Astro 7, static output, zero client JS on content pages |
+| Framework | Astro 7, static output; content pages ship only small inline scripts (menu, dark mode, forms) and no framework runtime |
 | Hosting | Cloudflare Workers with static assets (`wrangler deploy`) |
 | CMS | Keystatic at `/keystatic`, GitHub storage in production |
 | Content | MDX + JSON under `src/content/<collection>/<locale>/` |
@@ -69,6 +69,12 @@ Public newsletter routes, for reference: `/newsletter/` (signup),
 `/newsletter/abmelden/` (unsubscribe), `/api/newsletter/subscribe`,
 `/api/newsletter/verify`, `/api/newsletter/unsubscribe`. Each exists per locale under
 `/en/` and `/fr/` as well.
+
+**No link in a mail acts on GET.** The confirmation link, the unsubscribe link and the
+digest's unsubscribe link each open a page with one button that POSTs. Corporate mail
+scanners fetch every link in a message: a GET that confirmed would let anyone subscribe a
+stranger past the double opt-in, and a GET that unsubscribed would drop readers whose
+employer merely scanned the mail.
 
 Two Ausschreibungen routes sit outside `/api/admin` on purpose, and carry their own
 credential instead: `/api/cfps/notify` (`POST`) is called by the scrape workflow with
@@ -126,8 +132,8 @@ Two things in that worker are deliberate and easy to break:
 
 - The RFC 8058 one-click unsubscribe is answered in `src/worker.ts` **before**
   Astro's CSRF check, which would otherwise reject the cross-origin POST mail
-  clients send. The exemption is limited to that one path and requires a valid
-  token.
+  clients send. The exemption covers exactly `/api/newsletter/unsubscribe` and
+  `/api/cfps/unsubscribe`, and only with a valid token in the query string.
 - Dispatch renders MDX by calling `/admin/preview` through the `SELF` binding.
   Fetching the public hostname from inside the Worker loops back through the edge
   and fails with a 522.
@@ -263,8 +269,10 @@ only supported export is the CSV of a result set.
      --data-binary @Gedenkbuch_Ergebnisliste_*.csv
    ```
 
-Re-ingesting is safe: rows upsert on `(source, source_id)`, so the same export twice
-updates rather than duplicates.
+Re-ingesting is safe: rows upsert on `(source, source_id)`, and `source_id` is the entry id
+from the export's link column (`…/gedenkbuch/en866687`). The same person arriving in two
+different exports therefore updates one row; a row without a link falls back to name plus
+birth date.
 
 The export is semicolon-separated and latin1-encoded, which the loader handles — it sniffs
 the delimiter from the header and falls back to windows-1252 when the bytes do not decode
@@ -276,10 +284,9 @@ birthplace turns into a replacement character.
 push access to the content repo rather than the shared password Ankai used. That includes
 `POST /api/admin/ankai/ingest/gedenkbuch`, which rewrites the corpus from a CSV export.
 
-**Bindings.** `ANKAI_DB` and `ANKAI_CACHE` deliberately point at the same D1 database and
-KV namespace the standalone worker used, so nothing had to be migrated and both serve
-identical data until it is switched off. They are prefixed because a bare `DB` or `CACHE`
-would read as this site's own.
+**Bindings.** `ANKAI_DB` and `ANKAI_CACHE` point at the D1 database and KV namespace the
+standalone worker used, so nothing had to be migrated. They are prefixed because a bare
+`DB` or `CACHE` would read as this site's own.
 
 **Optional upstream secrets.** `DDB_API_KEY` enables the DDB adapter; `FETCH_PROXY_TOKEN`
 (with `FETCH_PROXY_URL`) enables Arcinsys and Yad Vashem. Without them those sources

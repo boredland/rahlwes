@@ -4,6 +4,7 @@ import PageHeader from '@components/PageHeader.astro'
 import NewsletterForm from '@components/NewsletterForm.astro'
 import { type Locale } from '@i18n/config'
 import { useTranslations } from '@i18n/ui'
+import { isToken } from '@newsletter/tokens'
 
 interface Props {
   locale: Locale
@@ -12,19 +13,35 @@ interface Props {
 const { locale } = Astro.props
 const t = useTranslations(locale)
 
-// Set by /api/newsletter/verify when a confirmation link is followed.
+// `status` reports the outcome of a confirmation; `confirm` carries the token from the
+// mail link until the reader presses the button. See /api/newsletter/verify.
 const status = Astro.url.searchParams.get('status')
+const confirmToken = Astro.url.searchParams.get('confirm')
 ---
 
 <DefaultLayout title={t('newsletter.title')} description={t('newsletter.intro')}>
-  <PageHeader title={t('newsletter.title')} showBreadcrumbs={false} />
+  <PageHeader title={t('newsletter.title')} />
   <section class="my-16">
     <div class="container space-content">
       {status === 'verified' && <p class="notice is-success">{t('newsletter.verified')}</p>}
       {status === 'invalid' && <p class="notice is-error">{t('newsletter.invalidToken')}</p>}
 
-      <p class="lead">{t('newsletter.intro')}</p>
-      <NewsletterForm locale={locale} />
+      {
+        isToken(confirmToken) ? (
+          <form class="confirm-form" method="post" action="/api/newsletter/verify">
+            <input type="hidden" name="token" value={confirmToken} />
+            <p class="lead">{t('newsletter.confirmIntro')}</p>
+            <p>
+              <button type="submit">{t('newsletter.confirmSubmit')}</button>
+            </p>
+          </form>
+        ) : (
+          <>
+            <p class="lead">{t('newsletter.intro')}</p>
+            <NewsletterForm locale={locale} />
+          </>
+        )
+      }
     </div>
   </section>
 </DefaultLayout>
@@ -47,6 +64,23 @@ const status = Astro.url.searchParams.get('status')
 
     &.is-error {
       color: #b3261e;
+    }
+  }
+
+  .confirm-form button {
+    border: 2px solid var(--color-accent-600);
+    border-radius: var(--radius-s);
+    background-color: var(--color-accent-600);
+    padding: var(--space-2xs) var(--space-m);
+    color: #fff;
+    font-family: inherit;
+    font-size: var(--font-size-0);
+    font-weight: 700;
+    cursor: pointer;
+
+    &:where(:hover, :focus-visible) {
+      background-color: transparent;
+      color: var(--color-accent-600);
     }
   }
 </style>

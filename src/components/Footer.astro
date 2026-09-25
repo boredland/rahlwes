@@ -19,7 +19,7 @@ const currentYear = new Date().getFullYear()
     <div class="container grid grid-cols-1 gap-8 md:grid-cols-3">
       <div class="flex flex-col gap-4">
         <Logo />
-        <p class="text-sm">{themeConfig.seo.description}</p>
+        <p class="text-sm">{t('site.description')}</p>
       </div>
       <div class="flex flex-col gap-4">
         <Heading level="h3" size="h6">{t('nav.main')}</Heading>
@@ -31,7 +31,7 @@ const currentYear = new Date().getFullYear()
         <Heading level="h3" size="h6">{t('nav.contact')}</Heading>
         <ul class="flex flex-col gap-2">
           {
-            (themeConfig.socials ?? []).map((social) => (
+            themeConfig.socials.map((social) => (
               <li>
                 <Link href={social.href} isExternal={!social.href.startsWith('mailto:')}>
                   <Icon aria-hidden="true" name={social.icon} size="1.25rem" />

@@ -14,6 +14,8 @@ export type Subscriber = {
   /** Set once the address hard-bounced or was suppressed; such rows are never mailed. */
   bounced_at: string | null
   bounce_reason: string | null
+  /** Last confirmation mail; throttles re-sends to a pending address. */
+  confirmation_sent_at: string | null
 }
 
 export type Campaign = {
@@ -58,14 +60,6 @@ export function listVerified(db: D1Database) {
     .prepare('SELECT * FROM subscribers WHERE verified = 1 AND bounced_at IS NULL ORDER BY id')
     .all<Subscriber>()
     .then((r) => r.results)
-}
-
-/** Bounced rows stay on the list, so the admin table can show why they stopped. */
-export function countBounced(db: D1Database) {
-  return db
-    .prepare('SELECT COUNT(*) AS n FROM subscribers WHERE bounced_at IS NOT NULL')
-    .first<{ n: number }>()
-    .then((r) => r?.n ?? 0)
 }
 
 export function listAll(db: D1Database) {

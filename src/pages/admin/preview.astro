@@ -11,7 +11,7 @@
  * route under /admin is shadowed by the site-wide `/[locale]/` route and never runs.
  * It sits under /admin so the middleware keeps it off the public site.
  */
-import { getCollection, render } from 'astro:content'
+import { getEntry, render } from 'astro:content'
 import { isLocale } from '@i18n/config'
 
 export const prerender = false
@@ -22,8 +22,7 @@ const slug = Astro.url.searchParams.get('slug')
 
 if (!isLocale(locale) || !slug) return new Response('Unknown newsletter', { status: 404 })
 
-const newsletters = await getCollection('newsletters')
-const entry = newsletters.find((candidate) => candidate.id === `${locale}/${slug}`)
+const entry = await getEntry('newsletters', `${locale}/${slug}`)
 
 if (!entry) return new Response('Unknown newsletter', { status: 404 })
 

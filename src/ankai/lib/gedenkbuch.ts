@@ -1,4 +1,7 @@
-import type { ArchiveRecord, AnkaiEnv } from "../types";
+import type { AnkaiEnv } from "../types";
+
+/** Statements per D1 batch; one batch is one round trip. */
+const INGEST_BATCH = 500;
 
 /**
  * Ingest a Bundesarchiv Gedenkbuch CSV export (Jewish victims of the Reich) into D1.
@@ -31,22 +34,32 @@ export async function ingestGedenkbuchCsv(env: AnkaiEnv, csv: string): Promise<n
   // Gedenkbuch exposes, so entries deep-link to their own page rather than the search.
   const iLink = col("gedenkbucheintrag (link)", "gedenkbucheintrag", "link", "url");
 
-  let count = 0;
+  // Batched rather than awaited row by row: a surname search exports thousands of rows,
+  // and one D1 round trip per row makes the upload scale with the network, not the data.
+  const statement = env.ANKAI_DB.prepare(
+    `INSERT INTO records
+       (source, source_id, person_name, role, birth_date, birth_place, death_date, death_place,
+        document_type, holding, reference, title, landing_url, access_note, updated_at)
+     VALUES ('gedenkbuch',?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+     ON CONFLICT(source, source_id) DO UPDATE SET
+       person_name=excluded.person_name, birth_date=excluded.birth_date, birth_place=excluded.birth_place,
+       death_date=excluded.death_date, death_place=excluded.death_place, title=excluded.title,
+       landing_url=excluded.landing_url, access_note=excluded.access_note, updated_at=excluded.updated_at`,
+  );
+  const updatedAt = new Date().toISOString();
+  const bound: D1PreparedStatement[] = [];
+
   for (let r = 1; r < rows.length; r++) {
     const cells = rows[r]!;
     const name = [at(cells, iFirst), at(cells, iLast)].filter(Boolean).join(" ").trim();
     if (!name) continue;
-    const sourceId = `gb-${r}-${name.replace(/\s+/g, "_")}`.slice(0, 128);
-    await env.ANKAI_DB.prepare(
-      `INSERT INTO records
-         (source, source_id, person_name, role, birth_date, birth_place, death_date, death_place,
-          document_type, holding, reference, title, landing_url, access_note, updated_at)
-       VALUES ('gedenkbuch',?,?,?,?,?,?,?,?,?,?,?,?,?,?)
-       ON CONFLICT(source, source_id) DO UPDATE SET
-         person_name=excluded.person_name, birth_date=excluded.birth_date, birth_place=excluded.birth_place,
-         death_date=excluded.death_date, access_note=excluded.access_note, updated_at=excluded.updated_at`,
-    )
-      .bind(
+    const link = at(cells, iLink);
+    // The entry's own Gedenkbuch URL is the only identifier stable across exports; a row
+    // number shifts with every different search, so keying on it duplicated people.
+    // Without a link, name and birth date are the next best natural key.
+    const sourceId = (link.match(/\/gedenkbuch\/([^/?#]+)/)?.[1] ?? `${name}|${at(cells, iBirth)}`).slice(0, 128);
+    bound.push(
+      statement.bind(
         sourceId,
         name,
         "victim",
@@ -58,14 +71,17 @@ export async function ingestGedenkbuchCsv(env: AnkaiEnv, csv: string): Promise<n
         "Bundesarchiv",
         null,
         name,
-        at(cells, iLink) || "https://www.bundesarchiv.de/gedenkbuch/",
+        link || "https://www.bundesarchiv.de/gedenkbuch/",
         at(cells, iFate) || null,
-        new Date().toISOString(),
-      )
-      .run();
-    count += 1;
+        updatedAt,
+      ),
+    );
   }
-  return count;
+
+  for (let i = 0; i < bound.length; i += INGEST_BATCH) {
+    await env.ANKAI_DB.batch(bound.slice(i, i + INGEST_BATCH));
+  }
+  return bound.length;
 }
 
 const at = (cells: string[], i: number) => (i >= 0 ? (cells[i]?.trim() ?? "") : "");

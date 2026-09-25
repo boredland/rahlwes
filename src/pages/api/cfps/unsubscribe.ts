@@ -9,24 +9,32 @@ export const prerender = false
  * cannot act on is not an unsubscribe link. The token is the whole credential —
  * 256 unguessable bits that authorise removing exactly one address.
  *
- * GET so the link works from a mail client; the RFC 8058 one-click POST is
- * answered in `src/worker.ts`, ahead of Astro's CSRF check.
+ * The link in the mail only shows a button, because mail scanners fetch every link
+ * and a GET that deleted the row would drop recipients nobody asked to remove. The
+ * RFC 8058 one-click POST, token in the query string, is answered in `src/worker.ts`
+ * ahead of Astro's CSRF check; this handler takes the same-origin form post.
  */
-export const GET: APIRoute = async ({ url }) => {
+function page(body: string, status = 200) {
+  return new Response(
+    `<!doctype html><html lang="de"><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="robots" content="noindex"><title>Ausschreibungen abbestellen</title><body style="font-family:system-ui,sans-serif;max-width:34rem;margin:4rem auto;padding:0 1rem;line-height:1.5">${body}</body></html>`,
+    { status, headers: { 'content-type': 'text/html; charset=utf-8' } },
+  )
+}
+
+export const GET: APIRoute = ({ url }) => {
   const token = url.searchParams.get('token')
-  if (!isToken(token)) {
-    return new Response('Ungültiger Abmeldelink.', {
-      status: 400,
-      headers: { 'content-type': 'text/plain; charset=utf-8' },
-    })
-  }
+  if (!isToken(token)) return page('<p>Ungültiger Abmeldelink.</p>', 400)
 
-  await env.NEWSLETTER_DB.prepare('DELETE FROM cfp_subscribers WHERE unsubscribe_token = ?')
-    .bind(token)
-    .run()
+  return page(
+    `<p>Keine Ausschreibungs-E-Mails mehr an diese Adresse schicken?</p><form method="post"><input type="hidden" name="token" value="${token}"><button type="submit">Abmelden</button></form>`,
+  )
+}
 
-  return new Response('Sie erhalten keine Ausschreibungs-E-Mails mehr.', {
-    status: 200,
-    headers: { 'content-type': 'text/plain; charset=utf-8' },
-  })
+export const POST: APIRoute = async ({ request }) => {
+  const form = await request.formData().catch(() => null)
+  const token = form?.get('token')
+  if (typeof token !== 'string' || !isToken(token)) return page('<p>Ungültiger Abmeldelink.</p>', 400)
+
+  await env.NEWSLETTER_DB.prepare('DELETE FROM cfp_subscribers WHERE unsubscribe_token = ?').bind(token).run()
+  return page('<p>Sie erhalten keine Ausschreibungs-E-Mails mehr.</p>')
 }

@@ -6,15 +6,8 @@ import { defineThemeConfig } from './src/utils/defineThemeConfig'
  */
 export default defineThemeConfig({
   name: 'Ann-Kathrin Rahlwes',
-  id: 'rahlwes',
-  logo: null,
   seo: {
-    title: 'Ann-Kathrin Rahlwes — Historikerin',
-    subtitle: 'Let’s talk about history!',
-    description:
-      'Ich unterstütze Familien, Unternehmen & Museen dabei, historische Zeugnisse zu finden, Geschichte zu erforschen & zu erzählen.',
     author: 'Ann-Kathrin Rahlwes',
-    image: null,
   },
   colors: {
     primary: '#6673b6',
@@ -24,7 +17,6 @@ export default defineThemeConfig({
   },
   navigation: {
     darkmode: true,
-    items: [],
   },
   socials: [
     { label: 'E-Mail', href: 'mailto:info@rahlwes.eu', icon: 'lucide:mail' },

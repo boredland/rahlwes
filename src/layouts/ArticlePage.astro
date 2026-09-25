@@ -4,11 +4,13 @@ import PageHeader from '@components/PageHeader.astro'
 import ContentImage from '@components/ContentImage.astro'
 import ProseImage from '@components/ProseImage.astro'
 import ContactCta from '@components/ContactCta.astro'
-import { htmlLang, localizePath, type Locale } from '@i18n/config'
+import { htmlLang, locales, localizePath, type Locale } from '@i18n/config'
 import { articleSchema, breadcrumbSchema } from '@i18n/schema'
 import { useTranslations } from '@i18n/ui'
+import { resolveUpload } from '@utils/uploads'
 import type { CollectionEntry } from 'astro:content'
-import { render } from 'astro:content'
+import { getCollection, render } from 'astro:content'
+import { getImage } from 'astro:assets'
 
 interface Props {
   locale: Locale
@@ -20,10 +22,20 @@ const t = useTranslations(locale)
 const { Content } = await render(entry)
 
 const publishedAt = 'publishedAt' in entry.data ? entry.data.publishedAt : null
-const coverImage = 'coverImage' in entry.data ? entry.data.coverImage : null
+const coverImage = 'coverImage' in entry.data && entry.data.coverImage ? resolveUpload(entry.data.coverImage) : null
 const coverAlt = 'coverAlt' in entry.data ? entry.data.coverAlt : ''
 const excerpt = 'excerpt' in entry.data ? entry.data.excerpt : 'intro' in entry.data ? entry.data.intro : ''
 const dateFormat = new Intl.DateTimeFormat(htmlLang[locale], { dateStyle: 'long' })
+
+// The emitted WebP, not the Keystatic path: `/uploads/…` is never served, so pointing
+// JSON-LD at it handed search engines a 404.
+const coverUrl = coverImage ? new URL((await getImage({ src: coverImage, width: 1200, format: 'webp' })).src, Astro.site).href : null
+
+// Only the locales this entry is actually published in, so hreflang never names a 404.
+// The legal pages are German-only by design; see AGENTS.md.
+const slug = entry.id.split('/').slice(1).join('/')
+const siblings = await getCollection(entry.collection, ({ id }) => id.split('/').slice(1).join('/') === slug)
+const alternates = locales.filter((code) => siblings.some(({ id }) => id.startsWith(`${code}/`)))
 
 const showContactCta = 'contactCta' in entry.data && entry.data.contactCta
 const ctaHeading = ('contactCtaHeading' in entry.data && entry.data.contactCtaHeading) || t('contact.title')
@@ -44,13 +56,16 @@ const section =
   description={entry.data.seo.description || excerpt}
   type="article"
   useTitleTemplate={!entry.data.seo.title}
+  image={coverImage}
+  imageAlt={coverAlt}
+  alternates={alternates}
   schema={[
     articleSchema({
       kind: entry.collection === 'journal' ? 'BlogPosting' : 'WebPage',
       title: entry.data.title,
       description: entry.data.seo.description || excerpt,
       url: Astro.url.href,
-      image: coverImage ? new URL(coverImage, Astro.site).href : null,
+      image: coverUrl,
       published: publishedAt ?? undefined,
       locale,
     }),
@@ -64,7 +79,6 @@ const section =
   <PageHeader
     title={entry.data.title}
     subtitle={isProject ? undefined : excerpt}
-    showBreadcrumbs={false}
   />
 
   <article class:list={['my-12', { 'project-layout': isProject }]}>
@@ -79,7 +93,7 @@ const section =
       }
       <ContentImage
         class="cover"
-        src={coverImage}
+        src={'coverImage' in entry.data ? entry.data.coverImage : null}
         alt={coverAlt}
         widths={[600, 900, 1200]}
         sizes="(min-width: 1024px) 70vw, 95vw"

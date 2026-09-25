@@ -2,14 +2,20 @@
 import { currentLocale, locales, localeName, localizePath, stripLocale } from '@i18n/config'
 import { useTranslations } from '@i18n/ui'
 
+interface Props {
+  /** Id of the hidden label; unique per instance, since the picker sits in both menus. */
+  id: string
+}
+
+const { id } = Astro.props
 const locale = currentLocale(Astro.currentLocale)
 const t = useTranslations(locale)
 const basePath = stripLocale(Astro.url.pathname)
 ---
 
 <div class="language-picker">
-  <span class="sr-only" id="language-picker-label">{t('nav.language')}</span>
-  <ul aria-labelledby="language-picker-label">
+  <span class="sr-only" id={id}>{t('nav.language')}</span>
+  <ul aria-labelledby={id}>
     {
       locales.map((code) => (
         <li>

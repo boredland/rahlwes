@@ -22,7 +22,7 @@ export function personSchema(locale: Locale, site: URL | undefined) {
       addressCountry: 'DE',
     },
     knowsLanguage: ['de', 'en', 'fr'],
-    sameAs: (themeConfig.socials ?? [])
+    sameAs: themeConfig.socials
       .map((social) => social.href)
       .filter((href) => href.startsWith('http')),
     knowsAbout: [

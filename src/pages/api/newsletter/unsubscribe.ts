@@ -1,30 +1,34 @@
 import type { APIRoute } from 'astro'
 import { env } from 'cloudflare:workers'
 import { currentLocale, localizePath } from '@i18n/config'
-import { isEmail, normalizeEmail } from '@newsletter/db'
+import { findByUnsubscribeToken, isEmail, normalizeEmail } from '@newsletter/db'
 import { isToken } from '@newsletter/tokens'
 
 export const prerender = false
 
-type Submission = { email: string; locale: string }
+type Submission = { email: string; token: string; locale: string }
 
 async function readSubmission(request: Request): Promise<Submission> {
   const contentType = request.headers.get('content-type') ?? ''
   try {
     if (contentType.includes('json')) {
-      const body = (await request.json()) as { email?: string; locale?: string }
-      return { email: body.email ?? '', locale: body.locale ?? '' }
+      const body = (await request.json()) as { email?: string; token?: string; locale?: string }
+      return { email: body.email ?? '', token: body.token ?? '', locale: body.locale ?? '' }
     }
     const form = await request.formData()
-    return { email: String(form.get('email') ?? ''), locale: String(form.get('locale') ?? '') }
+    return {
+      email: String(form.get('email') ?? ''),
+      token: String(form.get('token') ?? ''),
+      locale: String(form.get('locale') ?? ''),
+    }
   } catch {
-    return { email: '', locale: '' }
+    return { email: '', token: '', locale: '' }
   }
 }
 
 /**
- * The form post behind /newsletter/abmelden/, for readers who no longer have a mail
- * carrying their token.
+ * The form post behind /newsletter/abmelden/: the one-button form a mail link opens,
+ * carrying the token, or the address form for readers who no longer have such a mail.
  *
  * The RFC 8058 one-click case never reaches this handler: it is answered in
  * src/worker.ts, ahead of Astro's CSRF check, which rejects the cross-origin POST a
@@ -37,7 +41,9 @@ export const POST: APIRoute = async ({ request }) => {
   const db = env.NEWSLETTER_DB
   const submission = await readSubmission(request)
   const email = normalizeEmail(submission.email)
-  if (isEmail(email)) {
+  if (isToken(submission.token)) {
+    await db.prepare('DELETE FROM subscribers WHERE unsubscribe_token = ?').bind(submission.token).run()
+  } else if (isEmail(email)) {
     await db.prepare('DELETE FROM subscribers WHERE email = ?').bind(email).run()
   }
 
@@ -50,8 +56,12 @@ export const POST: APIRoute = async ({ request }) => {
   return wantsHtml ? new Response(null, { status: 303, headers: { location: page } }) : new Response('Unsubscribed', { status: 200 })
 }
 
-/** Some clients probe the URI with GET first; send those to the readable page. */
-export const GET: APIRoute = ({ url, redirect }) => {
+/** Some clients probe the URI with GET first; send those to the reader's own page. */
+export const GET: APIRoute = async ({ url, redirect }) => {
   const token = url.searchParams.get('token')
-  return redirect(isToken(token) ? `/newsletter/abmelden/?token=${token}` : '/newsletter/abmelden/', 302)
+  if (!isToken(token)) return redirect('/newsletter/abmelden/', 302)
+
+  const subscriber = await findByUnsubscribeToken(env.NEWSLETTER_DB, token)
+  const page = localizePath('/newsletter/abmelden/', currentLocale(subscriber?.locale))
+  return redirect(`${page}?token=${token}`, 302)
 }
