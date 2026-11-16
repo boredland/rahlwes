@@ -56,6 +56,10 @@
   // because a bare `CACHE` would read as this site's own; nothing else here uses KV.
   "kv_namespaces": [{ "binding": "ANKAI_CACHE", "id": "80b6423e83024989a5c29dcb832fd7fa" }],
 
+  // Large media is served from here rather than from Workers Assets, which has a 25 MiB
+  // file limit and does not answer Range requests, so video cannot seek or play on Safari.
+  "r2_buckets": [{ "binding": "MEDIA", "bucket_name": "rahlwes-media" }],
+
   // Hard bounces appear on the account suppression list hours after a send, with no
   // webhook to subscribe to, so they are polled once a day.
   "triggers": { "crons": ["17 4 * * *"] },

@@ -151,10 +151,45 @@ async function handleOneClickUnsubscribe(request: Request, env: Env): Promise<Re
   return new Response('Unsubscribed', { status: 200 })
 }
 
+/**
+ * Browsers need `206` with `Content-Range` to seek in a video and Safari refuses to play
+ * one without it, which the static asset layer does not provide. R2's range support does
+ * the work; the objects are immutable per key, so they are cached for a year.
+ */
+async function serveMedia(request: Request, env: Env): Promise<Response | null> {
+  const url = new URL(request.url)
+  if (!url.pathname.startsWith('/media/')) return null
+  if (request.method !== 'GET' && request.method !== 'HEAD') return new Response(null, { status: 405 })
+
+  const key = decodeURIComponent(url.pathname.slice('/media/'.length))
+  const object = await env.MEDIA.get(key, { range: request.headers, onlyIf: request.headers })
+  if (!object) return new Response('Not found', { status: 404 })
+
+  const headers = new Headers()
+  object.writeHttpMetadata(headers)
+  headers.set('etag', object.httpEtag)
+  headers.set('accept-ranges', 'bytes')
+  headers.set('cache-control', 'public, max-age=31536000, immutable')
+
+  if (!('body' in object)) return new Response(null, { status: 304, headers })
+
+  const range = object.range
+  if (request.headers.has('range') && range && 'offset' in range) {
+    const offset = range.offset ?? 0
+    const length = range.length ?? object.size - offset
+    headers.set('content-range', `bytes ${offset}-${offset + length - 1}/${object.size}`)
+    headers.set('content-length', String(length))
+    return new Response(request.method === 'HEAD' ? null : object.body, { status: 206, headers })
+  }
+
+  headers.set('content-length', String(object.size))
+  return new Response(request.method === 'HEAD' ? null : object.body, { status: 200, headers })
+}
+
 export default {
   async fetch(request: Request, env: Env, context: ExecutionContext): Promise<Response> {
-    const unsubscribed = await handleOneClickUnsubscribe(request, env)
-    return unsubscribed ?? astro.fetch(request, env, context)
+    const handled = (await handleOneClickUnsubscribe(request, env)) ?? (await serveMedia(request, env))
+    return handled ?? astro.fetch(request, env, context)
   },
 
   /**
