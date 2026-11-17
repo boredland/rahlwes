@@ -119,6 +119,30 @@ describe("DDB adapter", () => {
     const res = await ddbAdapter.search({ name: "x", limit: 20, cursor: "SAME" }, ctx({ DDB_API_KEY: "k" }));
     expect(res.cursor).toBeUndefined();
   });
+
+  it("never puts the API key into an error when DDB answers with an error status", async () => {
+    mock = installMockFetch([{ match: "/search", status: 429, body: { error: "slow down" } }]);
+    const error = await ddbAdapter
+      .search({ name: "Frankfurt", limit: 5 }, ctx({ DDB_API_KEY: "test-key-123" }))
+      .catch((e: unknown) => e as Error);
+    expect(error).toBeInstanceOf(Error);
+    expect((error as Error).message).toMatch(/HTTP 429/);
+    expect((error as Error).message).not.toContain("test-key-123");
+  });
+
+  it("still sends the key to DDB", async () => {
+    mock = installMockFetch([{ match: "/search", body: { numberOfResults: 0, results: [] } }]);
+    await ddbAdapter.search({ name: "Frankfurt", limit: 5 }, ctx({ DDB_API_KEY: "test-key-123" }));
+    expect(mock.calls[0]!.url).toContain("oauth_consumer_key=test-key-123");
+  });
+
+  it("keeps the host and path in the error so a failing source can still be diagnosed", async () => {
+    mock = installMockFetch([{ match: "/search", status: 500, body: "boom" }]);
+    const error = await ddbAdapter
+      .search({ name: "Frankfurt", limit: 5 }, ctx({ DDB_API_KEY: "test-key-123" }))
+      .catch((e: unknown) => e as Error);
+    expect((error as Error).message).toMatch(/api\.deutsche-digitale-bibliothek\.de\/search/);
+  });
 });
 
 describe("Kalliope adapter", () => {

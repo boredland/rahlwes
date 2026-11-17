@@ -14,6 +14,20 @@ function cacheInit(cacheTtl: number | undefined): RequestInit {
   return cacheTtl ? { cf: { cacheTtl, cacheEverything: true } } : {};
 }
 
+/**
+ * The query string is where credentials travel for upstreams that take their key as a
+ * parameter, and these messages reach the browser through the gateway's per-source
+ * status. The host and path are enough to tell which source failed.
+ */
+function withoutQuery(url: string): string {
+  try {
+    const parsed = new URL(url);
+    return `${parsed.origin}${parsed.pathname}`;
+  } catch {
+    return url.split("?")[0]!;
+  }
+}
+
 export async function fetchJson<T>(
   url: string,
   init: RequestInit,
@@ -26,7 +40,7 @@ export async function fetchJson<T>(
     signal,
     headers: { "user-agent": USER_AGENT, accept: "application/json", ...(init.headers ?? {}) },
   });
-  if (!res.ok) throw new Error(`${url} -> HTTP ${res.status}`);
+  if (!res.ok) throw new Error(`${withoutQuery(url)} -> HTTP ${res.status}`);
   return (await res.json()) as T;
 }
 
@@ -41,6 +55,6 @@ export async function fetchText(
     signal,
     headers: { "user-agent": USER_AGENT, ...headers },
   });
-  if (!res.ok) throw new Error(`${url} -> HTTP ${res.status}`);
+  if (!res.ok) throw new Error(`${withoutQuery(url)} -> HTTP ${res.status}`);
   return res.text();
 }
