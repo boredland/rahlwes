@@ -90,11 +90,16 @@ read `.astro` files, and this site's layouts and components are `.astro` files.
   pass, 9 skipped. Runtime ~1.3 s. It needs no network.
 - `npm run build` passes **on the operator's machine** (exit 0, ~14 s) and prints one standing
   warning: `[glob-loader] No files found matching "*/*.mdx" in directory "src/content/newsletters"`.
-  **It fails on a clean clone with no Cloudflare login** (verified 2026-11-17): `wrangler.jsonc`
+  **On a clean clone with no Cloudflare login it fails** (verified 2026-11-17): `wrangler.jsonc`
   declares the email bindings with `"remote": true`, so the Cloudflare Vite plugin starts a
-  remote proxy session during the build and aborts with "More than one account available but
-  unable to select one in non-interactive mode". CI has no login, so the CI job must **not** run
-  `npm run build`. Do not "fix" this by setting `account_id` or a token in the workflow.
+  remote proxy session during the build and aborts ("More than one account available but unable
+  to select one in non-interactive mode"). On a CI runner there are no credentials at all.
+  **Fix, verified:** set the environment variable `CLOUDFLARE_VITE_FORCE_LOCAL=true` for the
+  build step (`@cloudflare/vite-plugin` reads it and skips remote bindings). With an empty `HOME`
+  and no credentials, `CLOUDFLARE_VITE_FORCE_LOCAL=true npm run build` completes: 66 HTML pages
+  and the same bindings in `dist/server/wrangler.json`. Do **not** give CI an API token or an
+  `account_id`, and do **not** change `astro.config.mjs` for this (it also governs production
+  deploys, which must keep their remote bindings).
 - Node engine: `>=22.12.0` (`package.json` `engines`). CI uses Node 22.
 - Conventions: workflow files use German step names, with English comments explaining
   **why** (see `drift.yml`). AGENTS.md: "Comments explain why, never what."
@@ -237,10 +242,13 @@ jobs:
       # Offline tests only. test:drift hits live archives and has its own workflow.
       - run: npm test
 
-      # No `npm run build` here on purpose: wrangler.jsonc marks the email bindings
-      # `remote: true`, so a build starts a remote proxy session that needs a Cloudflare
-      # login, and this read-only job has no credentials. `npm run deploy` runs the
-      # build with the operator's login.
+      # CLOUDFLARE_VITE_FORCE_LOCAL stops the Cloudflare Vite plugin from opening a remote
+      # proxy session: wrangler.jsonc marks the email bindings `remote: true`, which would
+      # otherwise need a Cloudflare login that this read-only job does not have. The build
+      # output is only checked here, never deployed.
+      - run: npm run build
+        env:
+          CLOUDFLARE_VITE_FORCE_LOCAL: 'true'
 ```
 
 `PUBLIC_CF_BEACON_TOKEN` and other `.env` values are **not** set in CI, which is fine: an unset
@@ -255,7 +263,7 @@ In `README.md`, in the `## Commands` code block, add one line between `npm run d
 `npm run translate`:
 
 ```
-npm run check      # astro check (types incl. .astro files); CI also runs the tests on every push
+npm run check      # astro check (types incl. .astro files); CI also runs the tests and a build on every push
 ```
 
 **Verify**: `sed -n '24,38p' README.md` shows the new line inside the block, which is otherwise unchanged.
@@ -265,7 +273,7 @@ npm run check      # astro check (types incl. .astro files); CI also runs the te
 ```sh
 rm -rf /tmp/ci-sim && git clone --quiet . /tmp/ci-sim && cd /tmp/ci-sim
 git checkout advisor/001-ci-gate   # or fetch your branch into the clone
-npm ci && npx astro sync && npm run check && npm test
+npm ci && npx astro sync && npm run check && npm test && CLOUDFLARE_VITE_FORCE_LOCAL=true npm run build
 ```
 
 **Verify**: every command exits 0; `npm run check` prints `0 errors`; `npm test` reports
@@ -281,7 +289,7 @@ on a clean clone, and by the first GitHub Actions run after the operator pushes.
 - [ ] On a **clean clone**: `npm ci && npx astro sync && npm run check` exits 0 with `0 errors`
 - [ ] `npm ls @astrojs/check typescript --depth=0` shows both **without** `extraneous`
 - [ ] `npm test` exits 0 (56 passed, 9 skipped)
-- [ ] `.github/workflows/check.yml` does **not** contain `npm run build`
+- [ ] `.github/workflows/check.yml` runs `npm run build` with `CLOUDFLARE_VITE_FORCE_LOCAL: 'true'` and no Cloudflare credentials
 - [ ] `.github/workflows/check.yml` exists, triggers on `push` to `main` and on `pull_request`, and runs `astro sync` before `npm run check`
 - [ ] `git status` shows only the in-scope files changed (`content.ts` only if the error reproduced)
 - [ ] `plans/README.md` status row updated
@@ -296,8 +304,8 @@ Stop and report back (do not improvise) if:
 - `npm install --save-dev @astrojs/check typescript` upgrades or changes any other package in
   `package-lock.json` (look at `git diff --stat package-lock.json`; a large diff is a STOP).
 - `npm test` no longer reports 56 passed / 9 skipped on `main` before your change.
-- You are about to add credentials, `account_id` or a Cloudflare token to the workflow to make
-  the build run in CI.
+- You are about to add credentials, `account_id` or a Cloudflare token to the workflow, or to edit
+  `astro.config.mjs`, to make the build run in CI.
 - You are tempted to add `npm audit`, lint or format steps: they are out of scope.
 
 ## Maintenance notes
