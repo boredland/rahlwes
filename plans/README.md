@@ -9,8 +9,8 @@ honor its STOP conditions, and update your row when done.
 | Plan | Title | Priority | Effort | Depends on | Status |
 |------|-------|----------|--------|------------|--------|
 | [001](./001-ci-gate.md) | Run typecheck (`astro check`) and tests on every push and pull request | P1 | S | — | DONE |
-| [002](./002-contact-form-fail-closed.md) | Make the contact form refuse submissions it cannot verify; 400 on malformed JSON | P1 | S | — (001 recommended) | TODO |
-| [003](./003-newsletter-resend-guard.md) | Make a second dispatch of the same newsletter impossible on the server | P1 | S | — | TODO |
+| [002](./002-contact-form-fail-closed.md) | Make the contact form refuse submissions it cannot verify; 400 on malformed JSON | P1 | S | — (001 recommended) | BLOCKED (code committed `4a03776`; **do not deploy** until the Turnstile widget and `TURNSTILE_SECRET_KEY` exist, or the form goes offline; steps 0 and 6 pending) |
+| [003](./003-newsletter-resend-guard.md) | Make a second dispatch of the same newsletter impossible on the server | P1 | S | — | BLOCKED (code committed; the operator must apply migration 0007 to the remote D1 first; the 200/409 check on the deployed worker is pending) |
 | [004](./004-media-route-fixes.md) | Make `/media/*` answer malformed and conditional requests correctly | P2 | S | — (001 recommended) | DONE |
 | [005](./005-redact-upstream-error-urls.md) | Stop upstream error messages from carrying the URL's query string | P2 | S | — (001 recommended) | DONE |
 | [006](./006-seo-descriptions-and-trailer-captions.md) | Replace cut-off meta descriptions; add captions to the trailer | P3 | S | 004 | BLOCKED (descriptions done; caption upload to R2 waits for the museum's permission, and the `<track>` commit must not be deployed before it) |
