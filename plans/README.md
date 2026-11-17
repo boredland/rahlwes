@@ -14,7 +14,7 @@ honor its STOP conditions, and update your row when done.
 | [004](./004-media-route-fixes.md) | Make `/media/*` answer malformed and conditional requests correctly | P2 | S | — (001 recommended) | DONE |
 | [005](./005-redact-upstream-error-urls.md) | Stop upstream error messages from carrying the URL's query string | P2 | S | — (001 recommended) | DONE |
 | [006](./006-seo-descriptions-and-trailer-captions.md) | Replace cut-off meta descriptions; add captions to the trailer | P3 | S | 004 | BLOCKED (descriptions done; caption upload to R2 waits for the museum's permission, and the `<track>` commit must not be deployed before it) |
-| [007](./007-production-cutover-checklist.md) | Prepare the switch to `rahlwes.eu` and prove it with a script | P3 | M | 001, 002 (006 recommended) | TODO |
+| [007](./007-production-cutover-checklist.md) | Prepare the switch to `rahlwes.eu` and prove it with a script | P3 | M | 001, 002 (006 recommended) | DONE (staging run is 8/10: `/sitemap.xml` 404 until the redirect is deployed, and the contact form 500 on a null body until plan 002 is deployed) |
 
 Status values: TODO | IN PROGRESS | DONE | BLOCKED (with one-line reason) | REJECTED (with one-line rationale — finding fixed independently or approach abandoned)
 

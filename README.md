@@ -361,3 +361,7 @@ by `DefaultLayout.astro`) and the fallbacks in
 The custom domain `next.rahlwes.eu` is declared in `wrangler.jsonc`. The zone
 already lives in the Cloudflare account, so `npm run deploy` provisions the
 route and certificate on first run.
+
+The switch from `next.rahlwes.eu` to `rahlwes.eu` is a checked procedure: see
+[docs/CUTOVER.md](./docs/CUTOVER.md), and `npm run verify:origin -- <origin> <staging|production>`
+proves it against a running origin.

@@ -36,6 +36,9 @@ export const legacyRedirects = {
   '/journal-en': '/en/journal/',
   '/journal-en/the-frankfurt-history-app': '/en/journal/orteerforschen/',
 
+  // The Squarespace sitemap URL; Search Console may still have it submitted, and the
+  // new sitemap lives at /sitemap-index.xml.
+  '/sitemap.xml': '/sitemap-index.xml',
 
   // The contact form now closes every page, so the standalone page it used to live
   // on is gone. The original Squarespace site had no contact page either.
