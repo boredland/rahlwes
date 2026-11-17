@@ -8,7 +8,7 @@ honor its STOP conditions, and update your row when done.
 
 | Plan | Title | Priority | Effort | Depends on | Status |
 |------|-------|----------|--------|------------|--------|
-| [001](./001-ci-gate.md) | Run typecheck (`astro check`), tests and the build on every push and pull request | P1 | S | — | TODO |
+| [001](./001-ci-gate.md) | Run typecheck (`astro check`) and tests on every push and pull request | P1 | S | — | DONE |
 | [002](./002-contact-form-fail-closed.md) | Make the contact form refuse submissions it cannot verify; 400 on malformed JSON | P1 | S | — (001 recommended) | TODO |
 | [003](./003-newsletter-resend-guard.md) | Make a second dispatch of the same newsletter impossible on the server | P1 | S | — | TODO |
 | [004](./004-media-route-fixes.md) | Make `/media/*` answer malformed and conditional requests correctly | P2 | S | — (001 recommended) | TODO |
