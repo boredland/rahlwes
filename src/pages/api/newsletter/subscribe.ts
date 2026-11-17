@@ -16,11 +16,22 @@ type SubscribePayload = {
   website?: string
 }
 
+/** A body that is not an object, or whose text fields are not strings, is a malformed request, not a server error. */
+function asStrings<T extends Record<string, unknown>>(value: unknown, keys: (keyof T)[]): value is T {
+  if (typeof value !== 'object' || value === null) return false
+  const record = value as Record<string, unknown>
+  return keys.every((key) => record[key as string] === undefined || typeof record[key as string] === 'string')
+}
+
 export const POST: APIRoute = async ({ request, clientAddress }) => {
   let payload: SubscribePayload
 
   try {
-    payload = (await request.json()) as SubscribePayload
+    const parsed: unknown = await request.json()
+    if (!asStrings<SubscribePayload>(parsed, ['email', 'locale', 'website'])) {
+      return Response.json({ ok: false, message: newsletterCopy('de').signup.invalid }, { status: 400 })
+    }
+    payload = parsed
   } catch {
     return Response.json({ ok: false, message: newsletterCopy('de').signup.invalid }, { status: 400 })
   }

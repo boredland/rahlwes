@@ -90,20 +90,38 @@ async function verifyTurnstile(token: string | undefined, secret: string, ip: st
   body.append('response', token)
   if (ip) body.append('remoteip', ip)
 
-  const response = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', {
-    method: 'POST',
-    body,
-  })
-  const outcome = (await response.json()) as { success: boolean; 'error-codes'?: string[] }
-  if (!outcome.success) console.warn('turnstile rejected', outcome['error-codes'])
-  return outcome.success
+  try {
+    const response = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', {
+      method: 'POST',
+      body,
+      signal: AbortSignal.timeout(5000),
+    })
+    const outcome = (await response.json()) as { success?: boolean; 'error-codes'?: string[] }
+    if (!outcome.success) console.warn('turnstile rejected', outcome['error-codes'])
+    return outcome.success === true
+  } catch (error) {
+    console.error('turnstile verification failed', error)
+    return false
+  }
+}
+
+/** A body that is not an object, or whose text fields are not strings, is a malformed request, not a server error. */
+function asStrings<T extends Record<string, unknown>>(value: unknown, keys: (keyof T)[]): value is T {
+  if (typeof value !== 'object' || value === null) return false
+  const record = value as Record<string, unknown>
+  return keys.every((key) => record[key as string] === undefined || typeof record[key as string] === 'string')
 }
 
 export const POST: APIRoute = async ({ request, clientAddress }) => {
   let payload: ContactPayload
 
   try {
-    payload = (await request.json()) as ContactPayload
+    const parsed: unknown = await request.json()
+    const textFields: (keyof ContactPayload)[] = ['fname', 'lname', 'email', 'message', 'locale', 'website', 'cf-turnstile-response']
+    if (!asStrings<ContactPayload>(parsed, textFields)) {
+      return Response.json({ ok: false, message: replies.de.invalid }, { status: 400 })
+    }
+    payload = parsed
   } catch {
     return Response.json({ ok: false, message: replies.de.invalid }, { status: 400 })
   }
@@ -135,13 +153,15 @@ export const POST: APIRoute = async ({ request, clientAddress }) => {
     return Response.json({ ok: false, message: t.consent }, { status: 400 })
   }
 
-  // Optional so the form still works before the widget exists; once the secret is
-  // set every submission must pass verification.
+  // A missing secret must stop the form rather than wave every submission through: the
+  // confirmation mail below would otherwise relay attacker-chosen text to any address.
   const secret = (env as Env & { TURNSTILE_SECRET_KEY?: string }).TURNSTILE_SECRET_KEY
-  if (secret) {
-    const ok = await verifyTurnstile(payload['cf-turnstile-response'], secret, clientAddress ?? null)
-    if (!ok) return Response.json({ ok: false, message: t.captcha }, { status: 403 })
+  if (!secret) {
+    console.error('TURNSTILE_SECRET_KEY is not set; refusing contact submissions')
+    return Response.json({ ok: false, message: t.error }, { status: 503 })
   }
+  const ok = await verifyTurnstile(payload['cf-turnstile-response'], secret, clientAddress ?? null)
+  if (!ok) return Response.json({ ok: false, message: t.captcha }, { status: 403 })
 
   const sender = `${fname} ${lname}`
   const received = new Date().toISOString()

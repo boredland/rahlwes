@@ -183,6 +183,14 @@ bundling the two would not be valid consent. Enrolment failures are logged and
 swallowed, because a newsletter problem must not tell someone their message was
 lost when it was already delivered.
 
+**Contact-form verification.** The endpoint checks a Cloudflare Turnstile token and
+**refuses every submission while `TURNSTILE_SECRET_KEY` is unset**: it answers 503 with
+the "write to info@rahlwes.eu" message instead of waving mail through, because the
+confirmation it sends would otherwise relay a stranger's text to any address. Local
+development uses Cloudflare's always-pass test pair, documented in `.env.example`. The
+sitekey is inlined at build time, so deploy with `npm run deploy` from a machine whose
+`.env` has it.
+
 **Sending domains.** Two `send_email` bindings, one per domain, each restricted
 to the addresses it may use:
 
