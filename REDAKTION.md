@@ -139,8 +139,9 @@ rückgängig machen**. Danach den Status in Keystatic auf *Versendet* setzen, da
 klar bleibt, was schon raus ist.
 
 Die Mails werden in einer Warteschlange nacheinander verschickt; bei einer
-größeren Liste dauert das ein paar Minuten. Ein zweiter Klick auf *Versenden*
-verschickt den Newsletter erneut an alle – also nur einmal klicken.
+größeren Liste dauert das ein paar Minuten. Ein Newsletter lässt sich pro Sprache nur
+einmal versenden – ein zweiter Klick wird abgewiesen. Soll eine korrigierte Fassung
+raus, den Eintrag in Keystatic unter einem **neuen Titel (neuer Slug)** kopieren.
 
 ### Sprache der Abonnenten
 

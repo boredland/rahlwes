@@ -10,6 +10,8 @@ export const prerender = false
 /** Queue accepts at most 100 messages per `sendBatch` call. */
 const QUEUE_BATCH = 100
 
+const ALREADY_SENT = 'Dieser Newsletter wurde bereits versendet. Ein erneuter Versand ist gesperrt.'
+
 /**
  * Strips the rendered body down to something an email client will show.
  *
@@ -69,6 +71,13 @@ export const POST: APIRoute = async ({ request }) => {
     )
   }
 
+  // The unique index on (slug, locale) is the real guard; this read only turns the
+  // common case into a readable answer before any rendering or queueing work.
+  const already = await env.NEWSLETTER_DB.prepare('SELECT id FROM campaigns WHERE slug = ? AND locale = ?')
+    .bind(slug, locale)
+    .first<{ id: number }>()
+  if (already) return Response.json({ ok: false, message: ALREADY_SENT }, { status: 409 })
+
   const subscribers = await listVerified(env.NEWSLETTER_DB)
   if (!subscribers.length) {
     return Response.json({ ok: false, message: 'Keine bestätigten Abonnenten.' }, { status: 409 })
@@ -93,11 +102,20 @@ export const POST: APIRoute = async ({ request }) => {
     return Response.json({ ok: false, message: 'Dieser Newsletter hat keinen Inhalt.' }, { status: 409 })
   }
 
-  const campaign = await env.NEWSLETTER_DB.prepare(
-    'INSERT INTO campaigns (slug, locale, subject, html, text) VALUES (?, ?, ?, ?, ?) RETURNING id',
-  )
-    .bind(slug, locale, entry.data.subject, html, text)
-    .first<{ id: number }>()
+  // Two simultaneous requests can both pass the read above, so the index decides.
+  let campaign: { id: number } | null
+  try {
+    campaign = await env.NEWSLETTER_DB.prepare(
+      'INSERT INTO campaigns (slug, locale, subject, html, text) VALUES (?, ?, ?, ?, ?) RETURNING id',
+    )
+      .bind(slug, locale, entry.data.subject, html, text)
+      .first<{ id: number }>()
+  } catch (error) {
+    if (error instanceof Error && error.message.includes('UNIQUE constraint failed')) {
+      return Response.json({ ok: false, message: ALREADY_SENT }, { status: 409 })
+    }
+    throw error
+  }
 
   if (!campaign) {
     return Response.json({ ok: false, message: 'Kampagne konnte nicht angelegt werden.' }, { status: 500 })

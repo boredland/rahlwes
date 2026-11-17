@@ -8,10 +8,14 @@ import { listVerified } from '@newsletter/db'
 
 export const prerender = false
 
-const [newsletters, recipients] = await Promise.all([
+const [newsletters, recipients, dispatched] = await Promise.all([
   getCollection('newsletters'),
   listVerified(env.NEWSLETTER_DB),
+  env.NEWSLETTER_DB.prepare('SELECT slug, locale FROM campaigns').all<{ slug: string; locale: string }>(),
 ])
+
+/** A campaign row exists from the moment a dispatch starts; dispatch refuses a second one. */
+const alreadySent = new Set(dispatched.results.map((row) => `${row.locale}/${row.slug}`))
 
 /** Ready-to-send first: the whole point of this page is dispatching those. */
 const entries = newsletters
@@ -52,28 +56,31 @@ const statusLabel: Record<string, string> = {
               </tr>
             </thead>
             <tbody>
-              {entries.map(({ entry, locale, slug }) => (
-                <tr>
-                  <td>{entry.data.subject}</td>
-                  <td>{localeName[locale]}</td>
-                  <td>{statusLabel[entry.data.status] ?? entry.data.status}</td>
-                  <td>
-                    <a class="preview" href={`/admin/preview?locale=${locale}&slug=${slug}`} target="_blank">
-                      Vorschau
-                    </a>
-                    <button
-                      type="button"
-                      class="dispatch"
-                      data-slug={slug}
-                      data-locale={locale}
-                      data-subject={entry.data.subject}
-                      disabled={entry.data.status !== 'ready' || recipients.length === 0}
-                    >
-                      Versenden
-                    </button>
-                  </td>
-                </tr>
-              ))}
+              {entries.map(({ entry, locale, slug }) => {
+                const sent = alreadySent.has(`${locale}/${slug}`)
+                return (
+                  <tr>
+                    <td>{entry.data.subject}</td>
+                    <td>{localeName[locale]}</td>
+                    <td>{statusLabel[entry.data.status] ?? entry.data.status}</td>
+                    <td>
+                      <a class="preview" href={`/admin/preview?locale=${locale}&slug=${slug}`} target="_blank">
+                        Vorschau
+                      </a>
+                      <button
+                        type="button"
+                        class="dispatch"
+                        data-slug={slug}
+                        data-locale={locale}
+                        data-subject={entry.data.subject}
+                        disabled={sent || entry.data.status !== 'ready' || recipients.length === 0}
+                      >
+                        {sent ? 'Bereits versendet' : 'Versenden'}
+                      </button>
+                    </td>
+                  </tr>
+                )
+              })}
             </tbody>
           </table>
         )
