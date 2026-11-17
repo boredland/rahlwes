@@ -161,8 +161,25 @@ async function serveMedia(request: Request, env: Env): Promise<Response | null> 
   if (!url.pathname.startsWith('/media/')) return null
   if (request.method !== 'GET' && request.method !== 'HEAD') return new Response(null, { status: 405 })
 
-  const key = decodeURIComponent(url.pathname.slice('/media/'.length))
-  const object = await env.MEDIA.get(key, { range: request.headers, onlyIf: request.headers })
+  let key: string
+  try {
+    key = decodeURIComponent(url.pathname.slice('/media/'.length))
+  } catch {
+    return new Response('Bad request', { status: 400 })
+  }
+
+  let object: R2Object | R2ObjectBody | null
+  try {
+    object = await env.MEDIA.get(key, { range: request.headers, onlyIf: request.headers })
+  } catch (error) {
+    if (!request.headers.has('range')) throw error
+    // R2 throws when the range starts past the end of the object. The 416 must carry
+    // the object size in Content-Range, which only head() can supply, and a throw for
+    // any other reason has no object to describe.
+    const meta = await env.MEDIA.head(key)
+    if (!meta) throw error
+    return new Response(null, { status: 416, headers: { 'content-range': `bytes */${meta.size}` } })
+  }
   if (!object) return new Response('Not found', { status: 404 })
 
   const headers = new Headers()
@@ -171,15 +188,25 @@ async function serveMedia(request: Request, env: Env): Promise<Response | null> 
   headers.set('accept-ranges', 'bytes')
   headers.set('cache-control', 'public, max-age=31536000, immutable')
 
-  if (!('body' in object)) return new Response(null, { status: 304, headers })
+  if (!('body' in object)) {
+    // A body-less object means a precondition did not hold, and R2 does not say which.
+    // Only a conditional GET (If-None-Match, If-Modified-Since) is answered 304; a failed
+    // If-Match or If-Unmodified-Since is 412.
+    const conditionalGet = request.headers.has('if-none-match') || request.headers.has('if-modified-since')
+    return new Response(null, { status: conditionalGet ? 304 : 412, headers })
+  }
 
   const range = object.range
+  // R2 reports a range it could not honour (for example `bytes=5-2`) as the whole object,
+  // which must be a plain 200, not a 206 covering everything.
   if (request.headers.has('range') && range && 'offset' in range) {
     const offset = range.offset ?? 0
     const length = range.length ?? object.size - offset
-    headers.set('content-range', `bytes ${offset}-${offset + length - 1}/${object.size}`)
-    headers.set('content-length', String(length))
-    return new Response(request.method === 'HEAD' ? null : object.body, { status: 206, headers })
+    if (length < object.size) {
+      headers.set('content-range', `bytes ${offset}-${offset + length - 1}/${object.size}`)
+      headers.set('content-length', String(length))
+      return new Response(request.method === 'HEAD' ? null : object.body, { status: 206, headers })
+    }
   }
 
   headers.set('content-length', String(object.size))

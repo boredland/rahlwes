@@ -11,7 +11,7 @@ honor its STOP conditions, and update your row when done.
 | [001](./001-ci-gate.md) | Run typecheck (`astro check`) and tests on every push and pull request | P1 | S | — | DONE |
 | [002](./002-contact-form-fail-closed.md) | Make the contact form refuse submissions it cannot verify; 400 on malformed JSON | P1 | S | — (001 recommended) | TODO |
 | [003](./003-newsletter-resend-guard.md) | Make a second dispatch of the same newsletter impossible on the server | P1 | S | — | TODO |
-| [004](./004-media-route-fixes.md) | Make `/media/*` answer malformed and conditional requests correctly | P2 | S | — (001 recommended) | TODO |
+| [004](./004-media-route-fixes.md) | Make `/media/*` answer malformed and conditional requests correctly | P2 | S | — (001 recommended) | DONE |
 | [005](./005-redact-upstream-error-urls.md) | Stop upstream error messages from carrying the URL's query string | P2 | S | — (001 recommended) | TODO |
 | [006](./006-seo-descriptions-and-trailer-captions.md) | Replace cut-off meta descriptions; add captions to the trailer | P3 | S | 004 | TODO |
 | [007](./007-production-cutover-checklist.md) | Prepare the switch to `rahlwes.eu` and prove it with a script | P3 | M | 001, 002 (006 recommended) | TODO |
