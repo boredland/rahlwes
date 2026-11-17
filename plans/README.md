@@ -9,12 +9,12 @@ honor its STOP conditions, and update your row when done.
 | Plan | Title | Priority | Effort | Depends on | Status |
 |------|-------|----------|--------|------------|--------|
 | [001](./001-ci-gate.md) | Run typecheck (`astro check`) and tests on every push and pull request | P1 | S | — | DONE |
-| [002](./002-contact-form-fail-closed.md) | Make the contact form refuse submissions it cannot verify; 400 on malformed JSON | P1 | S | — (001 recommended) | BLOCKED (code committed `4a03776`; **do not deploy** until the Turnstile widget and `TURNSTILE_SECRET_KEY` exist, or the form goes offline; steps 0 and 6 pending) |
-| [003](./003-newsletter-resend-guard.md) | Make a second dispatch of the same newsletter impossible on the server | P1 | S | — | BLOCKED (code committed; the operator must apply migration 0007 to the remote D1 first; the 200/409 check on the deployed worker is pending) |
+| [002](./002-contact-form-fail-closed.md) | Make the contact form refuse submissions it cannot verify; 400 on malformed JSON | P1 | S | — (001 recommended) | DONE on staging (widget `rahlwes` created for `next.rahlwes.eu` and `rahlwes.eu`, secret set, deployed; 400/400/400/403 verified; **pending the operator: one real submission through the page in a browser**) |
+| [003](./003-newsletter-resend-guard.md) | Make a second dispatch of the same newsletter impossible on the server | P1 | S | — | DONE (migration 0007 applied remotely; deployed; a re-dispatch of an already-dispatched newsletter returns 409 and the admin shows "Bereits versendet"; the first-dispatch 200 path was not exercised because sending mail to real subscribers was out of scope) |
 | [004](./004-media-route-fixes.md) | Make `/media/*` answer malformed and conditional requests correctly | P2 | S | — (001 recommended) | DONE |
 | [005](./005-redact-upstream-error-urls.md) | Stop upstream error messages from carrying the URL's query string | P2 | S | — (001 recommended) | DONE |
-| [006](./006-seo-descriptions-and-trailer-captions.md) | Replace cut-off meta descriptions; add captions to the trailer | P3 | S | 004 | BLOCKED (descriptions done; caption upload to R2 waits for the museum's permission, and the `<track>` commit must not be deployed before it) |
-| [007](./007-production-cutover-checklist.md) | Prepare the switch to `rahlwes.eu` and prove it with a script | P3 | M | 001, 002 (006 recommended) | DONE (staging run is 8/10: `/sitemap.xml` 404 until the redirect is deployed, and the contact form 500 on a null body until plan 002 is deployed) |
+| [006](./006-seo-descriptions-and-trailer-captions.md) | Replace cut-off meta descriptions; add captions to the trailer | P3 | S | 004 | PARTIAL (11 descriptions done and deployed; `<track>` markup committed but **not deployed**, caption files not uploaded: waiting for the museum's permission; deploying needs the markup stripped or the `.vtt` files in R2) |
+| [007](./007-production-cutover-checklist.md) | Prepare the switch to `rahlwes.eu` and prove it with a script | P3 | M | 001, 002 (006 recommended) | DONE (`verify:origin` is 10/10 on the deployed staging) |
 
 Status values: TODO | IN PROGRESS | DONE | BLOCKED (with one-line reason) | REJECTED (with one-line rationale — finding fixed independently or approach abandoned)
 
