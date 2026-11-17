@@ -13,7 +13,7 @@ honor its STOP conditions, and update your row when done.
 | [003](./003-newsletter-resend-guard.md) | Make a second dispatch of the same newsletter impossible on the server | P1 | S | — | TODO |
 | [004](./004-media-route-fixes.md) | Make `/media/*` answer malformed and conditional requests correctly | P2 | S | — (001 recommended) | DONE |
 | [005](./005-redact-upstream-error-urls.md) | Stop upstream error messages from carrying the URL's query string | P2 | S | — (001 recommended) | DONE |
-| [006](./006-seo-descriptions-and-trailer-captions.md) | Replace cut-off meta descriptions; add captions to the trailer | P3 | S | 004 | TODO |
+| [006](./006-seo-descriptions-and-trailer-captions.md) | Replace cut-off meta descriptions; add captions to the trailer | P3 | S | 004 | BLOCKED (descriptions done; caption upload to R2 waits for the museum's permission, and the `<track>` commit must not be deployed before it) |
 | [007](./007-production-cutover-checklist.md) | Prepare the switch to `rahlwes.eu` and prove it with a script | P3 | M | 001, 002 (006 recommended) | TODO |
 
 Status values: TODO | IN PROGRESS | DONE | BLOCKED (with one-line reason) | REJECTED (with one-line rationale — finding fixed independently or approach abandoned)
