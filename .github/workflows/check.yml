@@ -39,7 +39,10 @@ jobs:
       # Offline tests only. test:drift hits live archives and has its own workflow.
       - run: npm test
 
-      # No `npm run build` here on purpose: wrangler.jsonc marks the email bindings
-      # `remote: true`, so a build starts a remote proxy session that needs a Cloudflare
-      # login, and this read-only job has no credentials. `npm run deploy` runs the
-      # build with the operator's login.
+      # CLOUDFLARE_VITE_FORCE_LOCAL stops the Cloudflare Vite plugin from opening a remote
+      # proxy session: wrangler.jsonc marks the email bindings `remote: true`, which would
+      # otherwise need a Cloudflare login that this read-only job does not have. The build
+      # output is only checked here, never deployed.
+      - run: npm run build
+        env:
+          CLOUDFLARE_VITE_FORCE_LOCAL: 'true'
