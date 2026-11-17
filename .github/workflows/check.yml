@@ -1,0 +1,45 @@
+name: Prüfen
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+# Read-only: this job only looks. Anything that writes to the repository
+# (scrape-cfps.yml) asks for its own permission.
+permissions:
+  contents: read
+
+concurrency:
+  group: check-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      # .astro/ is git-ignored, so a fresh checkout has none of the generated content
+      # types that the checker needs to resolve collections.
+      - run: npx astro sync
+
+      # Pushing to main does not deploy (npm run deploy does), so this is the only
+      # automatic signal that a change still compiles. astro check, not plain tsc:
+      # tsc does not read .astro files.
+      - run: npm run check
+
+      # Offline tests only. test:drift hits live archives and has its own workflow.
+      - run: npm test
+
+      # No `npm run build` here on purpose: wrangler.jsonc marks the email bindings
+      # `remote: true`, so a build starts a remote proxy session that needs a Cloudflare
+      # login, and this read-only job has no credentials. `npm run deploy` runs the
+      # build with the operator's login.

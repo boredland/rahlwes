@@ -29,6 +29,7 @@ npm run dev        # localhost:4321, editor at /keystatic
 npm run build      # production build into dist/
 npm run preview    # run the built worker locally via wrangler
 npm run deploy     # build + wrangler deploy
+npm run check      # astro check (types incl. .astro files); CI also runs tests and the build on every push
 npm run translate  # DE -> EN/FR for the whole content tree
 npm run rephrase -- draft.md   # DeepL Write polish for German prose
 ```

@@ -88,8 +88,13 @@ read `.astro` files, and this site's layouts and components are `.astro` files.
     Do not assume it is gone: **verify on a clean checkout** (step 1).
 - `npm test` currently: 5 test files pass, 1 skipped (`test/ankai/drift.test.ts`), 56 tests
   pass, 9 skipped. Runtime ~1.3 s. It needs no network.
-- `npm run build` passes (exit 0, ~14 s) and prints one standing warning:
-  `[glob-loader] No files found matching "*/*.mdx" in directory "src/content/newsletters"`.
+- `npm run build` passes **on the operator's machine** (exit 0, ~14 s) and prints one standing
+  warning: `[glob-loader] No files found matching "*/*.mdx" in directory "src/content/newsletters"`.
+  **It fails on a clean clone with no Cloudflare login** (verified 2026-11-17): `wrangler.jsonc`
+  declares the email bindings with `"remote": true`, so the Cloudflare Vite plugin starts a
+  remote proxy session during the build and aborts with "More than one account available but
+  unable to select one in non-interactive mode". CI has no login, so the CI job must **not** run
+  `npm run build`. Do not "fix" this by setting `account_id` or a token in the workflow.
 - Node engine: `>=22.12.0` (`package.json` `engines`). CI uses Node 22.
 - Conventions: workflow files use German step names, with English comments explaining
   **why** (see `drift.yml`). AGENTS.md: "Comments explain why, never what."
@@ -232,7 +237,10 @@ jobs:
       # Offline tests only. test:drift hits live archives and has its own workflow.
       - run: npm test
 
-      - run: npm run build
+      # No `npm run build` here on purpose: wrangler.jsonc marks the email bindings
+      # `remote: true`, so a build starts a remote proxy session that needs a Cloudflare
+      # login, and this read-only job has no credentials. `npm run deploy` runs the
+      # build with the operator's login.
 ```
 
 `PUBLIC_CF_BEACON_TOKEN` and other `.env` values are **not** set in CI, which is fine: an unset
@@ -247,7 +255,7 @@ In `README.md`, in the `## Commands` code block, add one line between `npm run d
 `npm run translate`:
 
 ```
-npm run check      # astro check (types incl. .astro files); CI also runs tests and the build on every push
+npm run check      # astro check (types incl. .astro files); CI also runs the tests on every push
 ```
 
 **Verify**: `sed -n '24,38p' README.md` shows the new line inside the block, which is otherwise unchanged.
@@ -257,7 +265,7 @@ npm run check      # astro check (types incl. .astro files); CI also runs tests 
 ```sh
 rm -rf /tmp/ci-sim && git clone --quiet . /tmp/ci-sim && cd /tmp/ci-sim
 git checkout advisor/001-ci-gate   # or fetch your branch into the clone
-npm ci && npx astro sync && npm run check && npm test && npm run build
+npm ci && npx astro sync && npm run check && npm test
 ```
 
 **Verify**: every command exits 0; `npm run check` prints `0 errors`; `npm test` reports
@@ -273,7 +281,7 @@ on a clean clone, and by the first GitHub Actions run after the operator pushes.
 - [ ] On a **clean clone**: `npm ci && npx astro sync && npm run check` exits 0 with `0 errors`
 - [ ] `npm ls @astrojs/check typescript --depth=0` shows both **without** `extraneous`
 - [ ] `npm test` exits 0 (56 passed, 9 skipped)
-- [ ] `npm run build` exits 0
+- [ ] `.github/workflows/check.yml` does **not** contain `npm run build`
 - [ ] `.github/workflows/check.yml` exists, triggers on `push` to `main` and on `pull_request`, and runs `astro sync` before `npm run check`
 - [ ] `git status` shows only the in-scope files changed (`content.ts` only if the error reproduced)
 - [ ] `plans/README.md` status row updated
@@ -287,7 +295,9 @@ Stop and report back (do not improvise) if:
 - Fixing `content.ts` needs `any`, `@ts-ignore` or a cast through `unknown`.
 - `npm install --save-dev @astrojs/check typescript` upgrades or changes any other package in
   `package-lock.json` (look at `git diff --stat package-lock.json`; a large diff is a STOP).
-- `npm test` no longer reports 56 passed / 9 skipped, or `npm run build` fails on `main` before your change.
+- `npm test` no longer reports 56 passed / 9 skipped on `main` before your change.
+- You are about to add credentials, `account_id` or a Cloudflare token to the workflow to make
+  the build run in CI.
 - You are tempted to add `npm audit`, lint or format steps: they are out of scope.
 
 ## Maintenance notes
