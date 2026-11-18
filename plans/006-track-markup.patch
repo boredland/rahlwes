@@ -1,0 +1,33 @@
+diff --git a/src/content/projects/de/nachgefragt.mdx b/src/content/projects/de/nachgefragt.mdx
+index 935b73e..46be64f 100644
+--- a/src/content/projects/de/nachgefragt.mdx
++++ b/src/content/projects/de/nachgefragt.mdx
+@@ -34,4 +34,6 @@ Begleitend erschien mein Aufsatz über das Projekt in der Zeitschrift [„Einsic
+ 
+ <video controls preload="none" poster="/media/nachgefragt-trailer-poster.jpg" style={{ inlineSize: '100%', blockSize: 'auto', borderRadius: 'var(--radius-m)' }}>
+   <source src="/media/nachgefragt-trailer.mp4" type="video/mp4" />
++  <track kind="captions" src="/media/nachgefragt-captions.de.vtt" srclang="de" label="Deutsch" default />
++  <track kind="captions" src="/media/nachgefragt-captions.en.vtt" srclang="en" label="English" />
+ </video>
+diff --git a/src/content/projects/en/nachgefragt.mdx b/src/content/projects/en/nachgefragt.mdx
+index b954dc3..aca92b7 100644
+--- a/src/content/projects/en/nachgefragt.mdx
++++ b/src/content/projects/en/nachgefragt.mdx
+@@ -22,4 +22,6 @@ The core of my work was to evaluate eyewitness interviews according to categorie
+ 
+ <video controls preload="none" poster="/media/nachgefragt-trailer-poster.jpg" style={{ inlineSize: '100%', blockSize: 'auto', borderRadius: 'var(--radius-m)' }}>
+   <source src="/media/nachgefragt-trailer.mp4" type="video/mp4" />
++  <track kind="captions" src="/media/nachgefragt-captions.de.vtt" srclang="de" label="Deutsch" default />
++  <track kind="captions" src="/media/nachgefragt-captions.en.vtt" srclang="en" label="English" />
+ </video>
+diff --git a/src/content/projects/fr/nachgefragt.mdx b/src/content/projects/fr/nachgefragt.mdx
+index 11f3dce..e282ae6 100644
+--- a/src/content/projects/fr/nachgefragt.mdx
++++ b/src/content/projects/fr/nachgefragt.mdx
+@@ -22,4 +22,6 @@ L'essentiel de mon travail a consisté à analyser des interviews de témoins de
+ 
+ <video controls preload="none" poster="/media/nachgefragt-trailer-poster.jpg" style={{ inlineSize: '100%', blockSize: 'auto', borderRadius: 'var(--radius-m)' }}>
+   <source src="/media/nachgefragt-trailer.mp4" type="video/mp4" />
++  <track kind="captions" src="/media/nachgefragt-captions.de.vtt" srclang="de" label="Deutsch" default />
++  <track kind="captions" src="/media/nachgefragt-captions.en.vtt" srclang="en" label="English" />
+ </video>
