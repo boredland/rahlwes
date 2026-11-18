@@ -213,9 +213,12 @@ Save as `nachgefragt-captions.de.vtt` and `nachgefragt-captions.en.vtt`.
   count in the unedited `trailer.de-DE.vtt` (the cue count must not change). Same for `en`.
 - `head -3 …de.vtt` → starts with `WEBVTT`.
 
-### Step 4: Add the `<track>` elements
+### Step 4: Keep the `<track>` elements out of `main` until the files are in R2
 
-In each of the three `nachgefragt.mdx` files add, inside `<video>`, after `<source …/>`:
+The markup is **not** in the three `nachgefragt.mdx` files on `main`: a deploy from `main` must never
+ship caption requests whose files are not in R2 (they 404). It is saved as
+`plans/006-track-markup.patch` (the exact diff of commit `e0518ef`, which was reverted), and it
+adds, inside each `<video>` after `<source …/>`:
 
 ```mdx
   <track kind="captions" src="/media/nachgefragt-captions.de.vtt" srclang="de" label="Deutsch" default />
@@ -223,22 +226,27 @@ In each of the three `nachgefragt.mdx` files add, inside `<video>`, after `<sour
 ```
 
 `default` goes on the **German** track on every language page: the audio is German, so German
-captions are what the visitor needs first; a reader of the English page can switch to the
-English track in the player's captions menu. Do not translate the labels.
+captions are what the visitor needs first; a reader of the English page can switch to the English
+track in the player's captions menu. Do not translate the labels.
 
-**Verify**: `npm run build` → exit 0; `grep -c '<track' src/content/projects/{de,en,fr}/nachgefragt.mdx` → `2` for each.
+**Verify**: `git apply --check plans/006-track-markup.patch` → exit 0 (the patch still applies).
+Do not apply it yet.
 
-### Step 5: Rights check, then upload and deploy (operator gate)
+### Step 5: Rights check, then upload, apply the patch and deploy in one go (operator gate)
 
 **Stop here and ask the operator**: "The captions are Historisches Museum Frankfurt's work, like
-the video. Have you confirmed permission to host them?" If **no**, do not upload; commit the
-`<track>` change on the branch only and report. If **yes**:
+the video. Have you confirmed permission to host them?" If **no**, do nothing: `main` stays
+deployable. If **yes**, in this order, so no deploy ever sees markup without files:
 
 ```sh
 npx wrangler r2 object put rahlwes-media/nachgefragt-captions.de.vtt --file /tmp/captions-nachgefragt/nachgefragt-captions.de.vtt --content-type "text/vtt; charset=utf-8" --remote
 npx wrangler r2 object put rahlwes-media/nachgefragt-captions.en.vtt --file /tmp/captions-nachgefragt/nachgefragt-captions.en.vtt --content-type "text/vtt; charset=utf-8" --remote
+git apply plans/006-track-markup.patch
 npm run deploy
 ```
+
+Then commit the applied markup. If `/tmp/captions-nachgefragt/` is gone, regenerate the two files
+with step 3 first; the cue counts must be 31 each.
 
 **Verify** against the deployed worker:
 - `curl -s -D - -o /dev/null https://next.rahlwes.eu/media/nachgefragt-captions.de.vtt | grep -iE '^HTTP|content-type'` → `200`, `text/vtt; charset=utf-8`.
@@ -258,8 +266,8 @@ greps in Step 1 and 3, the build, and the deployed checks in Step 5. Do not add 
 - [ ] `grep -rn -E 'description: ".*(…|\.\.\.)"\s*$' src/content/pages src/content/projects src/content/journal` matches only the two legal pages
 - [ ] Every edited description is ≤ 165 characters
 - [ ] `npm run build` exits 0; `npm test` unchanged
-- [ ] Each `nachgefragt.mdx` (de, en, fr) contains exactly two `<track` elements
-- [ ] (After operator approval) both `.vtt` objects are in R2 and `curl` returns `200`, `text/vtt`
+- [ ] Until approval: `grep -c '<track' src/content/projects/{de,en,fr}/nachgefragt.mdx` is `0` for each and the patch passes `git apply --check`
+- [ ] After approval: each page has exactly two `<track` elements, both `.vtt` objects are in R2 and `curl` returns `200`, `text/vtt`
 - [ ] No `&nbsp;` in the uploaded captions
 - [ ] `git status` shows only in-scope files changed
 - [ ] `plans/README.md` status row updated
